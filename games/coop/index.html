@@ -1186,7 +1186,7 @@
         function cancelRoom() {
             document.getElementById('waitingOverlay').classList.remove('show');
             if (peerId) {
-                db.collection('rooms').doc(peerId).delete().catch(()=>{});
+                supabase.from('rooms').delete().eq('id', peerId).then().catch(()=>{});
                 if (peer) peer.destroy();
                 peer = null;
             }
@@ -1339,28 +1339,20 @@ try {
 } catch(e){}
 </script>
 
-<!-- Firebase Firestore SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <!-- PeerJS -->
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <!-- 联机模式脚本 -->
 <script>
-// ===== Firebase 初始化 =====
-const firebaseConfig = {
-    apiKey: "AIzaSyAoHM4A63TgvH588jtjRQyUQbfRjjw69t4",
-    authDomain: "web-arcade-121d9.firebaseapp.com",
-    projectId: "web-arcade-121d9",
-    storageBucket: "web-arcade-121d9.firebasestorage.app",
-    messagingSenderId: "162550999191",
-    appId: "1:162550999191:web:a373f63ab2eb2aa015e1d2"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const roomsRef = db.collection('rooms');
+// ===== Supabase 初始化 =====
+const supabaseUrl = 'https://lxdrzgwgirhvjabmfbvy.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzQ3OTU0NDAwLAogICJleHAiOiAxOTA1NzIwODAwfQ.W_ZdPqTk8V_nj-M2wvBqZKBZJ6PVWB9dQzSJtRtQwlQ';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-let unsubscribe = null;
+let roomsChannel = null;
+let roomChannel = null;
 let peer = null;
 let currentRoomId = null;
 
@@ -1372,37 +1364,55 @@ function genRoomCode() {
     return code;
 }
 
-// ===== 房间列表监听 =====
-function initLobby() {
+// ===== 房间列表监听 (Supabase Realtime) =====
+async function initLobby() {
     const list = document.getElementById('roomList');
     list.innerHTML = '<div class="empty">加载中...</div>';
-    if (unsubscribe) unsubscribe();
-    unsubscribe = roomsRef.where('state', '==', 'waiting')
-        .orderBy('createdAt', 'desc')
-        .limit(20)
-        .onSnapshot(snapshot => {
-            if (snapshot.empty) {
-                list.innerHTML = '<div class="empty">暂无可用房间，创建一个吧</div>';
-                return;
-            }
-            let html = '';
-            snapshot.forEach(doc => {
-                const r = doc.data();
-                html += `<div class="room-item">
-                    <div class="info">
-                        <span class="name">${r.hostName}</span>
-                        <span class="meta">${r.difficulty || '待定'} · ${r.createdAt?.toDate().toLocaleTimeString() || ''}</span>
-                    </div>
-                    <button class="join-btn" onclick="joinRoomById('${doc.id}')">加入</button>
-                </div>`;
-            });
-            list.innerHTML = html;
-        }, err => {
-            list.innerHTML = '<div class="empty">加载房间失败，请刷新</div>';
-        });
+    if (roomsChannel) { supabase.removeChannel(roomsChannel); roomsChannel = null; }
+
+    // 先拉一次全量数据
+    const { data: rooms, error } = await supabase
+        .from('rooms')
+        .select('*')
+        .eq('state', 'waiting')
+        .order('createdat', { ascending: false })
+        .limit(20);
+    if (error) { list.innerHTML = '<div class="empty">加载房间失败，请刷新</div>'; return; }
+    renderRoomList(rooms || []);
+
+    // 订阅实时变化（监听所有变化，重新拉取列表）
+    roomsChannel = supabase.channel('rooms-list')
+        .on('postgres_changes',
+            { event: '*', schema: 'public', table: 'rooms' },
+            async () => {
+                const { data: updated } = await supabase
+                    .from('rooms').select('*').eq('state', 'waiting')
+                    .order('createdat', { ascending: false }).limit(20);
+                renderRoomList(updated || []);
+            })
+        .subscribe();
 }
 
-// ===== 创建房间 =====
+function renderRoomList(rooms) {
+    const list = document.getElementById('roomList');
+    if (rooms.length === 0) {
+        list.innerHTML = '<div class="empty">暂无可用房间，创建一个吧</div>';
+        return;
+    }
+    let html = '';
+    rooms.forEach(r => {
+        html += `<div class="room-item">
+            <div class="info">
+                <span class="name">${r.hostname}</span>
+                <span class="meta">${r.difficulty || '待定'} · ${r.createdat ? new Date(r.createdat).toLocaleTimeString() : ''}</span>
+            </div>
+            <button class="join-btn" onclick="joinRoomById('${r.id}')">加入</button>
+        </div>`;
+    });
+    list.innerHTML = html;
+}
+
+// ===== 创建房间 (Supabase) =====
 async function createRoom() {
     const code = genRoomCode();
     const userName = localStorage.getItem('arcadeUser') || ('玩家' + Math.floor(Math.random() * 1000));
@@ -1411,29 +1421,36 @@ async function createRoom() {
     isHost = true;
 
     try {
-        await roomsRef.doc(code).set({
+        const { error } = await supabase.from('rooms').insert({
             id: code,
-            hostName: userName,
+            hostname: userName,
             difficulty: null,
             state: 'waiting',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            createdat: new Date().toISOString()
         });
+        if (error) throw error;
+
         document.getElementById('lobbyOverlay').classList.remove('show');
         document.getElementById('roomCodeDisplay').textContent = code;
         document.getElementById('waitingOverlay').classList.add('show');
 
-        // 监听房间变化（加入者到达 / 房间删除）
-        roomsRef.doc(code).onSnapshot(snap => {
-            if (!snap.exists) {
-                document.getElementById('waitingOverlay').classList.remove('show');
-                document.getElementById('modeOverlay').classList.remove('hidden');
-                return;
-            }
-            const data = snap.data();
-            if (data && data.state === 'ready' && data.guestName) {
-                document.getElementById('waitingOverlay').classList.remove('show');
-            }
-        }, () => {});
+        // 监听房间变化（加入者到达 / 删除）
+        if (roomChannel) supabase.removeChannel(roomChannel);
+        roomChannel = supabase.channel('room-' + code)
+            .on('postgres_changes',
+                { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${code}` },
+                payload => {
+                    if (payload.eventType === 'DELETE') {
+                        document.getElementById('waitingOverlay').classList.remove('show');
+                        document.getElementById('modeOverlay').classList.remove('hidden');
+                        return;
+                    }
+                    const data = payload.new;
+                    if (data && data.state === 'ready' && data.guestname) {
+                        document.getElementById('waitingOverlay').classList.remove('show');
+                    }
+                })
+            .subscribe();
 
         // 启动PeerJS作为host
         setupPeerHost(code);
@@ -1456,15 +1473,16 @@ async function joinRoomById(code) {
     const userName = localStorage.getItem('arcadeUser') || ('玩家' + Math.floor(Math.random() * 1000));
 
     try {
-        const doc = await roomsRef.doc(code).get();
-        if (!doc.exists || doc.data().state !== 'waiting') {
+        const { data, error } = await supabase.from('rooms').select('*').eq('id', code).single();
+        if (error || !data || data.state !== 'waiting') {
             alert('房间不存在或已满');
             return;
         }
-        await roomsRef.doc(code).update({
-            guestName: userName,
+        const { error: updateError } = await supabase.from('rooms').update({
+            guestname: userName,
             state: 'ready'
-        });
+        }).eq('id', code);
+        if (updateError) throw updateError;
         document.getElementById('lobbyOverlay').classList.remove('show');
         // 加入PeerJS
         setupPeerGuest(code, userName);
@@ -1738,10 +1756,11 @@ nextLevel = function() {
 // 清理
 window.addEventListener('beforeunload', () => {
     if (currentRoomId) {
-        db.collection('rooms').doc(currentRoomId).delete().catch(()=>{});
+        supabase.from('rooms').delete().eq('id', currentRoomId).then().catch(()=>{});
     }
     if (peer) peer.destroy();
-    if (unsubscribe) unsubscribe();
+    if (roomsChannel) supabase.removeChannel(roomsChannel);
+    if (roomChannel) supabase.removeChannel(roomChannel);
 });
 </script>
 </body>
