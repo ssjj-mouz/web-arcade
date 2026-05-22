@@ -44,7 +44,8 @@ async function createRoom({ hostname, difficulty }) {
 
 async function joinRoom({ roomId, guestname }) {
   const { data } = await db.collection('rooms').doc(roomId).get();
-  if (!data || data.state !== 'waiting') {
+  const room = data && data[0];
+  if (!room || room.state !== 'waiting') {
     return { error: '房间不存在或已满' };
   }
   await db.collection('rooms').doc(roomId).update({
@@ -63,7 +64,7 @@ async function listRooms() {
 
 async function getRoom({ roomId }) {
   const { data } = await db.collection('rooms').doc(roomId).get();
-  return { room: data || null };
+  return { room: (data && data[0]) || null };
 }
 
 async function deleteRoom({ roomId }) {
@@ -74,8 +75,9 @@ async function deleteRoom({ roomId }) {
 
 async function pollP2Input({ roomId }) {
   const { data } = await db.collection('game_sessions').doc(roomId).get();
-  if (!data) return { input: null };
-  const input = data.p2Input;
+  const session = data && data[0];
+  if (!session) return { input: null };
+  const input = session.p2Input;
   if (input) {
     await db.collection('game_sessions').doc(roomId).update({
       p2Input: null
@@ -100,6 +102,7 @@ async function writeP2Input({ roomId, input }) {
 
 async function getSession({ roomId }) {
   const { data } = await db.collection('game_sessions').doc(roomId).get();
-  if (!data) return { state: null };
-  return { state: data.state || null };
+  const session = data && data[0];
+  if (!session) return { state: null };
+  return { state: session.state || null };
 }
