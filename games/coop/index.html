@@ -1233,7 +1233,7 @@
                 initLevel(); return;
             }
 
-            // 联机模式客机：本地先移动（低延迟），同时发送到Supabase
+            // 联机模式客机：本地先移动（响应快），同时发送给主机，guestTick 延迟同步避免回溯
             if (isMultiplayer && !isHost) {
                 if (e.key === ' ') {
                     e.preventDefault();
@@ -1247,17 +1247,13 @@
                 const p2Keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
                 if (p2Keys.includes(e.key)) {
                     const d = grid;
-                    let moved = false;
-                    if (e.key === 'ArrowUp' && p2.y > 0 && d[p2.y - 1][p2.x] === 0) { p2.y--; moved = true; }
-                    else if (e.key === 'ArrowDown' && p2.y < rows - 1 && d[p2.y + 1][p2.x] === 0) { p2.y++; moved = true; }
-                    else if (e.key === 'ArrowLeft' && p2.x > 0 && d[p2.y][p2.x - 1] === 0) { p2.x--; moved = true; }
-                    else if (e.key === 'ArrowRight' && p2.x < cols - 1 && d[p2.y][p2.x + 1] === 0) { p2.x++; moved = true; }
-                    if (moved && p2.el) {
+                    if (e.key === 'ArrowUp' && p2.y > 0 && d[p2.y - 1][p2.x] === 0) { p2.y--; lastGuestMoveTime = Date.now(); }
+                    else if (e.key === 'ArrowDown' && p2.y < rows - 1 && d[p2.y + 1][p2.x] === 0) { p2.y++; lastGuestMoveTime = Date.now(); }
+                    else if (e.key === 'ArrowLeft' && p2.x > 0 && d[p2.y][p2.x - 1] === 0) { p2.x--; lastGuestMoveTime = Date.now(); }
+                    else if (e.key === 'ArrowRight' && p2.x < cols - 1 && d[p2.y][p2.x + 1] === 0) { p2.x++; lastGuestMoveTime = Date.now(); }
+                    if (lastGuestMoveTime && p2.el) {
                         p2.el.style.left = (p2.x * CELL + PADDING) + 'px';
                         p2.el.style.top = (p2.y * CELL + PADDING) + 'px';
-                        guestSendP2Input({type:'move', x:p2.x, y:p2.y});
-                    } else {
-                        // 撞墙也通知主机校准
                         guestSendP2Input({type:'move', x:p2.x, y:p2.y});
                     }
                 }
@@ -1386,6 +1382,7 @@ let roomPollTimer = null;
 let currentRoomId = null;
 let hostGameTimer = null;
 let guestPollTimer = null;
+let lastGuestMoveTime = 0;
 
 function genRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -1505,8 +1502,7 @@ async function hostTick(roomId) {
         if (data && data.input) {
             const input = data.input;
             if (input.type === 'move' && !isLocked && !isNaN(input.x) && !isNaN(input.y)) {
-                const dist = Math.abs(input.x - p2.x) + Math.abs(input.y - p2.y);
-                if (dist <= 3 && input.x > 0 && input.x < cols - 1 && input.y > 0 && input.y < rows - 1 && grid[input.y][input.x] === 0) {
+                if (input.x > 0 && input.x < cols - 1 && input.y > 0 && input.y < rows - 1 && grid[input.y][input.x] === 0) {
                     p2.x = input.x; p2.y = input.y;
                     if (p2.el) {
                         p2.el.style.left = (p2.x * CELL + PADDING) + 'px';
@@ -1621,6 +1617,8 @@ async function guestTick(roomId) {
 
             p1.el = addDiv(msg.p1.x, msg.p1.y, 'cell p1');
             p2.el = addDiv(msg.p2.x, msg.p2.y, 'cell p2');
+            p1.x = msg.p1.x; p1.y = msg.p1.y;
+            p2.x = msg.p2.x; p2.y = msg.p2.y;
             heldItems = [];
 
             items = [];
@@ -1648,7 +1646,7 @@ async function guestTick(roomId) {
             p1.el.style.left = (p1.x * CELL + PADDING) + 'px';
             p1.el.style.top = (p1.y * CELL + PADDING) + 'px';
         }
-        if (msg.p2 && p2.el) {
+        if (msg.p2 && p2.el && Date.now() - lastGuestMoveTime > 400) {
             p2.x = msg.p2.x; p2.y = msg.p2.y;
             p2.el.style.left = (p2.x * CELL + PADDING) + 'px';
             p2.el.style.top = (p2.y * CELL + PADDING) + 'px';

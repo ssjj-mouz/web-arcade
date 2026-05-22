@@ -77,13 +77,15 @@ async function pollP2Input({ roomId }) {
   const { data } = await db.collection('game_sessions').doc(roomId).get();
   const session = data && data[0];
   if (!session) return { input: null };
-  const input = session.p2Input;
-  if (input) {
+  const raw = session.p2Input;
+  let input = null;
+  if (raw) {
+    try { input = JSON.parse(raw); } catch(e) {}
     await db.collection('game_sessions').doc(roomId).update({
       p2Input: null
     });
   }
-  return { input: input || null };
+  return { input };
 }
 
 async function writeState({ roomId, state }) {
@@ -95,7 +97,7 @@ async function writeState({ roomId, state }) {
 
 async function writeP2Input({ roomId, input }) {
   await db.collection('game_sessions').doc(roomId).update({
-    p2Input: input
+    p2Input: JSON.stringify(input)
   });
   return { success: true };
 }
