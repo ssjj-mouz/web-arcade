@@ -954,6 +954,7 @@
 
         function initLevel() {
             isLocked = false;
+            lockReason = null;
 
             if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
             if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
@@ -1139,6 +1140,7 @@
 
         function gameOver() {
             isLocked = true;
+            lockReason = 'lose';
             if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
             if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
 
@@ -1397,6 +1399,7 @@
             if (p1.x === gate1.x && p1.y === gate1.y &&
                 p2.x === gate2.x && p2.y === gate2.y) {
                 isLocked = true;
+                lockReason = 'win';
                 if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
                 if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
                 setTimeout(() => {
@@ -1460,6 +1463,7 @@ let guestPollTimer = null;
 let lastGuestMoveTime = 0;
 let lastUsedItem = null;
 let pendingChat = null;
+let lockReason = null;
 let disconnectCount = 0;
 
 function genRoomCode() {
@@ -1620,6 +1624,9 @@ async function hostTick(roomId) {
             const chatData = await callCF('session.pollChat', { roomId });
             if (chatData && chatData.chat && !pendingChat) {
                 pendingChat = chatData.chat;
+                // 主机立即显示客机的消息气泡
+                const targetEl = chatData.chat.sender === 'p1' ? p1.el : p2.el;
+                if (targetEl) showBubble(targetEl, chatData.chat.text, chatData.chat.sender);
             }
         } catch(e) {}
 
@@ -1630,6 +1637,7 @@ async function hostTick(roomId) {
         if (!isLocked && p1.x === gate1.x && p1.y === gate1.y &&
             p2.x === gate2.x && p2.y === gate2.y) {
             isLocked = true;
+            lockReason = 'win';
             if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
             if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
             setTimeout(() => {
@@ -1656,7 +1664,8 @@ async function writeHostState(roomId) {
         isLocked, freezeSafe,
         enemy2Active: enemy2.active,
         effect: lastUsedItem,
-        chat: pendingChat
+        chat: pendingChat,
+        lockReason
     };
     lastUsedItem = null;
     pendingChat = null;
@@ -1743,6 +1752,7 @@ async function guestTick(roomId) {
             p1.x = msg.p1.x; p1.y = msg.p1.y;
             p2.x = msg.p2.x; p2.y = msg.p2.y;
             isLocked = msg.isLocked || false;
+            lockReason = msg.lockReason || null;
             heldItems = [];
 
             items = [];
@@ -1804,6 +1814,7 @@ async function guestTick(roomId) {
         }
         if (msg.isLocked !== undefined) isLocked = msg.isLocked;
         if (msg.freezeSafe !== undefined) freezeSafe = msg.freezeSafe;
+        if (msg.lockReason !== undefined) lockReason = msg.lockReason;
 
         // 同步道具效果文字和冰冻特效
         if (msg.effect) {
@@ -1831,17 +1842,27 @@ async function guestTick(roomId) {
             else enemy2.el.classList.remove('frozen');
         }
 
-        // 同步聊天消息（显示为角色上方气泡）
+        // 同步聊天消息（跳过自己的消息回显，本地已显示）
         if (msg.chat && msg.chat.text) {
-            const targetEl = msg.chat.sender === 'p1' ? p1.el : p2.el;
-            if (targetEl) showBubble(targetEl, msg.chat.text, msg.chat.sender);
+            const isOwn = (isHost && msg.chat.sender === 'p1') || (!isHost && msg.chat.sender === 'p2');
+            if (!isOwn) {
+                const targetEl = msg.chat.sender === 'p1' ? p1.el : p2.el;
+                if (targetEl) showBubble(targetEl, msg.chat.text, msg.chat.sender);
+            }
         }
 
         if (isLocked && document.getElementById('winScreen').style.display !== 'flex') {
             if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
             if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
             if (isMultiplayer && !isHost) {
-                showOverlay('⏳ 等待房主', '#fcd34d', '房主正在处理...', '', '');
+                if (lockReason === 'win') {
+                    showOverlay('✨ 双子同心！', '#fcd34d', `关卡 ${currentLevel} 完成！`, '', '');
+                } else if (lockReason === 'lose') {
+                    const desc = difficulty === 'hard' ? '小心两个追踪者，双人协作避开' : '小心巡逻的敌人，双人协作避开';
+                    showOverlay('被巡逻兵抓住！', '#ef4444', desc, '', '');
+                } else {
+                    showOverlay('⏳ 等待房主', '#fcd34d', '房主正在处理...', '', '');
+                }
             } else {
                 showOverlay('✨ 双子同心！', '#fcd34d',
                     `关卡 ${currentLevel} 完成！`,
@@ -1924,6 +1945,7 @@ initLevel = function() {
     if (guestPollTimer) { clearInterval(guestPollTimer); guestPollTimer = null; }
     if (isMultiplayer && !isHost) {
         isLocked = false;
+        lockReason = null;
         if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
         if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
         enemy2.active = false;
