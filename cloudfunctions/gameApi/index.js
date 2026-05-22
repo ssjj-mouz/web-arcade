@@ -24,6 +24,8 @@ exports.main = async (event) => {
       case 'session.writeP2': return await writeP2Input(params);
       case 'session.p2UseItem': return await p2UseItem(params);
       case 'session.pollUseItem': return await pollUseItem(params);
+      case 'session.sendChat': return await sendChat(params);
+      case 'session.pollChat': return await pollChat(params);
       case 'session.get': return await getSession(params);
       default: return { error: 'unknown action' };
     }
@@ -127,4 +129,20 @@ async function pollUseItem({ roomId }) {
     p2UseItem: null
   });
   return { item };
+}
+
+async function sendChat({ roomId, sender, text }) {
+  await db.collection('game_sessions').doc(roomId).update({
+    chat: { sender, text, time: Date.now() }
+  });
+  return { success: true };
+}
+
+async function pollChat({ roomId }) {
+  const { data } = await db.collection('game_sessions').doc(roomId).get();
+  const session = data && data[0];
+  if (!session || !session.chat) return { chat: null };
+  const chat = session.chat;
+  await db.collection('game_sessions').doc(roomId).update({ chat: null });
+  return { chat };
 }

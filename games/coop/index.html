@@ -483,6 +483,64 @@
             background: transparent; color: #ef4444; font-size: 0.85rem; cursor: pointer;
         }
         .waiting-card .cancel-btn:hover { background: rgba(239,68,68,0.1); }
+
+        /* ===== 聊天框 ===== */
+        .chat-area {
+            margin-top: 10px;
+            display: flex; gap: 8px;
+            width: min(90vw, 594px);
+        }
+        .chat-area input {
+            flex: 1;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3);
+            color: #f8fafc;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .chat-area input:focus { border-color: rgba(96,165,250,0.4); }
+        .chat-area button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .chat-area button:hover { opacity: 0.9; }
+        .chat-bubble {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #e2e8f0;
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 30;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: chatFade 4s ease-out forwards;
+            line-height: 1.4;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-bubble.p1 { border-color: rgba(96,165,250,0.4); }
+        .chat-bubble.p2 { border-color: rgba(248,113,113,0.4); }
+        @keyframes chatFade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(4px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            70% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+        }
     </style>
 </head>
 <body>
@@ -574,6 +632,11 @@
         <span>各自走到对应传送门过关</span>
         <span><kbd>R</kbd> 重来</span>
         <span><kbd>E</kbd> 转向 <kbd>Space</kbd> 定身2秒</span>
+    </div>
+
+    <div class="chat-area" id="chatArea" style="display:none;">
+        <input type="text" id="chatInput" placeholder="按 Enter 发送消息..." maxlength="50">
+        <button onclick="sendChat()">发送</button>
     </div>
 
     <div class="overlay" id="winScreen">
@@ -1195,6 +1258,7 @@
             currentRoomId = null;
             isMultiplayer = false;
             isHost = false;
+            document.getElementById('chatArea').style.display = 'none';
             document.getElementById('modeOverlay').classList.remove('hidden');
         }
 
@@ -1395,6 +1459,8 @@ let hostGameTimer = null;
 let guestPollTimer = null;
 let lastGuestMoveTime = 0;
 let lastUsedItem = null;
+let pendingChat = null;
+let disconnectCount = 0;
 
 function genRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -1504,7 +1570,7 @@ async function joinRoomById(code) {
 // ===== 主机游戏循环 =====
 function startHostGameLoop(roomId) {
     if (hostGameTimer) clearInterval(hostGameTimer);
-    hostGameTimer = setInterval(() => hostTick(roomId), 300);
+    hostGameTimer = setInterval(() => hostTick(roomId), 200);
 }
 
 async function hostTick(roomId) {
@@ -1549,6 +1615,14 @@ async function hostTick(roomId) {
             }
         } catch(e) {}
 
+        // 3b. 读取客机聊天消息
+        try {
+            const chatData = await callCF('session.pollChat', { roomId });
+            if (chatData && chatData.chat && !pendingChat) {
+                pendingChat = chatData.chat;
+            }
+        } catch(e) {}
+
         // 4. 碰撞检测
         checkEnemyCollision();
 
@@ -1581,9 +1655,11 @@ async function writeHostState(roomId) {
         difficulty, level: currentLevel,
         isLocked, freezeSafe,
         enemy2Active: enemy2.active,
-        effect: lastUsedItem
+        effect: lastUsedItem,
+        chat: pendingChat
     };
     lastUsedItem = null;
+    pendingChat = null;
     if (enemy2.active) {
         state.enemies.push({x: enemy2.x, y: enemy2.y, dx: enemy2.dx, dy: enemy2.dy});
     }
@@ -1603,16 +1679,30 @@ function startGuestGame() {
     document.getElementById('difficulty-overlay').style.display = 'none';
     mazeEl.innerHTML = '';
     document.getElementById('winScreen').style.display = 'none';
+    document.getElementById('chatArea').style.display = 'flex';
     guestFirstSync = false;
 
     if (guestPollTimer) clearInterval(guestPollTimer);
-    guestPollTimer = setInterval(() => guestTick(currentRoomId), 300);
+    guestPollTimer = setInterval(() => guestTick(currentRoomId), 200);
 }
 
 async function guestTick(roomId) {
     try {
         const result = await callCF('session.get', { roomId });
-        if (!result || !result.state) return;
+        if (!result || !result.state) {
+            disconnectCount++;
+            if (disconnectCount >= 3) {
+                document.getElementById('winScreen').style.display = 'flex';
+                document.getElementById('winTitle').textContent = '房主已离开';
+                document.getElementById('winTitle').style.color = '#ef4444';
+                document.getElementById('winDesc').textContent = '游戏房间已关闭';
+                const btn = document.getElementById('overlayBtn');
+                btn.textContent = '返回大厅';
+                btn.setAttribute('onclick', 'backToLobby()');
+            }
+            return;
+        }
+        disconnectCount = 0;
         const msg = result.state;
 
         // 检测关卡变化或游戏重开（房主进入下一关/重开），重建迷宫
@@ -1741,6 +1831,12 @@ async function guestTick(roomId) {
             else enemy2.el.classList.remove('frozen');
         }
 
+        // 同步聊天消息（显示为角色上方气泡）
+        if (msg.chat && msg.chat.text) {
+            const targetEl = msg.chat.sender === 'p1' ? p1.el : p2.el;
+            if (targetEl) showBubble(targetEl, msg.chat.text, msg.chat.sender);
+        }
+
         if (isLocked && document.getElementById('winScreen').style.display !== 'flex') {
             if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
             if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
@@ -1756,6 +1852,25 @@ async function guestTick(roomId) {
 }
 
 // ===== 客机发送输入 =====
+async function backToLobby() {
+    if (guestPollTimer) { clearInterval(guestPollTimer); guestPollTimer = null; }
+    if (hostGameTimer) { clearInterval(hostGameTimer); hostGameTimer = null; }
+    if (roomPollTimer) { clearInterval(roomPollTimer); roomPollTimer = null; }
+    currentRoomId = null;
+    isMultiplayer = false;
+    isHost = false;
+    document.getElementById('winScreen').style.display = 'none';
+    document.getElementById('difficulty-overlay').style.display = 'flex';
+    document.getElementById('modeOverlay').classList.add('hidden');
+    document.getElementById('lobbyOverlay').classList.remove('show');
+    document.getElementById('waitingOverlay').classList.remove('show');
+    mazeEl.innerHTML = '';
+    document.getElementById('lvlNum').textContent = '1';
+    document.getElementById('chatArea').style.display = 'none';
+    currentLevel = 1;
+    disconnectCount = 0;
+}
+
 async function guestSendP2Input(input) {
     if (!currentRoomId || isHost) return;
     try {
@@ -1769,6 +1884,38 @@ async function guestUseItem(item) {
         await callCF('session.p2UseItem', { roomId: currentRoomId, item });
     } catch(e) {}
 }
+
+// ===== 聊天 =====
+function showBubble(el, text, sender) {
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble' + (sender === 'p1' ? ' p1' : ' p2');
+    bubble.textContent = text;
+    el.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 4000);
+}
+
+function sendChat() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text || !currentRoomId) return;
+    input.value = '';
+    const sender = isHost ? 'p1' : 'p2';
+    // 本地立即显示气泡
+    const targetEl = isHost ? p1.el : p2.el;
+    if (targetEl) showBubble(targetEl, text, sender);
+    // 发送到云端
+    if (isHost) {
+        // 主机直接记录到待同步聊天
+        pendingChat = { sender, text };
+    } else {
+        callCF('session.sendChat', { roomId: currentRoomId, sender, text }).catch(() => {});
+    }
+}
+
+// 聊天输入框回车发送
+document.getElementById('chatInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') sendChat();
+});
 
 // ===== 重写initLevel/nextLevel =====
 const origInitLevel = initLevel;
@@ -1785,11 +1932,12 @@ initLevel = function() {
         document.getElementById('winScreen').style.display = 'none';
         guestFirstSync = false;
         if (currentRoomId) {
-            guestPollTimer = setInterval(() => guestTick(currentRoomId), 300);
+            guestPollTimer = setInterval(() => guestTick(currentRoomId), 200);
         }
     } else {
         origInitLevel();
         if (isMultiplayer && isHost && currentRoomId) {
+            document.getElementById('chatArea').style.display = 'flex';
             startHostGameLoop(currentRoomId);
         }
     }
