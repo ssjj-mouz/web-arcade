@@ -1274,6 +1274,7 @@
                 const idx = heldItems.indexOf('pause');
                 if (idx !== -1) {
                     heldItems.splice(idx, 1);
+                    lastUsedItem = 'pause';
                     useItem('pause');
                     updateItemUI();
                 }
@@ -1283,6 +1284,7 @@
                 const idx = heldItems.indexOf('turn');
                 if (idx !== -1) {
                     heldItems.splice(idx, 1);
+                    lastUsedItem = 'turn';
                     useItem('turn');
                     updateItemUI();
                 }
@@ -1392,6 +1394,7 @@ let currentRoomId = null;
 let hostGameTimer = null;
 let guestPollTimer = null;
 let lastGuestMoveTime = 0;
+let lastUsedItem = null;
 
 function genRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -1539,6 +1542,7 @@ async function hostTick(roomId) {
                 const idx = heldItems.indexOf(itemData.item);
                 if (idx !== -1) {
                     heldItems.splice(idx, 1);
+                    lastUsedItem = itemData.item;
                     useItem(itemData.item);
                     updateItemUI();
                 }
@@ -1576,8 +1580,10 @@ async function writeHostState(roomId) {
         grid, rows, cols, gate1, gate2,
         difficulty, level: currentLevel,
         isLocked, freezeSafe,
-        enemy2Active: enemy2.active
+        enemy2Active: enemy2.active,
+        effect: lastUsedItem
     };
+    lastUsedItem = null;
     if (enemy2.active) {
         state.enemies.push({x: enemy2.x, y: enemy2.y, dx: enemy2.dx, dy: enemy2.dy});
     }
@@ -1708,6 +1714,32 @@ async function guestTick(roomId) {
         }
         if (msg.isLocked !== undefined) isLocked = msg.isLocked;
         if (msg.freezeSafe !== undefined) freezeSafe = msg.freezeSafe;
+
+        // 同步道具效果文字和冰冻特效
+        if (msg.effect) {
+            const text = msg.effect === 'turn' ? '转向' : '定身';
+            const targets = [enemy.el, enemy2.el].filter(Boolean);
+            targets.forEach(el => {
+                const popup = document.createElement('div');
+                popup.className = 'dir-popup';
+                popup.textContent = text;
+                if (msg.effect === 'pause') {
+                    popup.style.color = '#93c5fd';
+                    popup.style.borderColor = 'rgba(147,197,253,0.4)';
+                }
+                el.appendChild(popup);
+                setTimeout(() => popup.remove(), 600);
+            });
+        }
+        // 同步冰冻样式
+        if (enemy.el) {
+            if (freezeSafe) enemy.el.classList.add('frozen');
+            else enemy.el.classList.remove('frozen');
+        }
+        if (enemy2.el) {
+            if (freezeSafe) enemy2.el.classList.add('frozen');
+            else enemy2.el.classList.remove('frozen');
+        }
 
         if (isLocked && document.getElementById('winScreen').style.display !== 'flex') {
             if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
