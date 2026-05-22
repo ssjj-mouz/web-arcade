@@ -1463,6 +1463,7 @@ let guestPollTimer = null;
 let lastGuestMoveTime = 0;
 let lastUsedItem = null;
 let pendingChat = null;
+let lastChatTime = 0;
 let lockReason = null;
 let disconnectCount = 0;
 
@@ -1622,7 +1623,7 @@ async function hostTick(roomId) {
         // 3b. 读取客机聊天消息
         try {
             const chatData = await callCF('session.pollChat', { roomId });
-            if (chatData && chatData.chat && !pendingChat) {
+            if (chatData && chatData.chat) {
                 pendingChat = chatData.chat;
                 // 主机立即显示客机的消息气泡
                 const targetEl = chatData.chat.sender === 'p1' ? p1.el : p2.el;
@@ -1668,7 +1669,6 @@ async function writeHostState(roomId) {
         lockReason
     };
     lastUsedItem = null;
-    pendingChat = null;
     if (enemy2.active) {
         state.enemies.push({x: enemy2.x, y: enemy2.y, dx: enemy2.dx, dy: enemy2.dy});
     }
@@ -1843,7 +1843,8 @@ async function guestTick(roomId) {
         }
 
         // 同步聊天消息（跳过自己的消息回显，本地已显示）
-        if (msg.chat && msg.chat.text) {
+        if (msg.chat && msg.chat.text && msg.chat.time && msg.chat.time !== lastChatTime) {
+            lastChatTime = msg.chat.time;
             const isOwn = (isHost && msg.chat.sender === 'p1') || (!isHost && msg.chat.sender === 'p2');
             if (!isOwn) {
                 const targetEl = msg.chat.sender === 'p1' ? p1.el : p2.el;
@@ -1927,7 +1928,7 @@ function sendChat() {
     // 发送到云端
     if (isHost) {
         // 主机直接记录到待同步聊天
-        pendingChat = { sender, text };
+        pendingChat = { sender, text, time: Date.now() };
     } else {
         callCF('session.sendChat', { roomId: currentRoomId, sender, text }).catch(() => {});
     }
