@@ -507,7 +507,10 @@
             <div class="lobby-actions">
                 <input type="text" id="roomCodeInput" placeholder="输入房间码" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-weight:bold;">
                 <button class="lobby-join-btn" onclick="joinRoom()">加入</button>
-                <button class="lobby-create-btn" onclick="createRoom()">创建房间</button>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+                <button class="lobby-create-btn" onclick="createRoom('easy')" style="flex:1;background:#22c55e;color:white;padding:10px;border-radius:8px;border:none;font-weight:600;cursor:pointer;">🟢 简单房</button>
+                <button class="lobby-create-btn" onclick="createRoom('hard')" style="flex:1;background:#ef4444;color:white;padding:10px;border-radius:8px;border:none;font-weight:600;cursor:pointer;">🔴 困难房</button>
             </div>
             <div class="room-list" id="roomList">
                 <div class="empty">加载中...</div>
@@ -1162,9 +1165,6 @@
         // 先显示模式选择
         let isMultiplayer = false;
         let isHost = false;
-        let peerConn = null;
-        let dataChan = null;
-        let peerId = null;
 
         function startSinglePlayer() {
             isMultiplayer = false;
@@ -1174,6 +1174,7 @@
 
         function showLobby() {
             document.getElementById('modeOverlay').classList.add('hidden');
+            document.getElementById('difficulty-overlay').style.display = 'none';
             document.getElementById('lobbyOverlay').classList.add('show');
             initLobby();
         }
@@ -1185,11 +1186,16 @@
 
         function cancelRoom() {
             document.getElementById('waitingOverlay').classList.remove('show');
-            if (peerId) {
-                supabase.from('rooms').delete().eq('id', peerId).then().catch(()=>{});
-                if (peer) peer.destroy();
-                peer = null;
+            if (currentRoomId) {
+                fetchSupabase(`rooms?id=eq.${currentRoomId}`, { method: 'DELETE' }).catch(()=>{});
             }
+            if (peer) { peer.destroy(); peer = null; }
+            dataChan = null;
+            if (syncInterval) { clearInterval(syncInterval); syncInterval = null; }
+            if (roomPollTimer) { clearInterval(roomPollTimer); roomPollTimer = null; }
+            currentRoomId = null;
+            isMultiplayer = false;
+            isHost = false;
             document.getElementById('modeOverlay').classList.remove('hidden');
         }
 
@@ -1198,18 +1204,11 @@
         startGame = function(diff) {
             isMultiplayer = isMultiplayer || false;
             if (isMultiplayer && isHost) {
-                // 联机模式：房主选难度后通知对方
                 difficulty = diff;
                 document.getElementById('difficulty-overlay').style.display = 'none';
                 updateNavForDifficulty(diff);
-                // 发送开始游戏信号
-                if (dataChan && dataChan.readyState === 'open') {
-                    dataChan.send(JSON.stringify({type: 'startGame', difficulty: diff}));
-                }
                 currentLevel = 1;
                 initLevel();
-                // 联机模式同步初始状态
-                if (isMultiplayer) syncGameState();
             } else {
                 origStartGame(diff);
             }
@@ -1229,13 +1228,43 @@
             }
         }
 
-        // 修改键盘控制 - 联机模式只控制当前玩家
-        // 覆盖原键盘处理，支持联机
         window.addEventListener('keydown', function(e) {
             if (isLocked) return;
             if (e.key === 'r' || e.key === 'R') {
                 initLevel(); return;
             }
+
+            // 联机模式客机：本地先移动（低延迟），同时通过PeerJS发送
+            if (isMultiplayer && !isHost) {
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    if (dataChan && dataChan.readyState === 'open')
+                        dataChan.send(JSON.stringify({type:'useItem', item:'pause'}));
+                    return;
+                }
+                if (e.key === 'e' || e.key === 'E') {
+                    if (dataChan && dataChan.readyState === 'open')
+                        dataChan.send(JSON.stringify({type:'useItem', item:'turn'}));
+                    return;
+                }
+                const p2Keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+                if (p2Keys.includes(e.key)) {
+                    const d = grid;
+                    let moved = false;
+                    if (e.key === 'ArrowUp' && p2.y > 0 && d[p2.y - 1][p2.x] === 0) { p2.y--; moved = true; }
+                    else if (e.key === 'ArrowDown' && p2.y < rows - 1 && d[p2.y + 1][p2.x] === 0) { p2.y++; moved = true; }
+                    else if (e.key === 'ArrowLeft' && p2.x > 0 && d[p2.y][p2.x - 1] === 0) { p2.x--; moved = true; }
+                    else if (e.key === 'ArrowRight' && p2.x < cols - 1 && d[p2.y][p2.x + 1] === 0) { p2.x++; moved = true; }
+                    if (moved && p2.el) {
+                        p2.el.style.left = (p2.x * CELL + PADDING) + 'px';
+                        p2.el.style.top = (p2.y * CELL + PADDING) + 'px';
+                    }
+                    if (dataChan && dataChan.readyState === 'open')
+                        dataChan.send(JSON.stringify({type:'move', player:2, x:p2.x, y:p2.y}));
+                }
+                return;
+            }
+
             if (e.key === ' ') {
                 e.preventDefault();
                 const idx = heldItems.indexOf('pause');
@@ -1243,7 +1272,6 @@
                     heldItems.splice(idx, 1);
                     useItem('pause');
                     updateItemUI();
-                    if (isMultiplayer && dataChan) dataChan.send(JSON.stringify({type:'useItem', item:'pause'}));
                 }
                 return;
             }
@@ -1253,7 +1281,6 @@
                     heldItems.splice(idx, 1);
                     useItem('turn');
                     updateItemUI();
-                    if (isMultiplayer && dataChan) dataChan.send(JSON.stringify({type:'useItem', item:'turn'}));
                 }
                 return;
             }
@@ -1262,26 +1289,21 @@
             let moved = false;
 
             if (!isMultiplayer || isHost) {
-                // P1 控制 (单人模式 或 联机房主控制蓝星)
                 const k = e.key.toLowerCase();
                 if (k === 'w' && p1.y > 0 && d[p1.y - 1][p1.x] === 0) { p1.y--; moved = true; }
                 if (k === 's' && p1.y < rows - 1 && d[p1.y + 1][p1.x] === 0) { p1.y++; moved = true; }
                 if (k === 'a' && p1.x > 0 && d[p1.y][p1.x - 1] === 0) { p1.x--; moved = true; }
                 if (k === 'd' && p1.x < cols - 1 && d[p1.y][p1.x + 1] === 0) { p1.x++; moved = true; }
-                if (moved && isMultiplayer && dataChan) {
+                if (moved && isMultiplayer && dataChan && dataChan.readyState === 'open') {
                     dataChan.send(JSON.stringify({type:'move', player:1, x:p1.x, y:p1.y}));
                 }
             }
 
             if (!isMultiplayer || !isHost) {
-                // P2 控制 (单人模式 或 联机加入者控制红星)
                 if (e.key === 'ArrowUp' && p2.y > 0 && d[p2.y - 1][p2.x] === 0) { p2.y--; moved = true; }
                 if (e.key === 'ArrowDown' && p2.y < rows - 1 && d[p2.y + 1][p2.x] === 0) { p2.y++; moved = true; }
                 if (e.key === 'ArrowLeft' && p2.x > 0 && d[p2.y][p2.x - 1] === 0) { p2.x--; moved = true; }
                 if (e.key === 'ArrowRight' && p2.x < cols - 1 && d[p2.y][p2.x + 1] === 0) { p2.x++; moved = true; }
-                if (moved && isMultiplayer && dataChan) {
-                    dataChan.send(JSON.stringify({type:'move', player:2, x:p2.x, y:p2.y}));
-                }
             }
 
             if (!moved) return;
@@ -1298,9 +1320,6 @@
                     it.el.remove();
                     items.splice(i, 1);
                     updateItemUI();
-                    if (isMultiplayer && dataChan) {
-                        dataChan.send(JSON.stringify({type:'itemPickup', x:it.x, y:it.y, type:it.type}));
-                    }
                 }
             }
 
@@ -1312,7 +1331,6 @@
                 isLocked = true;
                 if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
                 if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
-                if (isMultiplayer && dataChan) dataChan.send(JSON.stringify({type:'win', level: currentLevel}));
                 setTimeout(() => {
                     showOverlay('✨ 双子同心！', '#fcd34d',
                         `关卡 ${currentLevel} 完成！`,
@@ -1339,24 +1357,41 @@ try {
 } catch(e){}
 </script>
 
-<!-- PeerJS -->
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
-<!-- 联机模式脚本 -->
+<!-- 联机模式脚本 (PeerJS + Supabase 房间管理) -->
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
-// ===== Supabase 初始化 =====
+// ===== Supabase REST API =====
 const supabaseUrl = 'https://lxdrzgwgirhvjabmfbvy.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZHJ6Z3dnaXJodmphYm1mYnZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTUzOTEsImV4cCI6MjA5NDk5MTM5MX0.m2avNH0tEltuogK1iouqTxZx89J6wE9hHZCsa3tcBgU';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseKey = 'sb_publishable_agrBqJ4vtwwg3Zeye4Mq2g_KiCpIdM6';
 
-let roomsChannel = null;
-let roomChannel = null;
-let peer = null;
+async function fetchSupabase(path, { method = 'GET', body } = {}) {
+    const url = `${supabaseUrl}/rest/v1/${path}`;
+    const res = await fetch(url, {
+        method,
+        headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+        },
+        body: body ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) {
+        const err = await res.text();
+        console.error('Supabase error:', res.status, err);
+        throw new Error(`${res.status}: ${err}`);
+    }
+    if (method === 'DELETE' || res.status === 204) return null;
+    return res.json();
+}
+
+let roomsPollTimer = null;
+let roomPollTimer = null;
 let currentRoomId = null;
+let peer = null;
+let dataChan = null;
+let syncInterval = null;
 
-// ===== 生成房间码 =====
 function genRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
     let code = '';
@@ -1364,96 +1399,86 @@ function genRoomCode() {
     return code;
 }
 
-// ===== 房间列表监听 (Supabase Realtime) =====
+// ===== 房间列表 =====
 async function initLobby() {
     const list = document.getElementById('roomList');
-    list.innerHTML = '<div class="empty">加载中...</div>';
-    if (roomsChannel) { supabase.removeChannel(roomsChannel); roomsChannel = null; }
-
-    // 先拉一次全量数据
-    const { data: rooms, error } = await supabase
-        .from('rooms')
-        .select('*')
-        .eq('state', 'waiting')
-        .order('createdat', { ascending: false })
-        .limit(20);
-    if (error) { list.innerHTML = '<div class="empty">加载房间失败，请刷新</div>'; return; }
-    renderRoomList(rooms || []);
-
-    // 订阅实时变化（监听所有变化，重新拉取列表）
-    roomsChannel = supabase.channel('rooms-list')
-        .on('postgres_changes',
-            { event: '*', schema: 'public', table: 'rooms' },
-            async () => {
-                const { data: updated } = await supabase
-                    .from('rooms').select('*').eq('state', 'waiting')
-                    .order('createdat', { ascending: false }).limit(20);
-                renderRoomList(updated || []);
-            })
-        .subscribe();
+    if (roomsPollTimer) { clearInterval(roomsPollTimer); roomsPollTimer = null; }
+    await refreshRoomList();
+    roomsPollTimer = setInterval(refreshRoomList, 3000);
 }
 
-function renderRoomList(rooms) {
+async function refreshRoomList() {
     const list = document.getElementById('roomList');
-    if (rooms.length === 0) {
-        list.innerHTML = '<div class="empty">暂无可用房间，创建一个吧</div>';
-        return;
+    try {
+        const rooms = await fetchSupabase('rooms?state=eq.waiting&order=createdat.desc&limit=20') || [];
+        list.innerHTML = rooms.length === 0
+            ? '<div class="empty">暂无可用房间，创建一个吧</div>'
+            : rooms.map(r => `<div class="room-item">
+                <div class="info">
+                    <span class="name">${r.hostname}</span>
+                    <span class="meta">${r.difficulty || '待定'} · ${r.createdat ? new Date(r.createdat).toLocaleTimeString() : ''}</span>
+                </div>
+                <button class="join-btn" onclick="joinRoomById('${r.id}')">加入</button>
+            </div>`).join('');
+    } catch(e) {
+        list.innerHTML = '<div class="empty">加载房间失败</div>';
     }
-    let html = '';
-    rooms.forEach(r => {
-        html += `<div class="room-item">
-            <div class="info">
-                <span class="name">${r.hostname}</span>
-                <span class="meta">${r.difficulty || '待定'} · ${r.createdat ? new Date(r.createdat).toLocaleTimeString() : ''}</span>
-            </div>
-            <button class="join-btn" onclick="joinRoomById('${r.id}')">加入</button>
-        </div>`;
-    });
-    list.innerHTML = html;
 }
 
-// ===== 创建房间 (Supabase) =====
-async function createRoom() {
+// ===== 创建房间 =====
+async function createRoom(diff) {
     const code = genRoomCode();
     const userName = localStorage.getItem('arcadeUser') || ('玩家' + Math.floor(Math.random() * 1000));
     currentRoomId = code;
     isMultiplayer = true;
     isHost = true;
+    difficulty = diff;
 
     try {
-        const { error } = await supabase.from('rooms').insert({
-            id: code,
-            hostname: userName,
-            difficulty: null,
-            state: 'waiting',
-            createdat: new Date().toISOString()
+        await fetchSupabase('rooms', {
+            method: 'POST',
+            body: { id: code, hostname: userName, difficulty: diff, state: 'waiting', createdat: new Date().toISOString() }
         });
-        if (error) throw error;
-
         document.getElementById('lobbyOverlay').classList.remove('show');
         document.getElementById('roomCodeDisplay').textContent = code;
         document.getElementById('waitingOverlay').classList.add('show');
+        updateNavForDifficulty(diff);
+        document.getElementById('difficulty-overlay').style.display = 'none';
 
-        // 监听房间变化（加入者到达 / 删除）
-        if (roomChannel) supabase.removeChannel(roomChannel);
-        roomChannel = supabase.channel('room-' + code)
-            .on('postgres_changes',
-                { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${code}` },
-                payload => {
-                    if (payload.eventType === 'DELETE') {
-                        document.getElementById('waitingOverlay').classList.remove('show');
-                        document.getElementById('modeOverlay').classList.remove('hidden');
-                        return;
-                    }
-                    const data = payload.new;
-                    if (data && data.state === 'ready' && data.guestname) {
-                        document.getElementById('waitingOverlay').classList.remove('show');
-                    }
-                })
-            .subscribe();
-
-        // 启动PeerJS作为host
         setupPeerHost(code);
+
+        if (roomPollTimer) clearInterval(roomPollTimer);
+        roomPollTimer = setInterval(async () => {
+            try {
+                const data = await fetchSupabase(`rooms?id=eq.${code}&select=id,state,guestname`);
+                if (!data || data.length === 0) {
+                    clearInterval(roomPollTimer); roomPollTimer = null;
+                    document.getElementById('waitingOverlay').classList.remove('show');
+                    document.getElementById('modeOverlay').classList.remove('hidden');
+                    return;
+                }
+                if (data[0].state === 'ready' && data[0].guestname) {
+                    clearInterval(roomPollTimer); roomPollTimer = null;
+                    // 等待PeerJS连接就绪
+                    let retries = 0;
+                    const waitForChan = setInterval(() => {
+                        if (dataChan && dataChan.readyState === 'open') {
+                            clearInterval(waitForChan);
+                            document.getElementById('waitingOverlay').classList.remove('show');
+                            currentLevel = 1;
+                            initLevel();
+                            dataChan.send(JSON.stringify({type: 'startGame', difficulty: diff}));
+                            setTimeout(() => syncGameState(), 200);
+                            if (syncInterval) clearInterval(syncInterval);
+                            syncInterval = setInterval(syncGameState, 200);
+                        } else if (++retries > 30) {
+                            clearInterval(waitForChan);
+                            alert('连接超时');
+                        }
+                    }, 300);
+                }
+            } catch(e) {}
+        }, 1000);
     } catch(e) {
         alert('创建房间失败: ' + e.message);
     }
@@ -1473,18 +1498,16 @@ async function joinRoomById(code) {
     const userName = localStorage.getItem('arcadeUser') || ('玩家' + Math.floor(Math.random() * 1000));
 
     try {
-        const { data, error } = await supabase.from('rooms').select('*').eq('id', code).single();
-        if (error || !data || data.state !== 'waiting') {
+        const data = await fetchSupabase(`rooms?id=eq.${code}&select=id,state`);
+        if (!data || data.length === 0 || data[0].state !== 'waiting') {
             alert('房间不存在或已满');
             return;
         }
-        const { error: updateError } = await supabase.from('rooms').update({
-            guestname: userName,
-            state: 'ready'
-        }).eq('id', code);
-        if (updateError) throw updateError;
+        await fetchSupabase(`rooms?id=eq.${code}`, {
+            method: 'PATCH',
+            body: { guestname: userName, state: 'ready' }
+        });
         document.getElementById('lobbyOverlay').classList.remove('show');
-        // 加入PeerJS
         setupPeerGuest(code, userName);
     } catch(e) {
         alert('加入房间失败: ' + e.message);
@@ -1493,43 +1516,26 @@ async function joinRoomById(code) {
 
 // ===== PeerJS - 房主 =====
 function setupPeerHost(code) {
+    if (peer) peer.destroy();
     peer = new Peer(code, { debug: 0 });
-    peer.on('open', id => {
-        peerId = id;
-    });
     peer.on('connection', conn => {
         dataChan = conn;
-        conn.on('data', data => {
-            handleData(data);
-        });
-        conn.on('open', () => {
-            // 连接建立，房主选难度
-            document.getElementById('difficulty-overlay').style.display = 'flex';
-        });
+        conn.on('data', data => handleData(data));
     });
-    peer.on('error', err => {
-        console.warn('Peer error:', err);
-    });
-}
-
-function startPeerHost(code) {
-    // Peer已经在setupPeerHost里设置好了
-    // 等待guest连接
+    peer.on('error', err => console.warn('Peer error:', err));
 }
 
 // ===== PeerJS - 加入者 =====
 function setupPeerGuest(code, userName) {
+    if (peer) peer.destroy();
     peer = new Peer(undefined, { debug: 0 });
     peer.on('open', id => {
-        peerId = id;
         const conn = peer.connect(code, { reliable: true });
         dataChan = conn;
         conn.on('open', () => {
             conn.send(JSON.stringify({type: 'join', name: userName}));
         });
-        conn.on('data', data => {
-            handleData(data);
-        });
+        conn.on('data', data => handleData(data));
     });
     peer.on('error', err => {
         console.warn('Peer error:', err);
@@ -1543,27 +1549,18 @@ function handleData(data) {
         const msg = typeof data === 'string' ? JSON.parse(data) : data;
         switch(msg.type) {
             case 'startGame':
-                // 加入者收到开始游戏信号
                 difficulty = msg.difficulty;
                 isMultiplayer = true;
                 isHost = false;
                 currentLevel = 1;
                 document.getElementById('difficulty-overlay').style.display = 'none';
                 updateNavForDifficulty(msg.difficulty);
-                // 显示难度标签（友方显示加入者的难度）
-                if (msg.difficulty === 'hard') {
-                    document.getElementById('difficulty-overlay').style.display = 'none';
-                }
                 initLevel();
                 break;
-
             case 'sync':
-                // 同步游戏状态
                 syncReceived(msg);
                 break;
-
             case 'move':
-                // 对方移动
                 if (msg.player === 1 && !isHost) {
                     p1.x = msg.x; p1.y = msg.y;
                     if (p1.el) { p1.el.style.left = (p1.x * CELL + PADDING) + 'px'; p1.el.style.top = (p1.y * CELL + PADDING) + 'px'; }
@@ -1572,9 +1569,7 @@ function handleData(data) {
                     if (p2.el) { p2.el.style.left = (p2.x * CELL + PADDING) + 'px'; p2.el.style.top = (p2.y * CELL + PADDING) + 'px'; }
                 }
                 break;
-
             case 'itemPickup':
-                // 同步道具拾取
                 for (let i = items.length - 1; i >= 0; i--) {
                     if (items[i].x === msg.x && items[i].y === msg.y) {
                         if (!heldItems.includes(msg.type)) heldItems.push(msg.type);
@@ -1585,25 +1580,14 @@ function handleData(data) {
                     }
                 }
                 break;
-
             case 'useItem':
-                if (isMultiplayer) {
-                    const idx = heldItems.indexOf(msg.item);
-                    if (idx !== -1) {
-                        heldItems.splice(idx, 1);
-                        useItem(msg.item);
-                        updateItemUI();
-                    }
+                const idx = heldItems.indexOf(msg.item);
+                if (idx !== -1) {
+                    heldItems.splice(idx, 1);
+                    useItem(msg.item);
+                    updateItemUI();
                 }
                 break;
-
-            case 'requestSync':
-                // 加入者请求同步，房主发送完整状态
-                if (isHost && dataChan && dataChan.readyState === 'open') {
-                    syncGameState();
-                }
-                break;
-
             case 'win':
                 isLocked = true;
                 if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
@@ -1612,12 +1596,14 @@ function handleData(data) {
                     `关卡 ${msg.level || currentLevel} 完成！`,
                     '下一关', 'nextLevel()');
                 break;
-
             case 'nextLevel':
                 if (!isHost) {
                     currentLevel = msg.level;
                     initLevel();
                 }
+                break;
+            case 'requestSync':
+                if (isHost && dataChan && dataChan.readyState === 'open') syncGameState();
                 break;
         }
     } catch(e) {}
@@ -1633,15 +1619,9 @@ function syncGameState() {
         enemies: [{x: enemy.x, y: enemy.y, dx: enemy.dx, dy: enemy.dy}],
         items: items.map(it => ({x: it.x, y: it.y, type: it.type})),
         heldItems: [...heldItems],
-        grid: grid,
-        rows: rows,
-        cols: cols,
-        gate1: gate1,
-        gate2: gate2,
-        difficulty: difficulty,
-        level: currentLevel,
-        isLocked: isLocked,
-        freezeSafe: freezeSafe
+        grid, rows, cols, gate1, gate2,
+        difficulty, level: currentLevel,
+        isLocked, freezeSafe
     };
     if (enemy2.active) {
         state.enemies.push({x: enemy2.x, y: enemy2.y, dx: enemy2.dx, dy: enemy2.dy, active: true});
@@ -1652,7 +1632,6 @@ function syncGameState() {
 function syncReceived(msg) {
     if (isHost) return;
     if (msg.grid && !p1.el) {
-        // 首次同步：渲染完整迷宫
         grid = msg.grid; rows = msg.rows; cols = msg.cols;
         gate1 = msg.gate1; gate2 = msg.gate2;
         difficulty = msg.difficulty; currentLevel = msg.level;
@@ -1668,10 +1647,26 @@ function syncReceived(msg) {
         addDiv(gate1.x, gate1.y, 'cell gate1'); addGateLabel(gate1.x, gate1.y, 'B');
         addDiv(gate2.x, gate2.y, 'cell gate2'); addGateLabel(gate2.x, gate2.y, 'R');
         spawnEnemy();
-        if (difficulty === 'hard') spawnEnemy2();
+        if (difficulty === 'hard' || (msg.enemies && msg.enemies.length > 1)) spawnEnemy2();
         p1.el = addDiv(msg.p1.x, msg.p1.y, 'cell p1');
         p2.el = addDiv(msg.p2.x, msg.p2.y, 'cell p2');
         heldItems = [];
+        items = [];
+        if (msg.items) {
+            msg.items.forEach(it => {
+                const d = document.createElement('div');
+                d.className = 'item';
+                d.style.left = (it.x * CELL + PADDING) + 'px';
+                d.style.top = (it.y * CELL + PADDING) + 'px';
+                d.style.width = (CELL - PADDING * 2) + 'px';
+                d.style.height = (CELL - PADDING * 2) + 'px';
+                const inner = document.createElement('div');
+                inner.className = 'item-inner' + (it.type === 'pause' ? ' pause' : '');
+                d.appendChild(inner);
+                mazeEl.appendChild(d);
+                items.push({x: it.x, y: it.y, el: d, type: it.type});
+            });
+        }
         updateItemUI();
         return;
     }
@@ -1686,37 +1681,47 @@ function syncReceived(msg) {
         p2.el.style.left = (p2.x * CELL + PADDING) + 'px';
         p2.el.style.top = (p2.y * CELL + PADDING) + 'px';
     }
-    if (msg.enemies && msg.enemies.length > 0) {
+    if (msg.enemies && msg.enemies.length > 0 && enemy.el) {
         const e1 = msg.enemies[0];
         enemy.x = e1.x; enemy.y = e1.y;
-        if (enemy.el) {
-            enemy.el.style.left = (enemy.x * CELL + PADDING) + 'px';
-            enemy.el.style.top = (enemy.y * CELL + PADDING) + 'px';
-        }
-        if (msg.enemies.length > 1) {
-            const e2 = msg.enemies[1];
-            enemy2.x = e2.x; enemy2.y = e2.y;
-            enemy2.active = e2.active !== false;
-            if (enemy2.el) {
-                enemy2.el.style.left = (enemy2.x * CELL + PADDING) + 'px';
-                enemy2.el.style.top = (enemy2.y * CELL + PADDING) + 'px';
+        enemy.el.style.left = (enemy.x * CELL + PADDING) + 'px';
+        enemy.el.style.top = (enemy.y * CELL + PADDING) + 'px';
+    }
+    if (msg.enemies && msg.enemies.length > 1 && enemy2.el) {
+        const e2 = msg.enemies[1];
+        enemy2.x = e2.x; enemy2.y = e2.y;
+        enemy2.active = true;
+        enemy2.el.style.left = (enemy2.x * CELL + PADDING) + 'px';
+        enemy2.el.style.top = (enemy2.y * CELL + PADDING) + 'px';
+    }
+    // 道具同步
+    if (msg.items) {
+        const hostItemSet = new Set(msg.items.map(it => `${it.x},${it.y}`));
+        for (let i = items.length - 1; i >= 0; i--) {
+            if (!hostItemSet.has(`${items[i].x},${items[i].y}`)) {
+                if (items[i].el) items[i].el.remove();
+                items.splice(i, 1);
             }
         }
     }
-    if (msg.items) { /* 道具同步保持简洁 */ }
+    if (msg.heldItems) {
+        heldItems = [...msg.heldItems];
+        updateItemUI();
+    }
+    if (msg.isLocked !== undefined) isLocked = msg.isLocked;
+    if (msg.freezeSafe !== undefined) freezeSafe = msg.freezeSafe;
 }
 
-// ===== 定时同步 =====
-let syncInterval = null;
+// ===== 重写initLevel/nextLevel =====
 const origInitLevel = initLevel;
 initLevel = function() {
     if (syncInterval) { clearInterval(syncInterval); syncInterval = null; }
     if (isMultiplayer && !isHost) {
-        // 加入者：不生成迷宫，清空画面等待房主同步
         isLocked = false;
         if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
         if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
         enemy2.active = false;
+        p1.el = null; p2.el = null; enemy.el = null; enemy2.el = null;
         mazeEl.innerHTML = '';
         document.getElementById('winScreen').style.display = 'none';
         setTimeout(() => {
@@ -1728,39 +1733,36 @@ initLevel = function() {
         if (isMultiplayer && isHost) {
             setTimeout(() => {
                 syncGameState();
-                syncInterval = setInterval(syncGameState, 500);
+                if (syncInterval) clearInterval(syncInterval);
+                syncInterval = setInterval(syncGameState, 200);
             }, 200);
         }
     }
 };
 
-// 重写nextLevel - 联机模式由房主统一控制关卡推进
 const origNextLevel = nextLevel;
 nextLevel = function() {
-    if (isMultiplayer && !isHost) {
-        // 加入者不自己推进关卡，等房主同步
-        return;
-    }
+    if (isMultiplayer && !isHost) return;
     currentLevel++;
     const prev = parseInt(localStorage.getItem('coopHighScore') || '0');
     if (currentLevel > prev) {
         if (typeof window._syncScore === 'function') _syncScore('coop', currentLevel);
     }
-    if (isMultiplayer && dataChan) {
+    if (isMultiplayer && dataChan && dataChan.readyState === 'open') {
         dataChan.send(JSON.stringify({type:'nextLevel', level: currentLevel}));
     }
-    // 直接调initLevel，不用origNextLevel（避免重复currentLevel++）
     initLevel();
 };
 
 // 清理
 window.addEventListener('beforeunload', () => {
     if (currentRoomId) {
-        supabase.from('rooms').delete().eq('id', currentRoomId).then().catch(()=>{});
+        fetchSupabase(`rooms?id=eq.${currentRoomId}`, { method: 'DELETE' }).catch(()=>{});
     }
-    if (peer) peer.destroy();
-    if (roomsChannel) supabase.removeChannel(roomsChannel);
-    if (roomChannel) supabase.removeChannel(roomChannel);
+    if (peer) { peer.destroy(); peer = null; }
+    if (roomsPollTimer) clearInterval(roomsPollTimer);
+    if (roomPollTimer) clearInterval(roomPollTimer);
+    if (syncInterval) clearInterval(syncInterval);
 });
 </script>
 </body>
