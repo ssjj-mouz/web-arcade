@@ -22,6 +22,8 @@ exports.main = async (event) => {
       case 'session.pollP2': return await pollP2Input(params);
       case 'session.writeState': return await writeState(params);
       case 'session.writeP2': return await writeP2Input(params);
+      case 'session.p2UseItem': return await p2UseItem(params);
+      case 'session.pollUseItem': return await pollUseItem(params);
       case 'session.get': return await getSession(params);
       default: return { error: 'unknown action' };
     }
@@ -107,4 +109,22 @@ async function getSession({ roomId }) {
   const session = data && data[0];
   if (!session) return { state: null };
   return { state: session.state || null };
+}
+
+async function p2UseItem({ roomId, item }) {
+  await db.collection('game_sessions').doc(roomId).update({
+    p2UseItem: item
+  });
+  return { success: true };
+}
+
+async function pollUseItem({ roomId }) {
+  const { data } = await db.collection('game_sessions').doc(roomId).get();
+  const session = data && data[0];
+  if (!session || !session.p2UseItem) return { item: null };
+  const item = session.p2UseItem;
+  await db.collection('game_sessions').doc(roomId).update({
+    p2UseItem: null
+  });
+  return { item };
 }

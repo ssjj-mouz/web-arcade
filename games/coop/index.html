@@ -1519,6 +1519,19 @@ async function hostTick(roomId) {
             }
         }
 
+        // 1b. 读取P2道具使用（独立通道，不与移动竞争）
+        try {
+            const itemData = await callCF('session.pollUseItem', { roomId });
+            if (itemData && itemData.item && !isLocked) {
+                const idx = heldItems.indexOf(itemData.item);
+                if (idx !== -1) {
+                    heldItems.splice(idx, 1);
+                    useItem(itemData.item);
+                    updateItemUI();
+                }
+            }
+        } catch(e) {}
+
         // 2. 道具拾取
         for (let i = items.length - 1; i >= 0; i--) {
             const it = items[i];
@@ -1594,6 +1607,18 @@ async function guestTick(roomId) {
         if (!result || !result.state) return;
         const msg = result.state;
 
+        // 检测关卡变化或游戏重开（房主进入下一关/重开），重建迷宫
+        if (guestFirstSync && msg.grid) {
+            const levelChanged = msg.level !== undefined && msg.level !== currentLevel;
+            const gameRestarted = msg.isLocked === false && isLocked === true;
+            if (levelChanged || gameRestarted) {
+                guestFirstSync = false;
+                if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
+                if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+                document.getElementById('winScreen').style.display = 'none';
+            }
+        }
+
         if (!guestFirstSync && msg.grid) {
             guestFirstSync = true;
             grid = msg.grid; rows = msg.rows; cols = msg.cols;
@@ -1619,6 +1644,7 @@ async function guestTick(roomId) {
             p2.el = addDiv(msg.p2.x, msg.p2.y, 'cell p2');
             p1.x = msg.p1.x; p1.y = msg.p1.y;
             p2.x = msg.p2.x; p2.y = msg.p2.y;
+            isLocked = msg.isLocked || false;
             heldItems = [];
 
             items = [];
@@ -1684,9 +1710,13 @@ async function guestTick(roomId) {
         if (isLocked && document.getElementById('winScreen').style.display !== 'flex') {
             if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
             if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
-            showOverlay('✨ 双子同心！', '#fcd34d',
-                `关卡 ${currentLevel} 完成！`,
-                '下一关', 'nextLevel()');
+            if (isMultiplayer && !isHost) {
+                showOverlay('⏳ 等待房主', '#fcd34d', '房主正在处理...', '', '');
+            } else {
+                showOverlay('✨ 双子同心！', '#fcd34d',
+                    `关卡 ${currentLevel} 完成！`,
+                    '下一关', 'nextLevel()');
+            }
         }
     } catch(e) {}
 }
@@ -1702,7 +1732,7 @@ async function guestSendP2Input(input) {
 async function guestUseItem(item) {
     if (!currentRoomId || isHost) return;
     try {
-        await callCF('session.writeP2', { roomId: currentRoomId, input: {type: 'useItem', item} });
+        await callCF('session.p2UseItem', { roomId: currentRoomId, item });
     } catch(e) {}
 }
 
