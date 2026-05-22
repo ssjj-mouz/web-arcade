@@ -1353,9 +1353,7 @@ try {
 } catch(e){}
 </script>
 
-<script src="https://static.cloudbase.net/cloudbase-js-sdk/2.8.34/cloudbase.js"></script>
-<script src="https://static.cloudbase.net/cloudbase-js-sdk/2.8.34/cloudbase.auth.js"></script>
-<script src="https://static.cloudbase.net/cloudbase-js-sdk/2.8.34/cloudbase.functions.js"></script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/3.0.1/cloudbase.full.js"></script>
 
 <!-- 联机模式脚本 (CloudBase 中继) -->
 <script>
@@ -1366,7 +1364,8 @@ let app = null;
 try {
     if (typeof cloudbase !== 'undefined') {
         app = cloudbase.init({ env: CLOUDBASE_ENV_ID });
-        app.auth().anonymousAuthProvider().signIn().catch(e => console.error('CloudBase auth error:', e));
+        // v3 SDK: auth 是属性不是方法
+        app.auth.signInAnonymously().catch(e => console.error('CloudBase auth error:', e));
     } else {
         console.error('CloudBase SDK 加载失败');
     }
