@@ -374,9 +374,158 @@
             font-weight: normal;
             margin-top: 1px;
         }
+        /* ===== 模式选择 & 联机大厅 ===== */
+        .mode-overlay {
+            position: fixed; inset: 0; z-index: 300;
+            background: rgba(2,6,23,0.92); backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .mode-overlay.hidden { display: none; }
+        .mode-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 32px;
+            width: min(90%, 360px); text-align: center;
+        }
+        .mode-card h1 {
+            margin: 0 0 4px; font-size: 1.5rem; font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa, #f87171);
+            -webkit-background-clip: text; color: transparent;
+        }
+        .mode-card .sub { color: #64748b; font-size: 0.85rem; margin: 0 0 24px; }
+        .mode-btns { display: flex; flex-direction: column; gap: 10px; }
+        .mode-btn {
+            padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03); color: #f8fafc;
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .mode-btn:hover { transform: translateY(-1px); }
+        .mode-btn.single { border-color: rgba(96,165,250,0.2); }
+        .mode-btn.single:hover { border-color: #60a5fa; background: rgba(96,165,250,0.06); }
+        .mode-btn.multi { border-color: rgba(251,191,36,0.2); }
+        .mode-btn.multi:hover { border-color: #fbbf24; background: rgba(251,191,36,0.06); }
+
+        .lobby-overlay {
+            position: fixed; inset: 0; z-index: 300;
+            background: rgba(2,6,23,0.92); backdrop-filter: blur(12px);
+            display: none; align-items: center; justify-content: center;
+        }
+        .lobby-overlay.show { display: flex; }
+        .lobby-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 28px;
+            width: min(92%, 420px); max-height: 80vh; display: flex; flex-direction: column;
+        }
+        .lobby-card h2 { margin: 0 0 4px; font-size: 1.2rem; color: #fbbf24; }
+        .lobby-card .sub { color: #64748b; font-size: 0.82rem; margin: 0 0 16px; }
+        .lobby-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+        .lobby-actions input {
+            flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3); color: #f8fafc; font-size: 0.9rem; outline: none;
+        }
+        .lobby-actions input:focus { border-color: #fbbf24; }
+        .lobby-actions button {
+            padding: 10px 18px; border-radius: 8px; border: none;
+            font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.2s;
+        }
+        .lobby-join-btn { background: #fbbf24; color: #0f172a; }
+        .lobby-join-btn:hover { background: #f59e0b; }
+        .lobby-create-btn { background: #3b82f6; color: white; }
+        .lobby-create-btn:hover { background: #2563eb; }
+        .room-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; min-height: 100px; }
+        .room-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.02); transition: 0.15s;
+        }
+        .room-item:hover { border-color: rgba(251,191,36,0.2); background: rgba(251,191,36,0.03); }
+        .room-item .info { display: flex; flex-direction: column; gap: 2px; }
+        .room-item .name { font-weight: 600; font-size: 0.9rem; }
+        .room-item .meta { color: #64748b; font-size: 0.75rem; }
+        .room-item .join-btn {
+            padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(251,191,36,0.3);
+            background: transparent; color: #fbbf24; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+        }
+        .room-item .join-btn:hover { background: rgba(251,191,36,0.1); }
+        .room-list .empty { color: #64748b; font-size: 0.85rem; text-align: center; padding: 30px 0; }
+        .lobby-back {
+            padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);
+            background: transparent; color: #94a3b8; font-size: 0.8rem; cursor: pointer; margin-bottom: 12px;
+            align-self: flex-start;
+        }
+        .lobby-back:hover { color: #f8fafc; border-color: rgba(255,255,255,0.2); }
+
+        /* ===== 等待房间 ===== */
+        .waiting-overlay {
+            position: fixed; inset: 0; z-index: 300;
+            background: rgba(2,6,23,0.92); backdrop-filter: blur(12px);
+            display: none; align-items: center; justify-content: center;
+        }
+        .waiting-overlay.show { display: flex; }
+        .waiting-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 32px; width: min(90%, 340px); text-align: center;
+        }
+        .waiting-card .code {
+            font-size: 2.8rem; font-weight: 900; letter-spacing: 8px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text; color: transparent;
+            margin: 16px 0;
+        }
+        .waiting-card .status { color: #94a3b8; font-size: 0.9rem; }
+        .waiting-card .spinner {
+            display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(251,191,36,0.2);
+            border-top-color: #fbbf24; border-radius: 50%; animation: spin 0.8s linear infinite;
+            margin-right: 8px; vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .waiting-card .cancel-btn {
+            margin-top: 20px; padding: 8px 20px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3);
+            background: transparent; color: #ef4444; font-size: 0.85rem; cursor: pointer;
+        }
+        .waiting-card .cancel-btn:hover { background: rgba(239,68,68,0.1); }
     </style>
 </head>
 <body>
+    <!-- 模式选择 -->
+    <div class="mode-overlay" id="modeOverlay">
+        <div class="mode-card">
+            <h1>双子星探险</h1>
+            <p class="sub">双人合作穿越迷宫，各自抵达传送门过关</p>
+            <div class="mode-btns">
+                <button class="mode-btn single" onclick="startSinglePlayer()">🎮 单人模式（同屏双人）</button>
+                <button class="mode-btn multi" onclick="showLobby()">🌐 联机模式（远程双人）</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 联机大厅 -->
+    <div class="lobby-overlay" id="lobbyOverlay">
+        <div class="lobby-card">
+            <button class="lobby-back" onclick="hideLobby()">← 返回</button>
+            <h2>🌐 联机大厅</h2>
+            <p class="sub">创建房间或加入已有房间</p>
+            <div class="lobby-actions">
+                <input type="text" id="roomCodeInput" placeholder="输入房间码" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-weight:bold;">
+                <button class="lobby-join-btn" onclick="joinRoom()">加入</button>
+                <button class="lobby-create-btn" onclick="createRoom()">创建房间</button>
+            </div>
+            <div class="room-list" id="roomList">
+                <div class="empty">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 等待房间 -->
+    <div class="waiting-overlay" id="waitingOverlay">
+        <div class="waiting-card">
+            <h2 style="color:#fbbf24;margin:0;">🏠 等待中</h2>
+            <p style="color:#64748b;font-size:0.85rem;">将房间码分享给好友</p>
+            <div class="code" id="roomCodeDisplay">ABCD</div>
+            <div class="status"><span class="spinner"></span>等待好友加入...</div>
+            <button class="cancel-btn" onclick="cancelRoom()">取消</button>
+        </div>
+    </div>
+
     <div class="nav">
         <button class="btn-back" onclick="location.href='../../index.html'">← 大厅</button>
         <h1>双子星探险</h1>
@@ -1000,14 +1149,93 @@
 
         // ========== 键盘控制 ==========
 
-        window.addEventListener('keydown', e => {
-            if (isLocked) return;
-
-            if (e.key === 'r' || e.key === 'R') {
-                initLevel();
-                return;
+        function nextLevel() {
+            currentLevel++;
+            const prev = parseInt(localStorage.getItem('coopHighScore') || '0');
+            if (currentLevel > prev) {
+                if (typeof window._syncScore === 'function') _syncScore('coop', currentLevel);
             }
+            initLevel();
+        }
 
+        // ========== 启动 ==========
+        // 先显示模式选择
+        let isMultiplayer = false;
+        let isHost = false;
+        let peerConn = null;
+        let dataChan = null;
+        let peerId = null;
+
+        function startSinglePlayer() {
+            isMultiplayer = false;
+            document.getElementById('modeOverlay').classList.add('hidden');
+            document.getElementById('difficulty-overlay').style.display = 'flex';
+        }
+
+        function showLobby() {
+            document.getElementById('modeOverlay').classList.add('hidden');
+            document.getElementById('lobbyOverlay').classList.add('show');
+            initLobby();
+        }
+
+        function hideLobby() {
+            document.getElementById('lobbyOverlay').classList.remove('show');
+            document.getElementById('modeOverlay').classList.remove('hidden');
+        }
+
+        function cancelRoom() {
+            document.getElementById('waitingOverlay').classList.remove('show');
+            if (peerId) {
+                db.collection('rooms').doc(peerId).delete().catch(()=>{});
+                if (peer) peer.destroy();
+                peer = null;
+            }
+            document.getElementById('modeOverlay').classList.remove('hidden');
+        }
+
+        // 修改startGame以支持联机模式
+        const origStartGame = startGame;
+        startGame = function(diff) {
+            isMultiplayer = isMultiplayer || false;
+            if (isMultiplayer && isHost) {
+                // 联机模式：房主选难度后通知对方
+                difficulty = diff;
+                document.getElementById('difficulty-overlay').style.display = 'none';
+                updateNavForDifficulty(diff);
+                // 发送开始游戏信号
+                if (dataChan && dataChan.readyState === 'open') {
+                    dataChan.send(JSON.stringify({type: 'startGame', difficulty: diff}));
+                }
+                currentLevel = 1;
+                initLevel();
+                // 联机模式同步初始状态
+                if (isMultiplayer) syncGameState();
+            } else {
+                origStartGame(diff);
+            }
+        };
+
+        function updateNavForDifficulty(diff) {
+            if (diff === 'hard') {
+                document.getElementById('diffLabel').textContent = '困难';
+                document.getElementById('diffLabel').style.color = '#ef4444';
+                document.getElementById('enemyLabel').innerHTML = '追踪者 <span style="color:#4ade80;">+ 巡逻者</span>';
+                document.getElementById('enemy2Ctrl').style.display = 'inline';
+            } else {
+                document.getElementById('diffLabel').textContent = '简单';
+                document.getElementById('diffLabel').style.color = '#22c55e';
+                document.getElementById('enemyLabel').innerHTML = '追踪者';
+                document.getElementById('enemy2Ctrl').style.display = 'none';
+            }
+        }
+
+        // 修改键盘控制 - 联机模式只控制当前玩家
+        // 覆盖原键盘处理，支持联机
+        window.addEventListener('keydown', function(e) {
+            if (isLocked) return;
+            if (e.key === 'r' || e.key === 'R') {
+                initLevel(); return;
+            }
             if (e.key === ' ') {
                 e.preventDefault();
                 const idx = heldItems.indexOf('pause');
@@ -1015,16 +1243,17 @@
                     heldItems.splice(idx, 1);
                     useItem('pause');
                     updateItemUI();
+                    if (isMultiplayer && dataChan) dataChan.send(JSON.stringify({type:'useItem', item:'pause'}));
                 }
                 return;
             }
-
             if (e.key === 'e' || e.key === 'E') {
                 const idx = heldItems.indexOf('turn');
                 if (idx !== -1) {
                     heldItems.splice(idx, 1);
                     useItem('turn');
                     updateItemUI();
+                    if (isMultiplayer && dataChan) dataChan.send(JSON.stringify({type:'useItem', item:'turn'}));
                 }
                 return;
             }
@@ -1032,16 +1261,28 @@
             const d = grid;
             let moved = false;
 
-            const k = e.key.toLowerCase();
-            if (k === 'w' && p1.y > 0 && d[p1.y - 1][p1.x] === 0) { p1.y--; moved = true; }
-            if (k === 's' && p1.y < rows - 1 && d[p1.y + 1][p1.x] === 0) { p1.y++; moved = true; }
-            if (k === 'a' && p1.x > 0 && d[p1.y][p1.x - 1] === 0) { p1.x--; moved = true; }
-            if (k === 'd' && p1.x < cols - 1 && d[p1.y][p1.x + 1] === 0) { p1.x++; moved = true; }
+            if (!isMultiplayer || isHost) {
+                // P1 控制 (单人模式 或 联机房主控制蓝星)
+                const k = e.key.toLowerCase();
+                if (k === 'w' && p1.y > 0 && d[p1.y - 1][p1.x] === 0) { p1.y--; moved = true; }
+                if (k === 's' && p1.y < rows - 1 && d[p1.y + 1][p1.x] === 0) { p1.y++; moved = true; }
+                if (k === 'a' && p1.x > 0 && d[p1.y][p1.x - 1] === 0) { p1.x--; moved = true; }
+                if (k === 'd' && p1.x < cols - 1 && d[p1.y][p1.x + 1] === 0) { p1.x++; moved = true; }
+                if (moved && isMultiplayer && dataChan) {
+                    dataChan.send(JSON.stringify({type:'move', player:1, x:p1.x, y:p1.y}));
+                }
+            }
 
-            if (e.key === 'ArrowUp' && p2.y > 0 && d[p2.y - 1][p2.x] === 0) { p2.y--; moved = true; }
-            if (e.key === 'ArrowDown' && p2.y < rows - 1 && d[p2.y + 1][p2.x] === 0) { p2.y++; moved = true; }
-            if (e.key === 'ArrowLeft' && p2.x > 0 && d[p2.y][p2.x - 1] === 0) { p2.x--; moved = true; }
-            if (e.key === 'ArrowRight' && p2.x < cols - 1 && d[p2.y][p2.x + 1] === 0) { p2.x++; moved = true; }
+            if (!isMultiplayer || !isHost) {
+                // P2 控制 (单人模式 或 联机加入者控制红星)
+                if (e.key === 'ArrowUp' && p2.y > 0 && d[p2.y - 1][p2.x] === 0) { p2.y--; moved = true; }
+                if (e.key === 'ArrowDown' && p2.y < rows - 1 && d[p2.y + 1][p2.x] === 0) { p2.y++; moved = true; }
+                if (e.key === 'ArrowLeft' && p2.x > 0 && d[p2.y][p2.x - 1] === 0) { p2.x--; moved = true; }
+                if (e.key === 'ArrowRight' && p2.x < cols - 1 && d[p2.y][p2.x + 1] === 0) { p2.x++; moved = true; }
+                if (moved && isMultiplayer && dataChan) {
+                    dataChan.send(JSON.stringify({type:'move', player:2, x:p2.x, y:p2.y}));
+                }
+            }
 
             if (!moved) return;
 
@@ -1057,6 +1298,9 @@
                     it.el.remove();
                     items.splice(i, 1);
                     updateItemUI();
+                    if (isMultiplayer && dataChan) {
+                        dataChan.send(JSON.stringify({type:'itemPickup', x:it.x, y:it.y, type:it.type}));
+                    }
                 }
             }
 
@@ -1068,6 +1312,7 @@
                 isLocked = true;
                 if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
                 if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+                if (isMultiplayer && dataChan) dataChan.send(JSON.stringify({type:'win', level: currentLevel}));
                 setTimeout(() => {
                     showOverlay('✨ 双子同心！', '#fcd34d',
                         `关卡 ${currentLevel} 完成！`,
@@ -1075,18 +1320,6 @@
                 }, 300);
             }
         });
-
-        function nextLevel() {
-            currentLevel++;
-            const prev = parseInt(localStorage.getItem('coopHighScore') || '0');
-            if (currentLevel > prev) {
-                if (typeof window._syncScore === 'function') _syncScore('coop', currentLevel);
-            }
-            initLevel();
-        }
-
-        // ========== 启动（显示难度选择） ==========
-        // 默认显示难度覆盖层，不会自动开始
     </script>
 <script>
 try {
@@ -1104,6 +1337,412 @@ try {
         };
     }
 } catch(e){}
+</script>
+
+<!-- Firebase Firestore SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<!-- PeerJS -->
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+<!-- 联机模式脚本 -->
+<script>
+// ===== Firebase 初始化 =====
+const firebaseConfig = {
+    apiKey: "AIzaSyAoHM4A63TgvH588jtjRQyUQbfRjjw69t4",
+    authDomain: "web-arcade-121d9.firebaseapp.com",
+    projectId: "web-arcade-121d9",
+    storageBucket: "web-arcade-121d9.firebasestorage.app",
+    messagingSenderId: "162550999191",
+    appId: "1:162550999191:web:a373f63ab2eb2aa015e1d2"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const roomsRef = db.collection('rooms');
+
+let unsubscribe = null;
+let peer = null;
+let currentRoomId = null;
+
+// ===== 生成房间码 =====
+function genRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    let code = '';
+    for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+}
+
+// ===== 房间列表监听 =====
+function initLobby() {
+    const list = document.getElementById('roomList');
+    list.innerHTML = '<div class="empty">加载中...</div>';
+    if (unsubscribe) unsubscribe();
+    unsubscribe = roomsRef.where('state', '==', 'waiting')
+        .orderBy('createdAt', 'desc')
+        .limit(20)
+        .onSnapshot(snapshot => {
+            if (snapshot.empty) {
+                list.innerHTML = '<div class="empty">暂无可用房间，创建一个吧</div>';
+                return;
+            }
+            let html = '';
+            snapshot.forEach(doc => {
+                const r = doc.data();
+                html += `<div class="room-item">
+                    <div class="info">
+                        <span class="name">${r.hostName}</span>
+                        <span class="meta">${r.difficulty || '待定'} · ${r.createdAt?.toDate().toLocaleTimeString() || ''}</span>
+                    </div>
+                    <button class="join-btn" onclick="joinRoomById('${doc.id}')">加入</button>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }, err => {
+            list.innerHTML = '<div class="empty">加载房间失败，请刷新</div>';
+        });
+}
+
+// ===== 创建房间 =====
+async function createRoom() {
+    const code = genRoomCode();
+    const userName = localStorage.getItem('arcadeUser') || ('玩家' + Math.floor(Math.random() * 1000));
+    currentRoomId = code;
+    isMultiplayer = true;
+    isHost = true;
+
+    try {
+        await roomsRef.doc(code).set({
+            id: code,
+            hostName: userName,
+            difficulty: null,
+            state: 'waiting',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        document.getElementById('lobbyOverlay').classList.remove('show');
+        document.getElementById('roomCodeDisplay').textContent = code;
+        document.getElementById('waitingOverlay').classList.add('show');
+
+        // 监听房间变化（加入者到达 / 房间删除）
+        roomsRef.doc(code).onSnapshot(snap => {
+            if (!snap.exists) {
+                document.getElementById('waitingOverlay').classList.remove('show');
+                document.getElementById('modeOverlay').classList.remove('hidden');
+                return;
+            }
+            const data = snap.data();
+            if (data && data.state === 'ready' && data.guestName) {
+                document.getElementById('waitingOverlay').classList.remove('show');
+            }
+        }, () => {});
+
+        // 启动PeerJS作为host
+        setupPeerHost(code);
+    } catch(e) {
+        alert('创建房间失败: ' + e.message);
+    }
+}
+
+// ===== 加入房间 =====
+async function joinRoom() {
+    const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+    if (code.length !== 4) return;
+    await joinRoomById(code);
+}
+
+async function joinRoomById(code) {
+    currentRoomId = code;
+    isMultiplayer = true;
+    isHost = false;
+    const userName = localStorage.getItem('arcadeUser') || ('玩家' + Math.floor(Math.random() * 1000));
+
+    try {
+        const doc = await roomsRef.doc(code).get();
+        if (!doc.exists || doc.data().state !== 'waiting') {
+            alert('房间不存在或已满');
+            return;
+        }
+        await roomsRef.doc(code).update({
+            guestName: userName,
+            state: 'ready'
+        });
+        document.getElementById('lobbyOverlay').classList.remove('show');
+        // 加入PeerJS
+        setupPeerGuest(code, userName);
+    } catch(e) {
+        alert('加入房间失败: ' + e.message);
+    }
+}
+
+// ===== PeerJS - 房主 =====
+function setupPeerHost(code) {
+    peer = new Peer(code, { debug: 0 });
+    peer.on('open', id => {
+        peerId = id;
+    });
+    peer.on('connection', conn => {
+        dataChan = conn;
+        conn.on('data', data => {
+            handleData(data);
+        });
+        conn.on('open', () => {
+            // 连接建立，房主选难度
+            document.getElementById('difficulty-overlay').style.display = 'flex';
+        });
+    });
+    peer.on('error', err => {
+        console.warn('Peer error:', err);
+    });
+}
+
+function startPeerHost(code) {
+    // Peer已经在setupPeerHost里设置好了
+    // 等待guest连接
+}
+
+// ===== PeerJS - 加入者 =====
+function setupPeerGuest(code, userName) {
+    peer = new Peer(undefined, { debug: 0 });
+    peer.on('open', id => {
+        peerId = id;
+        const conn = peer.connect(code, { reliable: true });
+        dataChan = conn;
+        conn.on('open', () => {
+            conn.send(JSON.stringify({type: 'join', name: userName}));
+        });
+        conn.on('data', data => {
+            handleData(data);
+        });
+    });
+    peer.on('error', err => {
+        console.warn('Peer error:', err);
+        alert('连接失败，请检查房间码是否正确');
+    });
+}
+
+// ===== 数据处理 =====
+function handleData(data) {
+    try {
+        const msg = typeof data === 'string' ? JSON.parse(data) : data;
+        switch(msg.type) {
+            case 'startGame':
+                // 加入者收到开始游戏信号
+                difficulty = msg.difficulty;
+                isMultiplayer = true;
+                isHost = false;
+                currentLevel = 1;
+                document.getElementById('difficulty-overlay').style.display = 'none';
+                updateNavForDifficulty(msg.difficulty);
+                // 显示难度标签（友方显示加入者的难度）
+                if (msg.difficulty === 'hard') {
+                    document.getElementById('difficulty-overlay').style.display = 'none';
+                }
+                initLevel();
+                break;
+
+            case 'sync':
+                // 同步游戏状态
+                syncReceived(msg);
+                break;
+
+            case 'move':
+                // 对方移动
+                if (msg.player === 1 && !isHost) {
+                    p1.x = msg.x; p1.y = msg.y;
+                    if (p1.el) { p1.el.style.left = (p1.x * CELL + PADDING) + 'px'; p1.el.style.top = (p1.y * CELL + PADDING) + 'px'; }
+                } else if (msg.player === 2 && isHost) {
+                    p2.x = msg.x; p2.y = msg.y;
+                    if (p2.el) { p2.el.style.left = (p2.x * CELL + PADDING) + 'px'; p2.el.style.top = (p2.y * CELL + PADDING) + 'px'; }
+                }
+                break;
+
+            case 'itemPickup':
+                // 同步道具拾取
+                for (let i = items.length - 1; i >= 0; i--) {
+                    if (items[i].x === msg.x && items[i].y === msg.y) {
+                        if (!heldItems.includes(msg.type)) heldItems.push(msg.type);
+                        if (items[i].el) items[i].el.remove();
+                        items.splice(i, 1);
+                        updateItemUI();
+                        break;
+                    }
+                }
+                break;
+
+            case 'useItem':
+                if (isMultiplayer) {
+                    const idx = heldItems.indexOf(msg.item);
+                    if (idx !== -1) {
+                        heldItems.splice(idx, 1);
+                        useItem(msg.item);
+                        updateItemUI();
+                    }
+                }
+                break;
+
+            case 'requestSync':
+                // 加入者请求同步，房主发送完整状态
+                if (isHost && dataChan && dataChan.readyState === 'open') {
+                    syncGameState();
+                }
+                break;
+
+            case 'win':
+                isLocked = true;
+                if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
+                if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+                showOverlay('✨ 双子同心！', '#fcd34d',
+                    `关卡 ${msg.level || currentLevel} 完成！`,
+                    '下一关', 'nextLevel()');
+                break;
+
+            case 'nextLevel':
+                if (!isHost) {
+                    currentLevel = msg.level;
+                    initLevel();
+                }
+                break;
+        }
+    } catch(e) {}
+}
+
+// ===== 游戏状态同步 =====
+function syncGameState() {
+    if (!dataChan || dataChan.readyState !== 'open') return;
+    const state = {
+        type: 'sync',
+        p1: {x: p1.x, y: p1.y},
+        p2: {x: p2.x, y: p2.y},
+        enemies: [{x: enemy.x, y: enemy.y, dx: enemy.dx, dy: enemy.dy}],
+        items: items.map(it => ({x: it.x, y: it.y, type: it.type})),
+        heldItems: [...heldItems],
+        grid: grid,
+        rows: rows,
+        cols: cols,
+        gate1: gate1,
+        gate2: gate2,
+        difficulty: difficulty,
+        level: currentLevel,
+        isLocked: isLocked,
+        freezeSafe: freezeSafe
+    };
+    if (enemy2.active) {
+        state.enemies.push({x: enemy2.x, y: enemy2.y, dx: enemy2.dx, dy: enemy2.dy, active: true});
+    }
+    dataChan.send(JSON.stringify(state));
+}
+
+function syncReceived(msg) {
+    if (isHost) return;
+    if (msg.grid && !p1.el) {
+        // 首次同步：渲染完整迷宫
+        grid = msg.grid; rows = msg.rows; cols = msg.cols;
+        gate1 = msg.gate1; gate2 = msg.gate2;
+        difficulty = msg.difficulty; currentLevel = msg.level;
+
+        mazeEl.innerHTML = '';
+        const totalW = cols * CELL, totalH = rows * CELL;
+        mazeEl.style.width = totalW + 'px';
+        mazeEl.style.height = totalH + 'px';
+        document.getElementById('lvlNum').textContent = currentLevel;
+        for (let r = 0; r < rows; r++)
+            for (let c = 0; c < cols; c++)
+                addDiv(c, r, grid[r][c] === 1 ? 'cell wall' : 'cell path');
+        addDiv(gate1.x, gate1.y, 'cell gate1'); addGateLabel(gate1.x, gate1.y, 'B');
+        addDiv(gate2.x, gate2.y, 'cell gate2'); addGateLabel(gate2.x, gate2.y, 'R');
+        spawnEnemy();
+        if (difficulty === 'hard') spawnEnemy2();
+        p1.el = addDiv(msg.p1.x, msg.p1.y, 'cell p1');
+        p2.el = addDiv(msg.p2.x, msg.p2.y, 'cell p2');
+        heldItems = [];
+        updateItemUI();
+        return;
+    }
+
+    if (msg.p1 && p1.el) {
+        p1.x = msg.p1.x; p1.y = msg.p1.y;
+        p1.el.style.left = (p1.x * CELL + PADDING) + 'px';
+        p1.el.style.top = (p1.y * CELL + PADDING) + 'px';
+    }
+    if (msg.p2 && p2.el) {
+        p2.x = msg.p2.x; p2.y = msg.p2.y;
+        p2.el.style.left = (p2.x * CELL + PADDING) + 'px';
+        p2.el.style.top = (p2.y * CELL + PADDING) + 'px';
+    }
+    if (msg.enemies && msg.enemies.length > 0) {
+        const e1 = msg.enemies[0];
+        enemy.x = e1.x; enemy.y = e1.y;
+        if (enemy.el) {
+            enemy.el.style.left = (enemy.x * CELL + PADDING) + 'px';
+            enemy.el.style.top = (enemy.y * CELL + PADDING) + 'px';
+        }
+        if (msg.enemies.length > 1) {
+            const e2 = msg.enemies[1];
+            enemy2.x = e2.x; enemy2.y = e2.y;
+            enemy2.active = e2.active !== false;
+            if (enemy2.el) {
+                enemy2.el.style.left = (enemy2.x * CELL + PADDING) + 'px';
+                enemy2.el.style.top = (enemy2.y * CELL + PADDING) + 'px';
+            }
+        }
+    }
+    if (msg.items) { /* 道具同步保持简洁 */ }
+}
+
+// ===== 定时同步 =====
+let syncInterval = null;
+const origInitLevel = initLevel;
+initLevel = function() {
+    if (syncInterval) { clearInterval(syncInterval); syncInterval = null; }
+    if (isMultiplayer && !isHost) {
+        // 加入者：不生成迷宫，清空画面等待房主同步
+        isLocked = false;
+        if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
+        if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+        enemy2.active = false;
+        mazeEl.innerHTML = '';
+        document.getElementById('winScreen').style.display = 'none';
+        setTimeout(() => {
+            if (dataChan && dataChan.readyState === 'open')
+                dataChan.send(JSON.stringify({type:'requestSync'}));
+        }, 500);
+    } else {
+        origInitLevel();
+        if (isMultiplayer && isHost) {
+            setTimeout(() => {
+                syncGameState();
+                syncInterval = setInterval(syncGameState, 500);
+            }, 200);
+        }
+    }
+};
+
+// 重写nextLevel - 联机模式由房主统一控制关卡推进
+const origNextLevel = nextLevel;
+nextLevel = function() {
+    if (isMultiplayer && !isHost) {
+        // 加入者不自己推进关卡，等房主同步
+        return;
+    }
+    currentLevel++;
+    const prev = parseInt(localStorage.getItem('coopHighScore') || '0');
+    if (currentLevel > prev) {
+        if (typeof window._syncScore === 'function') _syncScore('coop', currentLevel);
+    }
+    if (isMultiplayer && dataChan) {
+        dataChan.send(JSON.stringify({type:'nextLevel', level: currentLevel}));
+    }
+    // 直接调initLevel，不用origNextLevel（避免重复currentLevel++）
+    initLevel();
+};
+
+// 清理
+window.addEventListener('beforeunload', () => {
+    if (currentRoomId) {
+        db.collection('rooms').doc(currentRoomId).delete().catch(()=>{});
+    }
+    if (peer) peer.destroy();
+    if (unsubscribe) unsubscribe();
+});
 </script>
 </body>
 </html>
