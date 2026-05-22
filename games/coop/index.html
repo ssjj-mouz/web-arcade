@@ -1353,7 +1353,9 @@ try {
 } catch(e){}
 </script>
 
-<script src="https://imgcache.qq.com/qcloud/tcbjs/1.3.8/tcb.js"></script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/2.8.34/cloudbase.js"></script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/2.8.34/cloudbase.auth.js"></script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/2.8.34/cloudbase.functions.js"></script>
 
 <!-- 联机模式脚本 (CloudBase 中继) -->
 <script>
@@ -1362,9 +1364,9 @@ try {
 const CLOUDBASE_ENV_ID = 'games-d3g5ler2z3252069c';
 let app = null;
 try {
-    if (typeof tcb !== 'undefined') {
-        app = tcb.init({ env: CLOUDBASE_ENV_ID });
-        app.auth().signInAnonymously().catch(e => console.error('CloudBase auth error:', e));
+    if (typeof cloudbase !== 'undefined') {
+        app = cloudbase.init({ env: CLOUDBASE_ENV_ID });
+        app.auth().anonymousAuthProvider().signIn().catch(e => console.error('CloudBase auth error:', e));
     } else {
         console.error('CloudBase SDK 加载失败');
     }
