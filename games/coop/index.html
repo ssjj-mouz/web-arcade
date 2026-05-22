@@ -1465,6 +1465,7 @@ let lastUsedItem = null;
 let pendingChat = null;
 let lastChatTime = 0;
 let lockReason = null;
+let gameGen = 0;
 let disconnectCount = 0;
 
 function genRoomCode() {
@@ -1666,7 +1667,8 @@ async function writeHostState(roomId) {
         enemy2Active: enemy2.active,
         effect: lastUsedItem,
         chat: pendingChat,
-        lockReason
+        lockReason,
+        gameGen
     };
     lastUsedItem = null;
     if (enemy2.active) {
@@ -1717,7 +1719,7 @@ async function guestTick(roomId) {
         // 检测关卡变化或游戏重开（房主进入下一关/重开），重建迷宫
         if (guestFirstSync && msg.grid) {
             const levelChanged = msg.level !== undefined && msg.level !== currentLevel;
-            const gameRestarted = msg.isLocked === false && isLocked === true;
+            const gameRestarted = msg.gameGen !== undefined && msg.gameGen !== gameGen;
             if (levelChanged || gameRestarted) {
                 guestFirstSync = false;
                 if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
@@ -1730,7 +1732,7 @@ async function guestTick(roomId) {
             guestFirstSync = true;
             grid = msg.grid; rows = msg.rows; cols = msg.cols;
             gate1 = msg.gate1; gate2 = msg.gate2;
-            difficulty = msg.difficulty; currentLevel = msg.level;
+            difficulty = msg.difficulty; currentLevel = msg.level; gameGen = msg.gameGen;
             updateNavForDifficulty(msg.difficulty || difficulty);
 
             mazeEl.innerHTML = '';
@@ -1959,6 +1961,7 @@ initLevel = function() {
         }
     } else {
         origInitLevel();
+        gameGen++;
         if (isMultiplayer && isHost && currentRoomId) {
             document.getElementById('chatArea').style.display = 'flex';
             startHostGameLoop(currentRoomId);
