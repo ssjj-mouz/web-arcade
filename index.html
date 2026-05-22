@@ -793,50 +793,28 @@
             opacity: 0.7;
             transition: opacity 0.3s;
         }
-        /* 光标外环 - 旋转光环 */
-        .cursor-ring {
+        /* 光标箭头 - 赛博朋克风格 */
+        .cursor-arrow {
             position: fixed;
-            width: 40px;
-            height: 40px;
-            border: 2.5px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.7);
-            border-radius: 50%;
             pointer-events: none;
             z-index: 10000;
-            transform: translate(-50%, -50%);
-            box-shadow:
-                0 0 12px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3),
-                inset 0 0 12px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.1);
-            transition: width 0.15s, height 0.15s, border-color 0.15s;
+            filter: drop-shadow(0 0 6px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.7))
+                    drop-shadow(0 0 12px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3));
+            transition: opacity 0.2s;
         }
-        .cursor-ring::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 50%;
-            border: 1.5px solid transparent;
-            background: conic-gradient(transparent 30%, rgb(var(--accent-r),var(--accent-g),var(--accent-b)), transparent 70%) border-box;
-            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            animation: ringSpin 1.6s linear infinite;
-        }
-        @keyframes ringSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        /* 光标中心点 */
-        .cursor-dot {
+        /* 光标中心高亮 */
+        .cursor-tip {
             position: fixed;
-            width: 6px;
-            height: 6px;
-            background: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            width: 4px;
+            height: 4px;
+            background: #fff;
             border-radius: 50%;
             pointer-events: none;
             z-index: 10001;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.8);
-            transition: opacity 0.2s;
+            box-shadow: 0 0 8px rgb(var(--accent-r),var(--accent-g),var(--accent-b)),
+                        0 0 20px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.6);
+            opacity: 0.9;
         }
         /* 光标拖尾粒子 */
         .cursor-trail {
@@ -1131,8 +1109,16 @@
 
     <!-- 动态光标 -->
     <div id="cursor-neon"></div>
-    <div class="cursor-ring" id="cursorRing"></div>
-    <div class="cursor-dot" id="cursorDot"></div>
+    <svg class="cursor-arrow" id="cursorArrow" width="22" height="30" viewBox="0 0 22 30">
+        <polygon points="2,2 18,16 12,16 15,26 11,27 8,18 2,22"
+                 fill="rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2)"
+                 stroke="rgb(var(--accent-r),var(--accent-g),var(--accent-b))"
+                 stroke-width="1.2" stroke-linejoin="round"/>
+        <polygon points="4,5 14,14 10,14 12,21 10,22 8,16 4,18"
+                 fill="rgb(var(--accent-r),var(--accent-g),var(--accent-b))"
+                 opacity="0.4"/>
+    </svg>
+    <div class="cursor-tip" id="cursorTip"></div>
 
     <!-- 用户登录遮罩 -->
     <div id="login-overlay">
@@ -1920,8 +1906,8 @@
 
         // 赛博光标 - 环绕光环 + 拖尾粒子 + 爆裂特效
         const neonCursor = document.getElementById('cursor-neon');
-        const cursorRing = document.getElementById('cursorRing');
-        const cursorDot = document.getElementById('cursorDot');
+        const cursorArrow = document.getElementById('cursorArrow');
+        const cursorTip = document.getElementById('cursorTip');
         let mx = 0, my = 0, cx = 0, cy = 0, rx = 0, ry = 0, dx = 0, dy = 0;
         const trail = [];
         const TRAIL_COUNT = 12;
@@ -1972,12 +1958,10 @@
                 };
                 requestAnimationFrame(animP);
             }
-            cursorRing.style.transition = 'width 0.08s, height 0.08s';
-            cursorRing.style.width = '30px';
-            cursorRing.style.height = '30px';
+            cursorArrow.style.transition = 'transform 0.06s';
+            cursorArrow.style.transform = 'translate(-2px,-2px) scale(0.85)';
             setTimeout(() => {
-                cursorRing.style.width = '40px';
-                cursorRing.style.height = '40px';
+                cursorArrow.style.transform = '';
             }, 80);
         });
 
@@ -1993,13 +1977,13 @@
                 neonCursor.style.left = cx + 'px';
                 neonCursor.style.top = cy + 'px';
             }
-            if (cursorRing) {
-                cursorRing.style.left = rx + 'px';
-                cursorRing.style.top = ry + 'px';
+            if (cursorArrow) {
+                cursorArrow.style.left = (rx - 2) + 'px';
+                cursorArrow.style.top = (ry - 2) + 'px';
             }
-            if (cursorDot) {
-                cursorDot.style.left = dx + 'px';
-                cursorDot.style.top = dy + 'px';
+            if (cursorTip) {
+                cursorTip.style.left = dx + 'px';
+                cursorTip.style.top = dy + 'px';
             }
 
             trail.unshift({ x: mx, y: my, life: 1 });
