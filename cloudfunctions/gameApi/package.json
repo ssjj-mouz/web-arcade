@@ -1,0 +1,7 @@
+{
+  "name": "gameApi",
+  "version": "1.0.0",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.2.0"
+  }
+}

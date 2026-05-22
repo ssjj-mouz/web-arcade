@@ -1,0 +1,12 @@
+{
+  "envId": "games-d3g5ler2z3252069c",
+  "functionRoot": "cloudfunctions",
+  "functions": [
+    {
+      "name": "gameApi",
+      "timeout": 15,
+      "handler": "index.main",
+      "runtime": "Nodejs20.19"
+    }
+  ]
+}

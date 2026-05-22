@@ -1187,8 +1187,7 @@
         function cancelRoom() {
             document.getElementById('waitingOverlay').classList.remove('show');
             if (currentRoomId) {
-                fetchSupabase(`rooms?id=eq.${currentRoomId}`, { method: 'DELETE' }).catch(()=>{});
-                fetchSupabase(`game_sessions?room_id=eq.${currentRoomId}`, { method: 'DELETE' }).catch(()=>{});
+                callCF('room.delete', { roomId: currentRoomId }).catch(()=>{});
             }
             if (hostGameTimer) { clearInterval(hostGameTimer); hostGameTimer = null; }
             if (guestPollTimer) { clearInterval(guestPollTimer); guestPollTimer = null; }
@@ -1354,31 +1353,31 @@ try {
 } catch(e){}
 </script>
 
-<!-- 联机模式脚本 (Supabase 中继) -->
-<script>
-// ===== Supabase REST API =====
-const supabaseUrl = 'https://lxdrzgwgirhvjabmfbvy.supabase.co';
-const supabaseKey = 'sb_publishable_agrBqJ4vtwwg3Zeye4Mq2g_KiCpIdM6';
+<script src="https://imgcache.qq.com/qcloud/tcbjs/2.0.0/tcb.js"></script>
 
-async function fetchSupabase(path, { method = 'GET', body } = {}) {
-    const url = `${supabaseUrl}/rest/v1/${path}`;
-    const res = await fetch(url, {
-        method,
-        headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-        },
-        body: body ? JSON.stringify(body) : undefined
-    });
-    if (!res.ok) {
-        const err = await res.text();
-        console.error('Supabase error:', res.status, err);
-        throw new Error(`${res.status}: ${err}`);
+<!-- 联机模式脚本 (CloudBase 中继) -->
+<script>
+// ===== CloudBase 初始化 =====
+// ⚠️ 把下面的 YOUR_ENV_ID 替换成你的 CloudBase 环境ID（控制台 → 设置 → 环境ID）
+const CLOUDBASE_ENV_ID = 'games-d3g5ler2z3252069c';
+let app = null;
+try {
+    if (typeof tcb !== 'undefined') {
+        app = tcb.init({ env: CLOUDBASE_ENV_ID });
+        app.auth().signInAnonymously().catch(e => console.error('CloudBase auth error:', e));
+    } else {
+        console.error('CloudBase SDK 加载失败');
     }
-    if (method === 'DELETE' || res.status === 204) return null;
-    return res.json();
+} catch(e) {
+    console.error('CloudBase init error:', e);
+}
+
+async function callCF(action, data) {
+    if (!app) throw new Error('CloudBase 未初始化');
+    const res = await app.callFunction({ name: 'gameApi', data: { action, ...data } });
+    if (!res || !res.result) throw new Error('CloudBase 响应为空');
+    if (res.result.error) throw new Error(res.result.error);
+    return res.result;
 }
 
 let roomsPollTimer = null;
@@ -1405,16 +1404,22 @@ async function initLobby() {
 async function refreshRoomList() {
     const list = document.getElementById('roomList');
     try {
-        const rooms = await fetchSupabase('rooms?state=eq.waiting&order=createdat.desc&limit=20') || [];
+        const result = await callCF('room.list');
+        const rooms = result.rooms || [];
         list.innerHTML = rooms.length === 0
             ? '<div class="empty">暂无可用房间，创建一个吧</div>'
-            : rooms.map(r => `<div class="room-item">
+            : rooms.map(r => {
+                const name = r.hostname || '未知';
+                const diff = r.difficulty || '待定';
+                const time = r._id ? '' : '';
+                return `<div class="room-item">
                 <div class="info">
-                    <span class="name">${r.hostname}</span>
-                    <span class="meta">${r.difficulty || '待定'} · ${r.createdat ? new Date(r.createdat).toLocaleTimeString() : ''}</span>
+                    <span class="name">${name}</span>
+                    <span class="meta">${diff}</span>
                 </div>
-                <button class="join-btn" onclick="joinRoomById('${r.id}')">加入</button>
-            </div>`).join('');
+                <button class="join-btn" onclick="joinRoomById('${r._id}')">加入</button>
+            </div>`;
+            }).join('');
     } catch(e) {
         list.innerHTML = '<div class="empty">加载房间失败</div>';
     }
@@ -1422,22 +1427,15 @@ async function refreshRoomList() {
 
 // ===== 创建房间 =====
 async function createRoom(diff) {
-    const code = genRoomCode();
     const userName = localStorage.getItem('arcadeUser') || ('玩家' + Math.floor(Math.random() * 1000));
-    currentRoomId = code;
     isMultiplayer = true;
     isHost = true;
     difficulty = diff;
 
     try {
-        await fetchSupabase('rooms', {
-            method: 'POST',
-            body: { id: code, hostname: userName, difficulty: diff, state: 'waiting', createdat: new Date().toISOString() }
-        });
-        await fetchSupabase('game_sessions', {
-            method: 'POST',
-            body: { room_id: code, state: {}, p2_input: null, created_at: new Date().toISOString() }
-        });
+        const result = await callCF('room.create', { hostname: userName, difficulty: diff });
+        const code = result.id;
+        currentRoomId = code;
         document.getElementById('lobbyOverlay').classList.remove('show');
         document.getElementById('roomCodeDisplay').textContent = code;
         document.getElementById('waitingOverlay').classList.add('show');
@@ -1447,14 +1445,14 @@ async function createRoom(diff) {
         if (roomPollTimer) clearInterval(roomPollTimer);
         roomPollTimer = setInterval(async () => {
             try {
-                const data = await fetchSupabase(`rooms?id=eq.${code}&select=id,state,guestname`);
-                if (!data || data.length === 0) {
+                const data = await callCF('room.get', { roomId: code });
+                if (!data || !data.room) {
                     clearInterval(roomPollTimer); roomPollTimer = null;
                     document.getElementById('waitingOverlay').classList.remove('show');
                     document.getElementById('modeOverlay').classList.remove('hidden');
                     return;
                 }
-                if (data[0].state === 'ready' && data[0].guestname) {
+                if (data.room.state === 'ready' && data.room.guestname) {
                     clearInterval(roomPollTimer); roomPollTimer = null;
                     document.getElementById('waitingOverlay').classList.remove('show');
                     currentLevel = 1;
@@ -1481,15 +1479,11 @@ async function joinRoomById(code) {
     const userName = localStorage.getItem('arcadeUser') || ('玩家' + Math.floor(Math.random() * 1000));
 
     try {
-        const data = await fetchSupabase(`rooms?id=eq.${code}&select=id,state`);
-        if (!data || data.length === 0 || data[0].state !== 'waiting') {
-            alert('房间不存在或已满');
+        const result = await callCF('room.join', { roomId: code, guestname: userName });
+        if (result && result.error) {
+            alert(result.error);
             return;
         }
-        await fetchSupabase(`rooms?id=eq.${code}`, {
-            method: 'PATCH',
-            body: { guestname: userName, state: 'ready' }
-        });
         document.getElementById('lobbyOverlay').classList.remove('show');
         startGuestGame();
     } catch(e) {
@@ -1500,19 +1494,15 @@ async function joinRoomById(code) {
 // ===== 主机游戏循环 =====
 function startHostGameLoop(roomId) {
     if (hostGameTimer) clearInterval(hostGameTimer);
-    hostGameTimer = setInterval(() => hostTick(roomId), 150);
+    hostGameTimer = setInterval(() => hostTick(roomId), 300);
 }
 
 async function hostTick(roomId) {
     try {
-        // 1. 读取P2输入
-        const session = await fetchSupabase(`game_sessions?room_id=eq.${roomId}&select=p2_input`);
-        if (session && session.length > 0 && session[0].p2_input) {
-            const input = session[0].p2_input;
-            await fetchSupabase(`game_sessions?room_id=eq.${roomId}`, {
-                method: 'PATCH',
-                body: { p2_input: null }
-            });
+        // 1. 读取P2输入（云函数内原子化读取+清除）
+        const data = await callCF('session.pollP2', { roomId });
+        if (data && data.input) {
+            const input = data.input;
             if (input.type === 'move' && !isLocked && !isNaN(input.x) && !isNaN(input.y)) {
                 const dist = Math.abs(input.x - p2.x) + Math.abs(input.y - p2.y);
                 if (dist <= 3 && input.x > 0 && input.x < cols - 1 && input.y > 0 && input.y < rows - 1 && grid[input.y][input.x] === 0) {
@@ -1579,10 +1569,7 @@ async function writeHostState(roomId) {
     if (enemy2.active) {
         state.enemies.push({x: enemy2.x, y: enemy2.y, dx: enemy2.dx, dy: enemy2.dy});
     }
-    await fetchSupabase(`game_sessions?room_id=eq.${roomId}`, {
-        method: 'PATCH',
-        body: { state }
-    });
+    await callCF('session.writeState', { roomId, state });
 }
 
 // ===== 客机游戏 =====
@@ -1595,21 +1582,20 @@ function startGuestGame() {
     if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
     enemy2.active = false;
     p1.el = null; p2.el = null; enemy.el = null; enemy2.el = null;
-    // 先隐藏难度选择，再清空迷宫（difficulty-overlay 是 maze 的子元素）
     document.getElementById('difficulty-overlay').style.display = 'none';
     mazeEl.innerHTML = '';
     document.getElementById('winScreen').style.display = 'none';
     guestFirstSync = false;
 
     if (guestPollTimer) clearInterval(guestPollTimer);
-    guestPollTimer = setInterval(() => guestTick(currentRoomId), 150);
+    guestPollTimer = setInterval(() => guestTick(currentRoomId), 300);
 }
 
 async function guestTick(roomId) {
     try {
-        const session = await fetchSupabase(`game_sessions?room_id=eq.${roomId}&select=state`);
-        if (!session || session.length === 0 || !session[0].state) return;
-        const msg = session[0].state;
+        const result = await callCF('session.get', { roomId });
+        if (!result || !result.state) return;
+        const msg = result.state;
 
         if (!guestFirstSync && msg.grid) {
             guestFirstSync = true;
@@ -1636,7 +1622,6 @@ async function guestTick(roomId) {
             p2.el = addDiv(msg.p2.x, msg.p2.y, 'cell p2');
             heldItems = [];
 
-            // 重建道具
             items = [];
             if (msg.items) {
                 msg.items.forEach(it => {
@@ -1657,7 +1642,6 @@ async function guestTick(roomId) {
             return;
         }
 
-        // 更新位置
         if (msg.p1 && p1.el) {
             p1.x = msg.p1.x; p1.y = msg.p1.y;
             p1.el.style.left = (p1.x * CELL + PADDING) + 'px';
@@ -1682,7 +1666,6 @@ async function guestTick(roomId) {
             enemy2.el.style.top = (enemy2.y * CELL + PADDING) + 'px';
         }
 
-        // 同步道具
         if (msg.items) {
             const hostItemSet = new Set(msg.items.map(it => `${it.x},${it.y}`));
             for (let i = items.length - 1; i >= 0; i--) {
@@ -1699,7 +1682,6 @@ async function guestTick(roomId) {
         if (msg.isLocked !== undefined) isLocked = msg.isLocked;
         if (msg.freezeSafe !== undefined) freezeSafe = msg.freezeSafe;
 
-        // 胜利显示（由主机裁决）
         if (isLocked && document.getElementById('winScreen').style.display !== 'flex') {
             if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
             if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
@@ -1714,20 +1696,14 @@ async function guestTick(roomId) {
 async function guestSendP2Input(input) {
     if (!currentRoomId || isHost) return;
     try {
-        await fetchSupabase(`game_sessions?room_id=eq.${currentRoomId}`, {
-            method: 'PATCH',
-            body: { p2_input: input }
-        });
+        await callCF('session.writeP2', { roomId: currentRoomId, input });
     } catch(e) {}
 }
 
 async function guestUseItem(item) {
     if (!currentRoomId || isHost) return;
     try {
-        await fetchSupabase(`game_sessions?room_id=eq.${currentRoomId}`, {
-            method: 'PATCH',
-            body: { p2_input: {type: 'useItem', item} }
-        });
+        await callCF('session.writeP2', { roomId: currentRoomId, input: {type: 'useItem', item} });
     } catch(e) {}
 }
 
@@ -1746,7 +1722,7 @@ initLevel = function() {
         document.getElementById('winScreen').style.display = 'none';
         guestFirstSync = false;
         if (currentRoomId) {
-            guestPollTimer = setInterval(() => guestTick(currentRoomId), 150);
+            guestPollTimer = setInterval(() => guestTick(currentRoomId), 300);
         }
     } else {
         origInitLevel();
@@ -1770,8 +1746,7 @@ nextLevel = function() {
 // 清理
 window.addEventListener('beforeunload', () => {
     if (currentRoomId) {
-        fetchSupabase(`rooms?id=eq.${currentRoomId}`, { method: 'DELETE' }).catch(()=>{});
-        fetchSupabase(`game_sessions?room_id=eq.${currentRoomId}`, { method: 'DELETE' }).catch(()=>{});
+        callCF('room.delete', { roomId: currentRoomId }).catch(() => {});
     }
     if (roomsPollTimer) clearInterval(roomsPollTimer);
     if (roomPollTimer) clearInterval(roomPollTimer);

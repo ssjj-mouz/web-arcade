@@ -1,0 +1,11 @@
+{
+  "envId": "games-d3g5ler2z3252069c",
+  "functions": [
+    {
+      "name": "gameApi",
+      "timeout": 15,
+      "entry": "index.main",
+      "runtime": "Nodejs18.15"
+    }
+  ]
+}
