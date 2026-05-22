@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深海寻宝 - Web Arcade</title>
+    <link rel="stylesheet" href="css/match.css">
+</head>
+<body>
+
+    <header>
+        <h1>🌊 深海寻宝</h1>
+        <div class="stats">
+            <span>步数: <span id="moves">0</span></span>
+            <span>最高分: <span id="high-score">0</span></span>
+        </div>
+    </header>
+
+    <div class="game-board" id="board">
+        <!-- JS 动态生成卡片 -->
+    </div>
+
+    <div class="controls">
+        <button onclick="initGame()">重新洗牌 🔄</button>
+        <button onclick="location.href='../../index.html'" style="background:#475569; margin-left:10px;">返回大厅</button>
+    </div>
+
+    <script>
+        const symbols = ['🐟', '🐙', '🦀', '🐢', '🦈', '🐋', '🐡', '🦑'];
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let isLocked = false; // 防止动画期间点击
+
+        const board = document.getElementById('board');
+        const movesEl = document.getElementById('moves');
+        const highScoreEl = document.getElementById('high-score');
+
+        // 读取大厅分数
+        let highScore = localStorage.getItem('matchHighScore') || 999;
+        if(highScore == 999) highScoreEl.innerText = '-';
+        else highScoreEl.innerText = highScore;
+
+        function initGame() {
+            board.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            movesEl.innerText = moves;
+            isLocked = false;
+
+            // 构造 16 张卡片 (8对)
+            cards = [...symbols, ...symbols];
+            // Fisher-Yates 洗牌算法
+            cards.sort(() => Math.random() - 0.5);
+
+            cards.forEach((symbol, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.symbol = symbol;
+                
+                // HTML结构：包含正面和反面
+                card.innerHTML = `
+                    <div class="card-face card-front">${symbol}</div>
+                    <div class="card-face card-back"></div>
+                `;
+                
+                card.addEventListener('click', () => flipCard(card));
+                board.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            // 如果面板锁定、或者是已经翻开/匹配的卡，则忽略
+            if (isLocked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                moves++;
+                movesEl.innerText = moves;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            isLocked = true; // 锁定面板
+            const [card1, card2] = flippedCards;
+            const isMatch = card1.dataset.symbol === card2.dataset.symbol;
+
+            if (isMatch) {
+                // 延迟添加匹配成功的动画类
+                setTimeout(() => {
+                    card1.classList.replace('flipped', 'matched');
+                    card2.classList.replace('flipped', 'matched');
+                    matchedPairs++;
+                    flippedCards = [];
+                    isLocked = false;
+                    
+                    if (matchedPairs === symbols.length) gameOver();
+                }, 400);
+            } else {
+                // 不匹配，1秒后翻回去
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    isLocked = false;
+                }, 1000);
+            }
+        }
+
+        function gameOver() {
+            setTimeout(() => {
+                alert(`🎉 恭喜通关！共花费了 ${moves} 步。`);
+                // 步数越少越好
+                if(moves < highScore) {
+                    if (typeof window._syncScore === 'function') _syncScore('match', moves);
+                    highScoreEl.innerText = moves;
+                }
+            }, 500);
+        }
+
+        // 页面加载启动
+        initGame();
+    </script>
+<script>
+try {
+    const _user = localStorage.getItem('arcadeUser');
+    if (_user) {
+        window._syncScore = function(game, score) {
+            try {
+                const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
+                if (!all[_user]) all[_user] = {};
+                if (!all[_user][game] || score > all[_user][game]) {
+                    all[_user][game] = score;
+                    localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                }
+            } catch(e){}
+        };
+    }
+} catch(e){}
+</script>
+</body>
+</html>

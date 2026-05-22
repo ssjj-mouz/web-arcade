@@ -1,0 +1,74 @@
+:root {
+    --bg-color: #0f172a;
+    --text-main: #f8fafc;
+    --primary: #f59e0b;
+}
+
+* { box-sizing: border-box; }
+body {
+    margin: 0; min-height: 100vh;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    color: var(--text-main); font-family: 'Segoe UI', sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    overflow: hidden; /* 防止页面滚动 */
+}
+
+.game-header { text-align: center; margin-bottom: 20px; }
+.game-header h1 { margin: 0; color: var(--primary); text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+.score-board { font-size: 1.5rem; font-weight: bold; margin-top: 10px; }
+
+/* Canvas 容器美化 */
+.canvas-container {
+    position: relative;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,255,255,0.1);
+    overflow: hidden;
+}
+
+canvas { display: block; background: #000; cursor: pointer; }
+
+/* 游戏结束覆盖层 */
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(5px);
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+}
+.overlay h2 { color: #ef4444; font-size: 2rem; margin-bottom: 10px; }
+
+.controls { margin-top: 20px; display: flex; gap: 15px; }
+button {
+    padding: 10px 20px; font-size: 1rem; font-weight: bold;
+    background: var(--primary); color: #000; border: none; border-radius: 8px;
+    cursor: pointer; transition: 0.2s;
+}
+button:hover { background: #fbbf24; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4); }
+.btn-back { background: #475569; color: white; }
+.btn-back:hover { background: #64748b; box-shadow: 0 5px 15px rgba(255,255,255,0.1); }
+
+/* 难度选择覆盖层 */
+#difficulty-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    z-index: 10;
+}
+#difficulty-overlay h2 {
+    color: var(--primary); font-size: 1.8rem; margin-bottom: 6px;
+    text-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+}
+.diff-desc { color: #94a3b8; margin-bottom: 24px; font-size: 0.95rem; }
+.diff-buttons { display: flex; flex-direction: column; gap: 12px; width: 80%; max-width: 280px; }
+.diff-btn {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; font-size: 1rem; font-weight: bold;
+    background: rgba(255,255,255,0.06); color: #f8fafc;
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+    cursor: pointer; transition: all 0.25s; text-align: left;
+}
+.diff-btn:hover { transform: translateX(6px); border-color: var(--primary); background: rgba(245, 158, 11, 0.12); }
+.diff-btn.easy:hover { border-color: #22c55e; background: rgba(34, 197, 94, 0.12); }
+.diff-btn.normal:hover { border-color: var(--primary); background: rgba(245, 158, 11, 0.12); }
+.diff-btn.hard:hover { border-color: #ef4444; background: rgba(239, 68, 68, 0.12); }
+.diff-icon { font-size: 1.5rem; }
+.diff-label { font-size: 1.1rem; min-width: 40px; }
+.diff-note { font-size: 0.75rem; color: #94a3b8; font-weight: normal; }

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极客骇客 - Matrix Typist</title>
+    <link rel="stylesheet" href="css/typist.css">
+</head>
+<body>
+
+    <header>
+        <h1>💻 MATRIX.TYPIST</h1>
+        <div class="stats">
+            <span>Score: <span id="score">0</span></span>
+            <span class="hp">服务器HP: <span id="hp">3</span></span>
+        </div>
+    </header>
+
+    <main id="game-area">
+        <div class="defense-line"></div>
+        <div class="overlay hidden" id="overlay">
+            <h2 style="color:var(--danger); font-size: 3rem;">SERVER BREACHED</h2>
+            <p style="font-size: 1.5rem; margin: 10px 0;">拦截行数: <span id="final-score">0</span></p>
+            <button onclick="startGame()">REBOOT_SYSTEM()</button>
+            <button onclick="location.href='../../index.html'" style="border-color:#64748b; color:#cbd5e1;">EXIT_TO_HUB()</button>
+        </div>
+    </main>
+
+    <script>
+        // Web前端开发常用词汇库
+        const dictionary = [
+            "function", "return", "document", "window", "const", "let", 
+            "margin", "padding", "display", "flexbox", "grid", "border",
+            "canvas", "context", "animation", "transition", "transform",
+            "boolean", "string", "number", "object", "array", "promise"
+        ];
+
+        const gameArea = document.getElementById('game-area');
+        const scoreEl = document.getElementById('score');
+        const hpEl = document.getElementById('hp');
+        const overlay = document.getElementById('overlay');
+
+        let words = [];          // 屏幕上的单词对象数组
+        let targetWord = null;   // 当前玩家正在敲打的单词
+        let score = 0;
+        let hp = 3;
+        let spawnIntervalId;
+        let isGameOver = true;
+
+        function startGame() {
+            // 清理上一局残留
+            words.forEach(w => w.element.remove());
+            words = [];
+            targetWord = null;
+            score = 0;
+            hp = 3;
+            isGameOver = false;
+            
+            scoreEl.innerText = score;
+            hpEl.innerText = hp;
+            overlay.classList.add('hidden');
+
+            // 每2秒生成一个新词汇
+            clearInterval(spawnIntervalId);
+            spawnIntervalId = setInterval(spawnWord, 2000);
+        }
+
+        function spawnWord() {
+            if (isGameOver) return;
+
+            // 随机挑选单词
+            const text = dictionary[Math.floor(Math.random() * dictionary.length)];
+            const el = document.createElement('div');
+            el.className = 'word-entity';
+            el.innerText = text;
+
+            // 随机水平位置 (留出左右边距防止溢出)
+            const leftPos = Math.random() * (window.innerWidth - 150) + 20;
+            el.style.left = `${leftPos}px`;
+            
+            // 随分数增加，下落速度变快 (动画时长变短)
+            const duration = Math.max(4, 10 - (score * 0.1)); 
+            el.style.animationDuration = `${duration}s`;
+
+            gameArea.appendChild(el);
+
+            const wordObj = {
+                text: text,
+                element: el,
+                typedIndex: 0 // 已打出字符的索引
+            };
+            words.push(wordObj);
+
+            // 监听动画结束事件，一旦到底部即扣血
+            el.addEventListener('animationend', () => {
+                if (words.includes(wordObj)) {
+                    takeDamage(wordObj);
+                }
+            });
+        }
+
+        function takeDamage(wordObj) {
+            wordObj.element.remove();
+            words = words.filter(w => w !== wordObj);
+            
+            // 如果漏掉的正是当前锁定的目标，解除锁定
+            if (targetWord === wordObj) targetWord = null;
+
+            hp--;
+            hpEl.innerText = hp;
+            
+            // 屏幕闪红特效
+            gameArea.style.backgroundColor = "rgba(255, 0, 0, 0.2)";
+            setTimeout(() => gameArea.style.backgroundColor = "transparent", 200);
+
+            if (hp <= 0) {
+                endGame();
+            }
+        }
+
+        // 核心：键盘敲击事件监听
+        window.addEventListener('keydown', (e) => {
+            if (isGameOver) return;
+            const key = e.key.toLowerCase();
+            // 仅处理字母
+            if (!/^[a-z]$/.test(key)) return;
+
+            if (targetWord) {
+                // 如果已经锁定目标，必须继续打这个目标
+                const expectedChar = targetWord.text[targetWord.typedIndex];
+                if (key === expectedChar) {
+                    targetWord.typedIndex++;
+                    updateWordVisuals(targetWord);
+                    
+                    // 单词打完了
+                    if (targetWord.typedIndex === targetWord.text.length) {
+                        targetWord.element.remove();
+                        words = words.filter(w => w !== targetWord);
+                        targetWord = null;
+                        score++;
+                        scoreEl.innerText = score;
+                    }
+                }
+            } else {
+                // 如果没有锁定目标，寻找首字母匹配的单词
+                // 优先找最下面（存活最久）的匹配单词
+                const match = words.find(w => w.text[0] === key);
+                if (match) {
+                    targetWord = match;
+                    targetWord.element.classList.add('targeted');
+                    targetWord.typedIndex = 1;
+                    updateWordVisuals(targetWord);
+                }
+            }
+        });
+
+        // 用 HTML span 标签给已打出的字符上色
+        function updateWordVisuals(wordObj) {
+            const typedPart = wordObj.text.substring(0, wordObj.typedIndex);
+            const untypedPart = wordObj.text.substring(wordObj.typedIndex);
+            wordObj.element.innerHTML = `<span class="typed">${typedPart}</span>${untypedPart}`;
+        }
+
+        function endGame() {
+            isGameOver = true;
+            clearInterval(spawnIntervalId);
+            document.getElementById('final-score').innerText = score;
+            overlay.classList.remove('hidden');
+        }
+        
+        // 进入页面不自动开始，点击按钮才开始，这里直接自动开始以方便测试
+        startGame();
+    </script>
+<script>
+try {
+    const _user = localStorage.getItem('arcadeUser');
+    if (_user) {
+        window._syncScore = function(game, score) {
+            try {
+                const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
+                if (!all[_user]) all[_user] = {};
+                if (!all[_user][game] || score > all[_user][game]) {
+                    all[_user][game] = score;
+                    localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                }
+            } catch(e){}
+        };
+    }
+} catch(e){}
+</script>
+</body>
+</html>

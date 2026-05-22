@@ -1,0 +1,121 @@
+/* ================= 全局 & 街机主题 ================= */
+:root {
+    --bg: #09090b;
+    --surface: #18181b;
+    --primary: #8b5cf6;
+    --primary-glow: rgba(139, 92, 246, 0.6);
+    --text: #f8fafc;
+    --text-muted: #a1a1aa;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #27272a, var(--bg));
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    cursor: none;
+}
+
+/* ================= 头部导航 ================= */
+header {
+    padding: 20px 40px;
+    background: rgba(9, 9, 11, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(to right, #c084fc, #38bdf8);
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 20px rgba(192, 132, 252, 0.3);
+}
+
+.user-profile { display: flex; align-items: center; gap: 15px; font-weight: bold; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+
+/* ================= 游戏网格展示区 ================= */
+main {
+    flex: 1;
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.section-title {
+    font-size: 1.5rem; margin-bottom: 30px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 10px;
+}
+
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+/* ================= 游戏卡片美化 ================= */
+.game-card {
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--primary);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--primary-glow);
+}
+
+/* 各个游戏的封面配色 */
+.card-cover { height: 180px; display: flex; justify-content: center; align-items: center; font-size: 4rem; transition: 0.3s; }
+.game-card:hover .card-cover { transform: scale(1.1); }
+.cover-sky { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+.cover-match { background: linear-gradient(135deg, #10b981, #059669); }
+.cover-tower { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.cover-type { background: linear-gradient(135deg, #10b981, #000000); }
+.cover-beat { background: linear-gradient(135deg, #ec4899, #be185d); }
+.cover-sand { background: linear-gradient(135deg, #6366f1, #4338ca); }
+
+.card-info { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+.card-info h2 { font-size: 1.4rem; margin-bottom: 10px; }
+.card-info p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5; flex: 1; }
+
+.card-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px;
+}
+.tags span {
+    background: rgba(255,255,255,0.1); padding: 4px 10px;
+    border-radius: 20px; font-size: 0.75rem; color: #cbd5e1;
+}
+.btn-play {
+    background: var(--text); color: var(--bg); padding: 8px 16px;
+    border-radius: 8px; font-weight: bold; text-decoration: none; transition: 0.2s;
+}
+.game-card:hover .btn-play { background: var(--primary); color: white; }
+
+/* 禁用状态 */
+.locked { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+.locked:hover { transform: none; box-shadow: none; border-color: rgba(255,255,255,0.05); }
+.locked .btn-play { background: #333; color: #666; }

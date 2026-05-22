@@ -1,0 +1,15 @@
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.idea/
+.vscode/
+*.suo
+
+# Project specific
+.claude/
+实验报告01_202311071415_刘志卿.docx
+实验报告01_202311071415_刘志卿.zip

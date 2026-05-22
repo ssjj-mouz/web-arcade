@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云端筑梦师</title>
+    <link rel="stylesheet" href="css/tower.css">
+</head>
+<body>
+
+    <div class="game-header">
+        <h1>🏗️ 云端筑梦师</h1>
+        <div class="score-board">层数: <span id="score">0</span></div>
+    </div>
+
+    <div class="canvas-container">
+        <!-- Canvas点击和空格键都可以放下块 -->
+        <canvas id="gameCanvas" width="400" height="500"></canvas>
+        <div class="overlay" id="difficulty-overlay">
+            <h2>🏗️ 云端筑梦师</h2>
+            <p class="diff-desc">选择难度，开始你的筑梦之旅</p>
+            <div class="diff-buttons">
+                <button class="diff-btn easy" onclick="startGame(2, 0.1)">
+                    <span class="diff-icon">🌱</span>
+                    <span class="diff-label">简单</span>
+                    <span class="diff-note">缓慢移动，轻松上手</span>
+                </button>
+                <button class="diff-btn normal" onclick="startGame(4, 0.2)">
+                    <span class="diff-icon">⚖️</span>
+                    <span class="diff-label">普通</span>
+                    <span class="diff-note">标准速度，略有挑战</span>
+                </button>
+                <button class="diff-btn hard" onclick="startGame(6, 0.3)">
+                    <span class="diff-icon">🔥</span>
+                    <span class="diff-label">困难</span>
+                    <span class="diff-note">极速移动，高手试炼</span>
+                </button>
+            </div>
+        </div>
+        <div class="overlay" id="overlay">
+            <h2>建筑倒塌！</h2>
+            <p>最终层数: <span id="final-score">0</span></p>
+            <button onclick="showDifficulty()" style="margin-top:20px;">再来一局 🔄</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-back" onclick="location.href='../../index.html'">返回大厅</button>
+        <p style="color: #94a3b8; line-height: 40px; margin-left: 10px;">提示: 点击画面或按空格键放置方块</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const overlay = document.getElementById('overlay');
+
+        let blocks = [];
+        let state = 'playing'; // playing, gameover
+        let score = 0;
+        let speed = 4;
+        let speedIncrement = 0.2;
+        let blockHeight = 30;
+        let cameraY = 0; // 镜头跟随偏移
+
+        // 当前正在移动的块
+        let currentBlock = null;
+
+        function showDifficulty() {
+            overlay.style.display = 'none';
+            document.getElementById('difficulty-overlay').style.display = 'flex';
+        }
+
+        function startGame(initSpeed, incSpeed) {
+            blocks = [];
+            score = 0;
+            speed = initSpeed || 4;
+            speedIncrement = incSpeed || 0.2;
+            cameraY = 0;
+            state = 'playing';
+            scoreEl.innerText = score;
+            overlay.style.display = 'none';
+            document.getElementById('difficulty-overlay').style.display = 'none';
+
+            // 基础块 (地基)
+            blocks.push({ x: 100, y: canvas.height - blockHeight, w: 200, h: blockHeight, color: '#334155' });
+
+            // 首次生成移动块
+            spawnBlock();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnBlock() {
+            const lastBlock = blocks[blocks.length - 1];
+            currentBlock = {
+                x: 0, 
+                y: lastBlock.y - blockHeight, 
+                w: lastBlock.w, 
+                h: blockHeight, 
+                dir: 1, // 1向右, -1向左
+                // 动态 HSL 颜色，随层数变化产生彩虹渐变
+                color: `hsl(${score * 15}, 80%, 60%)` 
+            };
+        }
+
+        // 处理放下操作
+        function dropBlock() {
+            if (state !== 'playing') return;
+
+            const lastBlock = blocks[blocks.length - 1];
+            
+            // 计算重叠区域
+            const overlapStart = Math.max(currentBlock.x, lastBlock.x);
+            const overlapEnd = Math.min(currentBlock.x + currentBlock.w, lastBlock.x + lastBlock.w);
+            const overlap = overlapEnd - overlapStart;
+
+            if (overlap > 0) {
+                // 成功堆叠，截断超出部分
+                currentBlock.x = overlapStart;
+                currentBlock.w = overlap;
+                
+                // 将当前块固化到数组中
+                blocks.push({...currentBlock});
+                
+                score++;
+                scoreEl.innerText = score;
+                speed += speedIncrement; // 逐渐加速增加难度
+
+                // 镜头向上移动 (视觉上下降)
+                if (currentBlock.y < 200) cameraY += blockHeight;
+
+                spawnBlock();
+            } else {
+                // 完全没对上
+                state = 'gameover';
+                document.getElementById('final-score').innerText = score;
+                overlay.style.display = 'flex';
+                
+                // 记录最高分
+                if (typeof window._syncScore === 'function') _syncScore('tower', score);
+            }
+        }
+
+        canvas.addEventListener('mousedown', dropBlock);
+        window.addEventListener('keydown', (e) => { if(e.code === 'Space') dropBlock(); });
+
+        function update() {
+            if (state !== 'playing') return;
+
+            // 移动当前块
+            currentBlock.x += speed * currentBlock.dir;
+            if (currentBlock.x <= 0 || currentBlock.x + currentBlock.w >= canvas.width) {
+                currentBlock.dir *= -1; // 撞墙反弹
+            }
+        }
+
+        function draw() {
+            // 背景
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制固定的方块
+            blocks.forEach(b => {
+                ctx.fillStyle = b.color;
+                ctx.fillRect(b.x, b.y + cameraY, b.w, b.h);
+                // 给方块画个亮色顶边增加立体感
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fillRect(b.x, b.y + cameraY, b.w, 3);
+            });
+
+            // 绘制移动中的方块
+            if (state === 'playing' && currentBlock) {
+                ctx.fillStyle = currentBlock.color;
+                ctx.fillRect(currentBlock.x, currentBlock.y + cameraY, currentBlock.w, currentBlock.h);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fillRect(currentBlock.x, currentBlock.y + cameraY, currentBlock.w, 3);
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            if (state === 'playing') requestAnimationFrame(gameLoop);
+        }
+
+        showDifficulty();
+    </script>
+<script>
+try {
+    const _user = localStorage.getItem('arcadeUser');
+    if (_user) {
+        window._syncScore = function(game, score) {
+            try {
+                const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
+                if (!all[_user]) all[_user] = {};
+                if (!all[_user][game] || score > all[_user][game]) {
+                    all[_user][game] = score;
+                    localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                }
+            } catch(e){}
+        };
+    }
+} catch(e){}
+</script>
+</body>
+</html>

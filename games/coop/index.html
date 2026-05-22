@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双子星探险 - Web Arcade</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #0f172a, #020617);
+            color: #f8fafc; font-family: 'Segoe UI', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+
+        .nav {
+            display: flex; justify-content: space-between; align-items: center;
+            width: min(90vw, 800px); padding: 12px 24px; margin-bottom: 16px;
+            background: rgba(255,255,255,0.04); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+        }
+        .nav h1 {
+            margin: 0; font-size: 1.2rem;
+            background: linear-gradient(135deg, #60a5fa, #f87171);
+            -webkit-background-clip: text; color: transparent;
+        }
+        .nav-info { display: flex; gap: 20px; align-items: center; }
+        .nav-info span { font-size: 0.9rem; color: #94a3b8; }
+        .nav-info strong { color: #f8fafc; }
+
+        button {
+            padding: 8px 18px; font-size: 0.85rem; font-weight: bold;
+            border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-back { background: #475569; color: white; }
+        .btn-back:hover { background: #64748b; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(59,130,246,0.4); }
+
+        #maze {
+            position: relative;
+            width: 594px;
+            height: 594px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            background: #1e293b;
+        }
+
+        .cell {
+            position: absolute; box-sizing: border-box;
+            transition: 0.08s linear;
+        }
+        .wall {
+            background: #334155;
+            border: 1px solid #1e293b;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
+        }
+        .path {
+            background: #1a2332;
+            border: 1px solid #1e293b;
+        }
+        .p1 {
+            background: radial-gradient(circle at 35% 35%, #60a5fa, #2563eb);
+            border-radius: 50%;
+            box-shadow: 0 0 18px rgba(59,130,246,0.6), inset 0 -3px 6px rgba(0,0,0,0.3);
+            z-index: 10;
+            transition: 0.1s linear;
+        }
+        .p2 {
+            background: radial-gradient(circle at 35% 35%, #fca5a5, #dc2626);
+            border-radius: 50%;
+            box-shadow: 0 0 18px rgba(239,68,68,0.6), inset 0 -3px 6px rgba(0,0,0,0.3);
+            z-index: 10;
+            transition: 0.1s linear;
+        }
+        .gate1 {
+            border: 3px dashed #60a5fa;
+            border-radius: 8px;
+            animation: gatePulse 0.8s ease-in-out infinite alternate;
+            background: rgba(96,165,250,0.15);
+            box-shadow: 0 0 20px rgba(96,165,250,0.3), inset 0 0 20px rgba(96,165,250,0.05);
+            z-index: 5;
+        }
+        .gate2 {
+            border: 3px dashed #f87171;
+            border-radius: 8px;
+            animation: gatePulse 0.8s ease-in-out infinite alternate;
+            background: rgba(248,113,113,0.15);
+            box-shadow: 0 0 20px rgba(248,113,113,0.3), inset 0 0 20px rgba(248,113,113,0.05);
+            z-index: 5;
+        }
+        .gate-label {
+            position: absolute;
+            font-size: 1rem; font-weight: bold;
+            text-align: center;
+            pointer-events: none;
+            z-index: 6;
+            display: flex; align-items: center; justify-content: center;
+            text-shadow: 0 0 12px rgba(255,255,255,0.3);
+        }
+
+        @keyframes gatePulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+
+        /* ===== 巡逻兵（红色） ===== */
+        .enemy {
+            position: absolute;
+            background: radial-gradient(circle at 35% 30%, #ef4444, #7f1d1d);
+            border-radius: 50%;
+            box-shadow: 0 0 24px rgba(239,68,68,0.9), inset 0 -3px 6px rgba(0,0,0,0.4);
+            z-index: 10;
+            transition: 0.25s linear;
+            animation: enemyGlow 0.6s ease-in-out infinite alternate;
+        }
+        .enemy::before, .enemy::after {
+            content: '';
+            position: absolute;
+            width: 5px; height: 5px;
+            background: #fef2f2;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255,255,255,0.6);
+            top: 30%;
+        }
+        .enemy::before { left: 22%; }
+        .enemy::after { right: 22%; }
+        .enemy .pupil {
+            position: absolute;
+            width: 2.5px; height: 2.5px;
+            background: #1a1a2e;
+            border-radius: 50%;
+            top: 33%;
+        }
+
+        @keyframes enemyGlow {
+            0% { box-shadow: 0 0 18px rgba(239,68,68,0.6), inset 0 -3px 6px rgba(0,0,0,0.4); }
+            100% { box-shadow: 0 0 32px rgba(239,68,68,1), inset 0 -3px 6px rgba(0,0,0,0.4); }
+        }
+
+        /* ===== 巡逻兵 2（绿色，仅困难模式） ===== */
+        .enemy2 {
+            position: absolute;
+            background: radial-gradient(circle at 35% 30%, #4ade80, #14532d);
+            border-radius: 50%;
+            box-shadow: 0 0 24px rgba(74,222,128,0.9), inset 0 -3px 6px rgba(0,0,0,0.4);
+            z-index: 10;
+            transition: 0.3s linear;
+            animation: enemy2Glow 0.8s ease-in-out infinite alternate;
+        }
+        .enemy2::before, .enemy2::after {
+            content: '';
+            position: absolute;
+            width: 4px; height: 4px;
+            background: #dcfce7;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255,255,255,0.4);
+            top: 30%;
+        }
+        .enemy2::before { left: 20%; }
+        .enemy2::after { right: 20%; }
+        .enemy2 .pupil {
+            position: absolute;
+            width: 2.5px; height: 2.5px;
+            background: #052e16;
+            border-radius: 50%;
+            top: 33%;
+        }
+
+        @keyframes enemy2Glow {
+            0% { box-shadow: 0 0 18px rgba(74,222,128,0.5), inset 0 -3px 6px rgba(0,0,0,0.4); }
+            100% { box-shadow: 0 0 32px rgba(74,222,128,1), inset 0 -3px 6px rgba(0,0,0,0.4); }
+        }
+
+        .item {
+            position: absolute;
+            background: transparent;
+            z-index: 8;
+            pointer-events: none;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .item-inner {
+            width: 55%;
+            height: 55%;
+            position: relative;
+            background: linear-gradient(135deg, #c084fc, #7c3aed, #5b21b6);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            box-shadow: 0 0 16px rgba(139,92,246,0.9), 0 0 40px rgba(139,92,246,0.2);
+            animation: crystalGlow 1s ease-in-out infinite alternate;
+        }
+        .item-inner::before {
+            content: '';
+            position: absolute;
+            top: 15%; left: 20%;
+            width: 35%; height: 20%;
+            background: rgba(255,255,255,0.3);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            transform: rotate(15deg);
+        }
+        .item-inner::after {
+            content: '';
+            position: absolute;
+            bottom: 15%; right: 15%;
+            width: 8px; height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+        }
+        .item-inner.pause {
+            background: linear-gradient(135deg, #fbbf24, #d97706, #92400e);
+            box-shadow: 0 0 16px rgba(251,191,36,0.9), 0 0 40px rgba(251,191,36,0.2);
+            animation: crystalGlow 1s ease-in-out infinite alternate;
+        }
+        .enemy.frozen, .enemy2.frozen {
+            box-shadow: 0 0 30px rgba(147,197,253,1), 0 0 60px rgba(147,197,253,0.4) !important;
+            transition: 0.05s linear;
+            animation: none;
+        }
+        @keyframes crystalGlow {
+            0% { transform: scale(0.9) rotate(-5deg); box-shadow: 0 0 12px rgba(139,92,246,0.6); }
+            100% { transform: scale(1.1) rotate(5deg); box-shadow: 0 0 30px rgba(139,92,246,1), 0 0 60px rgba(139,92,246,0.3); }
+        }
+        .has-item {
+            box-shadow: 0 0 24px rgba(139,92,246,0.8), 0 0 48px rgba(139,92,246,0.3) !important;
+        }
+        .p1.has-item { box-shadow: 0 0 24px rgba(139,92,246,0.8), 0 0 48px rgba(139,92,246,0.4), 0 0 8px rgba(96,165,250,0.6) !important; }
+        .p2.has-item { box-shadow: 0 0 24px rgba(139,92,246,0.8), 0 0 48px rgba(139,92,246,0.4), 0 0 8px rgba(248,113,113,0.6) !important; }
+
+        .dir-popup {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #c084fc;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            border: 1px solid rgba(6,182,212,0.4);
+            box-shadow: 0 0 16px rgba(6,182,212,0.3);
+            animation: popFade 0.6s ease-out forwards;
+            z-index: 20;
+        }
+        @keyframes popFade {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+        }
+
+        .controls {
+            margin-top: 14px;
+            display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;
+            padding: 10px 24px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .controls span { color: #94a3b8; font-size: 0.82rem; }
+        .controls kbd {
+            background: #1e293b; padding: 1px 7px; border-radius: 4px;
+            font-size: 0.8rem; color: #e2e8f0; border: 1px solid #475569;
+        }
+        .controls .p1-color { color: #60a5fa; font-weight: bold; }
+        .controls .p2-color { color: #f87171; font-weight: bold; }
+        .controls .enemy-color { color: #ef4444; font-weight: bold; }
+        .controls .enemy2-color { color: #4ade80; font-weight: bold; }
+
+        .overlay {
+            position: absolute; inset: 0;
+            background: rgba(2, 6, 23, 0.92); backdrop-filter: blur(6px);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; border-radius: 10px;
+        }
+        .overlay h1 { font-size: 2.2rem; margin-bottom: 8px; }
+        .overlay p { color: #94a3b8; margin-bottom: 20px; }
+        .overlay .btn-primary { font-size: 1.1rem; padding: 12px 30px; }
+
+        /* 难度选择 - 匹配导航栏风格 */
+        #difficulty-overlay {
+            position: absolute; inset: 0;
+            background: rgba(2, 6, 23, 0.88);
+            backdrop-filter: blur(8px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 200; border-radius: 10px;
+        }
+        .diff-card {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 28px 28px 24px;
+            width: min(85%, 300px);
+            text-align: center;
+        }
+        .diff-card h1 {
+            margin: 0 0 2px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #f87171);
+            -webkit-background-clip: text; color: transparent;
+        }
+        .diff-card .sub {
+            font-size: 0.82rem;
+            color: #64748b;
+            margin: 0 0 18px;
+        }
+        .diff-buttons {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .diff-btn {
+            display: flex; align-items: center;
+            padding: 12px 16px;
+            font-size: 0.9rem; font-weight: 600;
+            background: rgba(255,255,255,0.03);
+            color: #f8fafc;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .diff-btn:hover {
+            transform: translateY(-1px);
+        }
+        .diff-btn.easy {
+            border-color: rgba(34, 197, 94, 0.15);
+        }
+        .diff-btn.easy:hover {
+            border-color: #22c55e;
+            background: rgba(34,197,94,0.06);
+            box-shadow: 0 0 20px rgba(34,197,94,0.08);
+        }
+        .diff-btn.hard {
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+        .diff-btn.hard:hover {
+            border-color: #ef4444;
+            background: rgba(239,68,68,0.06);
+            box-shadow: 0 0 20px rgba(239,68,68,0.08);
+        }
+        .diff-btn .tag {
+            display: inline-block;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            letter-spacing: 0.3px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        .diff-btn.easy .tag {
+            background: rgba(34,197,94,0.12);
+            color: #4ade80;
+            border: 1px solid rgba(34,197,94,0.15);
+        }
+        .diff-btn.hard .tag {
+            background: rgba(239,68,68,0.12);
+            color: #f87171;
+            border: 1px solid rgba(239,68,68,0.15);
+        }
+        .diff-btn .label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        .diff-btn .note {
+            display: block;
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: normal;
+            margin-top: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <button class="btn-back" onclick="location.href='../../index.html'">← 大厅</button>
+        <h1>双子星探险</h1>
+        <div class="nav-info">
+            <span id="diffLabel" style="color:#22c55e;">简单</span>
+            <span>关卡 <strong id="lvlNum">1</strong></span>
+            <span id="enemyLabel" style="color:#ef4444;">追踪者</span>
+            <span>道具 <strong id="itemCount">0</strong></span>
+            <button class="btn-primary" onclick="initLevel()">重来</button>
+        </div>
+    </div>
+
+    <div id="maze" style="position:relative;">
+        <div id="difficulty-overlay">
+            <div class="diff-card">
+                <h1>双子星探险</h1>
+                <p class="sub">双人合作穿越迷宫，各自抵达传送门过关</p>
+                <div class="diff-buttons">
+                    <button class="diff-btn easy" onclick="startGame('easy')">
+                        <span style="flex:1;">
+                            <span class="label">简单模式</span>
+                            <span class="note">1个追踪者，适合双人配合</span>
+                        </span>
+                        <span class="tag">1敌</span>
+                    </button>
+                    <button class="diff-btn hard" onclick="startGame('hard')">
+                        <span style="flex:1;">
+                            <span class="label">困难模式</span>
+                            <span class="note">2个追踪者，更具挑战性</span>
+                        </span>
+                        <span class="tag">2敌</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <span><span class="p1-color">● 蓝星</span> <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span>
+        <span><span class="p2-color">● 红星</span> <kbd>↑</kbd> <kbd>←</kbd> <kbd>↓</kbd> <kbd>→</kbd></span>
+        <span><span class="enemy-color">● 追踪者</span> 会追着你跑</span>
+        <span id="enemy2Ctrl" style="display:none;"><span class="enemy2-color">● 巡逻者</span> 也会追着你跑</span>
+        <span>各自走到对应传送门过关</span>
+        <span><kbd>R</kbd> 重来</span>
+        <span><kbd>E</kbd> 转向 <kbd>Space</kbd> 定身2秒</span>
+    </div>
+
+    <div class="overlay" id="winScreen">
+        <h1 id="winTitle" style="color:#fcd34d;">双子同心</h1>
+        <p id="winDesc">关卡完成，继续前进吧</p>
+        <button class="btn-primary" id="overlayBtn" onclick="nextLevel()">下一关</button>
+    </div>
+
+    <script>
+        // ========== 配置 ==========
+        const CELL = 54;
+        const PADDING = 1;
+
+        // ========== 状态 ==========
+        let grid = [];
+        let rows = 0, cols = 0;
+        let p1 = { x: 0, y: 0, el: null };
+        let p2 = { x: 0, y: 0, el: null };
+        let gate1 = { x: 0, y: 0 };
+        let gate2 = { x: 0, y: 0 };
+        let currentLevel = 1;
+        let isLocked = false;
+        let freezeSafe = false; // 定身期间巡逻兵无法逮捕
+        let difficulty = 'easy'; // 'easy' | 'hard'
+
+        // 巡逻兵1（红色，追踪型）
+        let enemy = { x: 0, y: 0, dx: 1, dy: 0, el: null, timer: null, pupilEls: [] };
+        // 巡逻兵2（绿色，仅困难模式）
+        let enemy2 = { x: 0, y: 0, dx: 1, dy: 0, el: null, timer: null, active: false };
+
+        // 道具（共享池，谁捡都一样，没有数量限制）
+        let items = [];
+        let heldItems = [];
+
+        const mazeEl = document.getElementById('maze');
+
+        // ========== 迷宫生成 (Recursive Backtracking) ==========
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function generateMaze(rCount, cCount) {
+            const g = Array(rCount).fill(null).map(() => Array(cCount).fill(1));
+            function carve(r, c) {
+                g[r][c] = 0;
+                const dirs = shuffle([[0, 2], [0, -2], [2, 0], [-2, 0]]);
+                for (const [dr, dc] of dirs) {
+                    const nr = r + dr, nc = c + dc;
+                    if (nr > 0 && nr < rCount - 1 && nc > 0 && nc < cCount - 1 && g[nr][nc] === 1) {
+                        g[r + dr / 2][c + dc / 2] = 0;
+                        carve(nr, nc);
+                    }
+                }
+            }
+            carve(1, 1);
+            return g;
+        }
+
+        // ========== 可行走格子 ==========
+
+        function getWalkableCells() {
+            const cells = [];
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (grid[r][c] === 0) cells.push({ r, c });
+                }
+            }
+            return cells;
+        }
+
+        // ========== BFS ==========
+
+        function hasPath(fromR, fromC, toR, toC) {
+            if (fromR === toR && fromC === toC) return true;
+            const visited = new Set();
+            const queue = [{ r: fromR, c: fromC }];
+            visited.add(`${fromR},${fromC}`);
+            while (queue.length > 0) {
+                const { r, c } = queue.shift();
+                for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+                    const nr = r + dr, nc = c + dc;
+                    const key = `${nr},${nc}`;
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(key) && grid[nr][nc] === 0) {
+                        if (nr === toR && nc === toC) return true;
+                        visited.add(key);
+                        queue.push({ r: nr, c: nc });
+                    }
+                }
+            }
+            return false;
+        }
+
+        function manhattan(x1, y1, x2, y2) {
+            return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+        }
+
+        // ========== 打通环路（无缓冲区域） ==========
+
+        function addBufferZones() {
+            let removed = 0;
+            const target = Math.floor((rows * cols) / 45);
+            const candidates = [];
+            for (let r = 2; r < rows - 2; r++) {
+                for (let c = 2; c < cols - 2; c++) {
+                    if (grid[r][c] === 1) {
+                        const hAdj = (grid[r][c-1] === 0 && grid[r][c+1] === 0) ? 1 : 0;
+                        const vAdj = (grid[r-1][c] === 0 && grid[r+1][c] === 0) ? 1 : 0;
+                        if (hAdj + vAdj > 0) candidates.push({ r, c });
+                    }
+                }
+            }
+            shuffle(candidates);
+            for (const { r, c } of candidates) {
+                if (removed >= target) break;
+                grid[r][c] = 0;
+                removed++;
+            }
+        }
+
+        // ========== 寻找巡逻兵起点 ==========
+
+        function findEnemyStart(avoidPositions, minDist) {
+            minDist = minDist || 3;
+            const forbidden = new Set([
+                `${p1.y},${p1.x}`, `${p2.y},${p2.x}`,
+                `${gate1.y},${gate1.x}`, `${gate2.y},${gate2.x}`
+            ]);
+            avoidPositions.forEach(p => forbidden.add(`${p.y},${p.x}`));
+
+            const candidates = getWalkableCells().filter(c => {
+                if (forbidden.has(`${c.r},${c.c}`)) return false;
+                if (manhattan(c.c, c.r, p1.x, p1.y) < minDist) return false;
+                if (manhattan(c.c, c.r, p2.x, p2.y) < minDist) return false;
+                for (const [dr, dc] of [[0,1],[0,-1],[1,0],[-1,0]]) {
+                    const nr = c.r + dr, nc = c.c + dc;
+                    if (nr > 0 && nr < rows - 1 && nc > 0 && nc < cols - 1 && grid[nr][nc] === 0) return true;
+                }
+                return false;
+            });
+            if (candidates.length === 0) return null;
+            return candidates[Math.floor(Math.random() * candidates.length)];
+        }
+
+        // ========== 生成道具 ==========
+
+        function spawnItems() {
+            items = [];
+            const forbidden = new Set([
+                `${p1.y},${p1.x}`, `${p2.y},${p2.x}`,
+                `${gate1.y},${gate1.x}`, `${gate2.y},${gate2.x}`,
+                `${enemy.y},${enemy.x}`
+            ]);
+            if (enemy2.active) forbidden.add(`${enemy2.y},${enemy2.x}`);
+            const candidates = getWalkableCells().filter(c => !forbidden.has(`${c.r},${c.c}`));
+            shuffle(candidates);
+
+            if (candidates.length > 0) {
+                const { r, c } = candidates[0];
+                const d = document.createElement('div');
+                d.className = 'item';
+                d.style.left = (c * CELL + PADDING) + 'px';
+                d.style.top = (r * CELL + PADDING) + 'px';
+                d.style.width = (CELL - PADDING * 2) + 'px';
+                d.style.height = (CELL - PADDING * 2) + 'px';
+                const inner = document.createElement('div');
+                inner.className = 'item-inner';
+                d.appendChild(inner);
+                mazeEl.appendChild(d);
+                items.push({ x: c, y: r, el: d, type: 'turn' });
+            }
+            if (candidates.length > 1) {
+                const { r, c } = candidates[1];
+                const d = document.createElement('div');
+                d.className = 'item';
+                d.style.left = (c * CELL + PADDING) + 'px';
+                d.style.top = (r * CELL + PADDING) + 'px';
+                d.style.width = (CELL - PADDING * 2) + 'px';
+                d.style.height = (CELL - PADDING * 2) + 'px';
+                const inner = document.createElement('div');
+                inner.className = 'item-inner pause';
+                d.appendChild(inner);
+                mazeEl.appendChild(d);
+                items.push({ x: c, y: r, el: d, type: 'pause' });
+            }
+        }
+
+        function updateItemUI() {
+            const count = heldItems.length;
+            document.getElementById('itemCount').textContent = count;
+        }
+
+        // ========== 使用道具 ==========
+
+        function useItem(type) {
+            if (type === 'turn') {
+                const targets = enemy2.active ? [enemy, enemy2] : [enemy];
+                targets.forEach(e => {
+                    if (!e.el) return;
+                    const opts = shuffle(getWalkableDirs(e.x, e.y));
+                    if (opts.length > 0) {
+                        [e.dx, e.dy] = opts[0];
+                        e.x += e.dx;
+                        e.y += e.dy;
+                        e.el.style.left = (e.x * CELL + PADDING) + 'px';
+                        e.el.style.top = (e.y * CELL + PADDING) + 'px';
+                        if (e.pupilEls && e.pupilEls.length > 0) {
+                            e.pupilEls[0].style.left = e.dx > 0 ? '32%' : (e.dx < 0 ? '24%' : '28%');
+                        }
+                        const popup = document.createElement('div');
+                        popup.className = 'dir-popup';
+                        popup.textContent = '转向';
+                        e.el.appendChild(popup);
+                        setTimeout(() => popup.remove(), 600);
+                    }
+                });
+                checkEnemyCollision();
+            } else if (type === 'pause') {
+                freezeSafe = true;
+                const targets = enemy2.active ? [enemy, enemy2] : [enemy];
+                targets.forEach(e => {
+                    if (!e.el) return;
+                    if (e.timer) {
+                        clearInterval(e.timer);
+                        e.timer = null;
+                    }
+                    e.el.classList.add('frozen');
+                    const popup = document.createElement('div');
+                    popup.className = 'dir-popup';
+                    popup.textContent = '定身';
+                    popup.style.color = '#93c5fd';
+                    popup.style.borderColor = 'rgba(147,197,253,0.4)';
+                    e.el.appendChild(popup);
+                });
+                setTimeout(() => {
+                    freezeSafe = false;
+                    targets.forEach(e => {
+                        if (e.el) e.el.classList.remove('frozen');
+                        if (!isLocked && !e.timer && e.active !== false) {
+                            e.timer = setInterval(e === enemy ? moveEnemy : moveEnemy2, 550);
+                        }
+                    });
+                }, 500);
+            }
+        }
+
+        // ========== 生成合法关卡 ==========
+
+        function generateLevel() {
+            const sizeOptions = [
+                [9, 9], [9, 11], [11, 9], [11, 11],
+                [11, 13], [13, 11], [13, 13]
+            ];
+            const [h, w] = sizeOptions[Math.floor(Math.random() * sizeOptions.length)];
+            rows = h; cols = w;
+
+            let attempts = 0;
+            while (attempts < 100) {
+                grid = generateMaze(rows, cols);
+                if (difficulty === 'hard') addBufferZones();
+                const walkable = getWalkableCells();
+                if (walkable.length < 12) { attempts++; continue; }
+
+                const shuffled = shuffle([...walkable]);
+                const p1Pos = shuffled[0], p2Pos = shuffled[1];
+                const g1Pos = shuffled[2], g2Pos = shuffled[3];
+
+                if (hasPath(p1Pos.r, p1Pos.c, g1Pos.r, g1Pos.c) &&
+                    hasPath(p2Pos.r, p2Pos.c, g2Pos.r, g2Pos.c)) {
+                    p1.x = p1Pos.c; p1.y = p1Pos.r;
+                    p2.x = p2Pos.c; p2.y = p2Pos.r;
+                    gate1.x = g1Pos.c; gate1.y = g1Pos.r;
+                    gate2.x = g2Pos.c; gate2.y = g2Pos.r;
+
+                    // 巡逻兵1
+                    const start1 = findEnemyStart([], 4);
+                    if (!start1) { attempts++; continue; }
+                    enemy.x = start1.c; enemy.y = start1.r;
+                    const dirs1 = [[1,0],[-1,0],[0,1],[0,-1]];
+                    const valid1 = shuffle(dirs1).find(([dx, dy]) => {
+                        const nx = start1.c + dx, ny = start1.r + dy;
+                        return ny > 0 && ny < rows - 1 && nx > 0 && nx < cols - 1 && grid[ny][nx] === 0;
+                    });
+                    enemy.dx = valid1 ? valid1[0] : 1;
+                    enemy.dy = valid1 ? valid1[1] : 0;
+
+                    // 困难模式：巡逻兵2
+                    if (difficulty === 'hard') {
+                        const start2 = findEnemyStart([{x: enemy.x, y: enemy.y}], 3);
+                        if (!start2) { attempts++; continue; }
+                        enemy2.x = start2.c; enemy2.y = start2.r;
+                        const valid2 = shuffle(dirs1).find(([dx, dy]) => {
+                            const nx = start2.c + dx, ny = start2.r + dy;
+                            return ny > 0 && ny < rows - 1 && nx > 0 && nx < cols - 1 && grid[ny][nx] === 0;
+                        });
+                        enemy2.dx = valid2 ? valid2[0] : 1;
+                        enemy2.dy = valid2 ? valid2[1] : 0;
+                        enemy2.active = true;
+                    } else {
+                        enemy2.active = false;
+                    }
+
+                    return true;
+                }
+                attempts++;
+            }
+            return generateLevel();
+        }
+
+        // ========== 渲染 ==========
+
+        function initLevel() {
+            isLocked = false;
+
+            if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
+            if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+            enemy2.active = false;
+
+            document.getElementById('winScreen').style.display = 'none';
+            mazeEl.innerHTML = '';
+
+            // 重新显示难度选择界面（如果当前没有难度）
+            if (!difficulty) return;
+
+            generateLevel();
+
+            const totalW = cols * CELL;
+            const totalH = rows * CELL;
+            mazeEl.style.width = totalW + 'px';
+            mazeEl.style.height = totalH + 'px';
+
+            document.getElementById('lvlNum').textContent = currentLevel;
+
+            // 画格子
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    addDiv(c, r, grid[r][c] === 1 ? 'cell wall' : 'cell path');
+                }
+            }
+
+            // 画传送门
+            addDiv(gate1.x, gate1.y, 'cell gate1');
+            addGateLabel(gate1.x, gate1.y, 'B');
+            addDiv(gate2.x, gate2.y, 'cell gate2');
+            addGateLabel(gate2.x, gate2.y, 'R');
+
+            // 画巡逻兵
+            spawnEnemy();
+            if (difficulty === 'hard') spawnEnemy2();
+
+            // 生成道具
+            heldItems = [];
+            spawnItems();
+            updateItemUI();
+
+            // 画玩家
+            p1.el = addDiv(p1.x, p1.y, 'cell p1');
+            p2.el = addDiv(p2.x, p2.y, 'cell p2');
+
+            // 1.5 秒缓冲期
+            setTimeout(() => {
+                if (!isLocked) {
+                    enemy.timer = setInterval(moveEnemy, 550);
+                    if (enemy2.active) {
+                        enemy2.timer = setInterval(moveEnemy2, 550);
+                    }
+                }
+            }, 1500);
+        }
+
+        function spawnEnemy() {
+            const d = document.createElement('div');
+            d.className = 'enemy';
+            d.style.left = (enemy.x * CELL + PADDING) + 'px';
+            d.style.top = (enemy.y * CELL + PADDING) + 'px';
+            d.style.width = (CELL - PADDING * 2) + 'px';
+            d.style.height = (CELL - PADDING * 2) + 'px';
+            mazeEl.appendChild(d);
+            enemy.el = d;
+
+            const p = document.createElement('div');
+            p.className = 'pupil';
+            p.style.left = '28%';
+            enemy.pupilEls = [p];
+            d.appendChild(p);
+        }
+
+        function spawnEnemy2() {
+            const d = document.createElement('div');
+            d.className = 'enemy2';
+            d.style.left = (enemy2.x * CELL + PADDING) + 'px';
+            d.style.top = (enemy2.y * CELL + PADDING) + 'px';
+            d.style.width = (CELL - PADDING * 2) + 'px';
+            d.style.height = (CELL - PADDING * 2) + 'px';
+            mazeEl.appendChild(d);
+            enemy2.el = d;
+
+            const p = document.createElement('div');
+            p.className = 'pupil';
+            p.style.left = '28%';
+            enemy2.pupilEls = [p];
+            d.appendChild(p);
+        }
+
+        function canWalk(x, y) {
+            return y > 0 && y < rows - 1 && x > 0 && x < cols - 1 && grid[y][x] === 0;
+        }
+
+        function getWalkableDirs(x, y) {
+            return [[1,0],[-1,0],[0,1],[0,-1]].filter(([dx, dy]) => canWalk(x + dx, y + dy));
+        }
+
+        // ========== 巡逻兵移动（两者相同） ==========
+
+        function moveEnemy() {
+            if (isLocked || !enemy.el) return;
+            doMove(enemy, moveEnemy);
+            checkEnemyCollision();
+        }
+
+        function moveEnemy2() {
+            if (isLocked || !enemy2.el || !enemy2.active) return;
+            doMove(enemy2, moveEnemy2);
+            checkEnemyCollision();
+        }
+
+        function doMove(e, selfFn) {
+            const nx = e.x + e.dx;
+            const ny = e.y + e.dy;
+            const blocked = !canWalk(nx, ny);
+            let moved = false;
+
+            if (blocked) {
+                const opts = shuffle(getWalkableDirs(e.x, e.y));
+                if (opts.length > 0) {
+                    [e.dx, e.dy] = opts[0];
+                    e.x += e.dx; e.y += e.dy;
+                    moved = true;
+                }
+            } else {
+                // 30% 追踪倾向
+                const distP1 = manhattan(nx, ny, p1.x, p1.y);
+                const distP2 = manhattan(nx, ny, p2.x, p2.y);
+                const chasePlayer = distP1 < distP2 ? p1 : p2;
+
+                const chaseDirs = getWalkableDirs(e.x, e.y).filter(([dx, dy]) => {
+                    const tx = e.x + dx, ty = e.y + dy;
+                    return manhattan(tx, ty, chasePlayer.x, chasePlayer.y) < manhattan(e.x, e.y, chasePlayer.x, chasePlayer.y);
+                });
+
+                if (chaseDirs.length > 0 && Math.random() < 0.3) {
+                    [e.dx, e.dy] = shuffle(chaseDirs)[0];
+                    e.x += e.dx; e.y += e.dy;
+                    moved = true;
+                } else {
+                    const turnDirs = e.dx !== 0
+                        ? getWalkableDirs(e.x, e.y).filter(([dx]) => dx === 0)
+                        : getWalkableDirs(e.x, e.y).filter(([, dy]) => dy === 0);
+                    const hasCross = turnDirs.length > 0;
+                    const p = hasCross ? 0.5 : 0.15;
+
+                    if (Math.random() < p) {
+                        const opts = shuffle(getWalkableDirs(e.x, e.y));
+                        if (opts.length > 0) {
+                            [e.dx, e.dy] = opts[0];
+                            e.x += e.dx; e.y += e.dy;
+                            moved = true;
+                        }
+                    } else {
+                        e.x = nx; e.y = ny;
+                        moved = true;
+                    }
+                }
+            }
+            if (!moved) return;
+
+            e.el.style.left = (e.x * CELL + PADDING) + 'px';
+            e.el.style.top = (e.y * CELL + PADDING) + 'px';
+
+            if (e.pupilEls && e.pupilEls.length > 0) {
+                e.pupilEls[0].style.left = e.dx > 0 ? '32%' : (e.dx < 0 ? '24%' : '28%');
+            }
+        }
+
+        // ========== 碰撞检测 ==========
+
+        function checkEnemyCollision() {
+            if (isLocked || freezeSafe) return;
+            if ((p1.x === enemy.x && p1.y === enemy.y) ||
+                (p2.x === enemy.x && p2.y === enemy.y) ||
+                (enemy2.active && (p1.x === enemy2.x && p1.y === enemy2.y)) ||
+                (enemy2.active && (p2.x === enemy2.x && p2.y === enemy2.y))) {
+                gameOver();
+            }
+        }
+
+        function gameOver() {
+            isLocked = true;
+            if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
+            if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+
+            let blink = 0;
+            const bi = setInterval(() => {
+                if (!p1.el || !p2.el) { clearInterval(bi); return; }
+                p1.el.style.opacity = blink % 2 ? '0.2' : '1';
+                p2.el.style.opacity = blink % 2 ? '0.2' : '1';
+                if (enemy.el) enemy.el.style.opacity = blink % 2 ? '1' : '0.3';
+                if (enemy2.el) enemy2.el.style.opacity = blink % 2 ? '1' : '0.3';
+                blink++;
+                if (blink > 7) {
+                    clearInterval(bi);
+                    const msg = difficulty === 'hard' ? '小心两个追踪者，双人协作避开' : '小心巡逻的敌人，双人协作避开';
+                    showOverlay('被巡逻兵抓住！', '#ef4444', msg, '重来', 'initLevel()');
+                }
+            }, 120);
+        }
+
+        function addDiv(x, y, cls) {
+            const d = document.createElement('div');
+            d.className = cls;
+            d.style.left = (x * CELL + PADDING) + 'px';
+            d.style.top = (y * CELL + PADDING) + 'px';
+            d.style.width = (CELL - PADDING * 2) + 'px';
+            d.style.height = (CELL - PADDING * 2) + 'px';
+            mazeEl.appendChild(d);
+            return d;
+        }
+
+        function addGateLabel(x, y, text) {
+            const d = document.createElement('div');
+            d.className = 'gate-label';
+            d.textContent = text;
+            d.style.left = (x * CELL) + 'px';
+            d.style.top = (y * CELL) + 'px';
+            d.style.width = CELL + 'px';
+            d.style.height = CELL + 'px';
+            mazeEl.appendChild(d);
+        }
+
+        function showOverlay(title, color, desc, btnText, btnAction) {
+            document.getElementById('winTitle').textContent = title;
+            document.getElementById('winTitle').style.color = color;
+            document.getElementById('winDesc').textContent = desc;
+            const btn = document.getElementById('overlayBtn');
+            btn.textContent = btnText;
+            btn.setAttribute('onclick', btnAction);
+            document.getElementById('winScreen').style.display = 'flex';
+        }
+
+        // ========== 难度选择 ==========
+
+        function startGame(diff) {
+            difficulty = diff;
+            document.getElementById('difficulty-overlay').style.display = 'none';
+
+            // 更新导航栏
+            if (diff === 'hard') {
+                document.getElementById('diffLabel').textContent = '困难';
+                document.getElementById('diffLabel').style.color = '#ef4444';
+                document.getElementById('enemyLabel').innerHTML = '追踪者 <span style="color:#4ade80;">+ 巡逻者</span>';
+                document.getElementById('enemy2Ctrl').style.display = 'inline';
+            } else {
+                document.getElementById('diffLabel').textContent = '简单';
+                document.getElementById('diffLabel').style.color = '#22c55e';
+                document.getElementById('enemyLabel').innerHTML = '追踪者';
+                document.getElementById('enemy2Ctrl').style.display = 'none';
+            }
+
+            currentLevel = 1;
+            initLevel();
+        }
+
+        // ========== 键盘控制 ==========
+
+        window.addEventListener('keydown', e => {
+            if (isLocked) return;
+
+            if (e.key === 'r' || e.key === 'R') {
+                initLevel();
+                return;
+            }
+
+            if (e.key === ' ') {
+                e.preventDefault();
+                const idx = heldItems.indexOf('pause');
+                if (idx !== -1) {
+                    heldItems.splice(idx, 1);
+                    useItem('pause');
+                    updateItemUI();
+                }
+                return;
+            }
+
+            if (e.key === 'e' || e.key === 'E') {
+                const idx = heldItems.indexOf('turn');
+                if (idx !== -1) {
+                    heldItems.splice(idx, 1);
+                    useItem('turn');
+                    updateItemUI();
+                }
+                return;
+            }
+
+            const d = grid;
+            let moved = false;
+
+            const k = e.key.toLowerCase();
+            if (k === 'w' && p1.y > 0 && d[p1.y - 1][p1.x] === 0) { p1.y--; moved = true; }
+            if (k === 's' && p1.y < rows - 1 && d[p1.y + 1][p1.x] === 0) { p1.y++; moved = true; }
+            if (k === 'a' && p1.x > 0 && d[p1.y][p1.x - 1] === 0) { p1.x--; moved = true; }
+            if (k === 'd' && p1.x < cols - 1 && d[p1.y][p1.x + 1] === 0) { p1.x++; moved = true; }
+
+            if (e.key === 'ArrowUp' && p2.y > 0 && d[p2.y - 1][p2.x] === 0) { p2.y--; moved = true; }
+            if (e.key === 'ArrowDown' && p2.y < rows - 1 && d[p2.y + 1][p2.x] === 0) { p2.y++; moved = true; }
+            if (e.key === 'ArrowLeft' && p2.x > 0 && d[p2.y][p2.x - 1] === 0) { p2.x--; moved = true; }
+            if (e.key === 'ArrowRight' && p2.x < cols - 1 && d[p2.y][p2.x + 1] === 0) { p2.x++; moved = true; }
+
+            if (!moved) return;
+
+            p1.el.style.left = (p1.x * CELL + PADDING) + 'px';
+            p1.el.style.top = (p1.y * CELL + PADDING) + 'px';
+            p2.el.style.left = (p2.x * CELL + PADDING) + 'px';
+            p2.el.style.top = (p2.y * CELL + PADDING) + 'px';
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                const it = items[i];
+                if ((p1.x === it.x && p1.y === it.y) || (p2.x === it.x && p2.y === it.y)) {
+                    heldItems.push(it.type);
+                    it.el.remove();
+                    items.splice(i, 1);
+                    updateItemUI();
+                }
+            }
+
+            checkEnemyCollision();
+            if (isLocked) return;
+
+            if (p1.x === gate1.x && p1.y === gate1.y &&
+                p2.x === gate2.x && p2.y === gate2.y) {
+                isLocked = true;
+                if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
+                if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+                setTimeout(() => {
+                    showOverlay('✨ 双子同心！', '#fcd34d',
+                        `关卡 ${currentLevel} 完成！`,
+                        '下一关', 'nextLevel()');
+                }, 300);
+            }
+        });
+
+        function nextLevel() {
+            currentLevel++;
+            const prev = parseInt(localStorage.getItem('coopHighScore') || '0');
+            if (currentLevel > prev) {
+                if (typeof window._syncScore === 'function') _syncScore('coop', currentLevel);
+            }
+            initLevel();
+        }
+
+        // ========== 启动（显示难度选择） ==========
+        // 默认显示难度覆盖层，不会自动开始
+    </script>
+<script>
+try {
+    const _user = localStorage.getItem('arcadeUser');
+    if (_user) {
+        window._syncScore = function(game, score) {
+            try {
+                const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
+                if (!all[_user]) all[_user] = {};
+                if (!all[_user][game] || score > all[_user][game]) {
+                    all[_user][game] = score;
+                    localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                }
+            } catch(e){}
+        };
+    }
+} catch(e){}
+</script>
+</body>
+</html>
