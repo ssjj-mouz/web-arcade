@@ -1288,6 +1288,7 @@
             let moved = false;
 
             if (!isMultiplayer || isHost) {
+                if (!e || !e.key) return;
                 const k = e.key.toLowerCase();
                 if (k === 'w' && p1.y > 0 && d[p1.y - 1][p1.x] === 0) { p1.y--; moved = true; }
                 if (k === 's' && p1.y < rows - 1 && d[p1.y + 1][p1.x] === 0) { p1.y++; moved = true; }

@@ -33,10 +33,11 @@ exports.main = async (event) => {
 async function createRoom({ hostname, difficulty }) {
   const id = genCode();
   await db.collection('rooms').doc(id).set({
-    data: { hostname, difficulty, state: 'waiting', guestname: '' }
+    hostname, difficulty, state: 'waiting', guestname: '',
+    createdAt: Date.now()
   });
   await db.collection('game_sessions').doc(id).set({
-    data: { state: {}, p2Input: null }
+    state: {}, p2Input: null
   });
   return { id };
 }
@@ -47,7 +48,7 @@ async function joinRoom({ roomId, guestname }) {
     return { error: '房间不存在或已满' };
   }
   await db.collection('rooms').doc(roomId).update({
-    data: { guestname, state: 'ready' }
+    guestname, state: 'ready'
   });
   return { success: true };
 }
@@ -55,7 +56,6 @@ async function joinRoom({ roomId, guestname }) {
 async function listRooms() {
   const { data } = await db.collection('rooms')
     .where({ state: 'waiting' })
-    .orderBy('createdAt', 'desc')
     .limit(20)
     .get();
   return { rooms: data || [] };
@@ -78,7 +78,7 @@ async function pollP2Input({ roomId }) {
   const input = data.p2Input;
   if (input) {
     await db.collection('game_sessions').doc(roomId).update({
-      data: { p2Input: null }
+      p2Input: null
     });
   }
   return { input: input || null };
@@ -86,14 +86,14 @@ async function pollP2Input({ roomId }) {
 
 async function writeState({ roomId, state }) {
   await db.collection('game_sessions').doc(roomId).update({
-    data: { state }
+    state
   });
   return { success: true };
 }
 
 async function writeP2Input({ roomId, input }) {
   await db.collection('game_sessions').doc(roomId).update({
-    data: { p2Input: input }
+    p2Input: input
   });
   return { success: true };
 }
