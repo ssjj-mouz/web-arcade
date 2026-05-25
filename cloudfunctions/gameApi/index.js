@@ -24,6 +24,14 @@ exports.main = async (event) => {
       case 'guest.input': return await writeGuestInput(params);
       case 'guest.useItem': return await writeGuestItem(params);
       case 'chat.send': return await writeChat(params);
+      case 'profile.save': return await saveProfile(params);
+      case 'profile.list': return await listProfiles();
+      case 'profile.delete': return await deleteProfile(params);
+      case 'comment.add': return await addComment(params);
+      case 'comment.list': return await listComments(params);
+      case 'comment.delete': return await deleteComment(params);
+      case 'stats.update': return await updateStats(params);
+      case 'stats.list': return await listStats();
       default: return { error: 'unknown action' };
     }
   } catch (e) {
@@ -106,4 +114,60 @@ async function writeChat({ roomId, field, sender, text, time }) {
     [field]: _.set({ sender, text, time })
   });
   return { success: true };
+}
+
+// ======================= 用户档案 =======================
+async function saveProfile({ username, scores, favorites, theme }) {
+  const doc = { scores: scores || {}, favorites: favorites || [], theme: theme || 'neon', updatedAt: Date.now() };
+  const { data } = await db.collection('user_data').doc(username).get();
+  if (data && data[0]) {
+    await db.collection('user_data').doc(username).update(doc);
+  } else {
+    await db.collection('user_data').doc(username).set({ ...doc, createdAt: Date.now() });
+  }
+  return { success: true };
+}
+
+async function listProfiles() {
+  const { data } = await db.collection('user_data').limit(200).get();
+  return { profiles: data || [] };
+}
+
+async function deleteProfile({ username }) {
+  await db.collection('user_data').doc(username).remove().catch(() => {});
+  return { success: true };
+}
+
+// ======================= 评论 =======================
+async function addComment({ gameKey, user, text }) {
+  const res = await db.collection('comments').add({ gameKey, user, text, time: Date.now() });
+  return { id: res.id };
+}
+
+async function listComments({ gameKey }) {
+  let query = db.collection('comments');
+  if (gameKey) query = query.where({ gameKey });
+  const { data } = await query.orderBy('time', 'desc').limit(200).get();
+  return { comments: data || [] };
+}
+
+async function deleteComment({ commentId }) {
+  await db.collection('comments').doc(commentId).remove().catch(() => {});
+  return { success: true };
+}
+
+// ======================= 游玩统计 =======================
+async function updateStats({ gameKey }) {
+  const { data } = await db.collection('play_counts').doc(gameKey).get();
+  if (data && data[0]) {
+    await db.collection('play_counts').doc(gameKey).update({ count: _.inc(1) });
+  } else {
+    await db.collection('play_counts').doc(gameKey).set({ count: 1 });
+  }
+  return { success: true };
+}
+
+async function listStats() {
+  const { data } = await db.collection('play_counts').get();
+  return { stats: data || [] };
 }

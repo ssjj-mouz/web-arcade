@@ -251,6 +251,13 @@ function getProfiles(){try{return JSON.parse(localStorage.getItem('arcadeProfile
 function getPlayCounts(){try{return JSON.parse(localStorage.getItem('arcadePlayCounts')||'{}')}catch(e){return{}}}
 function getFavorites(){try{return JSON.parse(localStorage.getItem('arcadeFavorites')||'[]')}catch(e){return[]}}
 
+// 异步从云端拉取数据
+if(typeof CloudSync !== 'undefined'){
+  CloudSync.loadAllProfiles().then(() => {
+    CloudSync.loadPlayCounts().then(() => render());
+  }).catch(() => {});
+}
+
 // === Render ===
 function render(){
   const main = document.getElementById('mainContent');
@@ -372,5 +379,7 @@ function render(){
 
 render();
 </script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/4.0.0/cloudbase.full.js"></script>
+<script src="shared/cloudSync.js"></script>
 </body>
 </html>

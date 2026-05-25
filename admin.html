@@ -494,16 +494,26 @@ function addComment(gameKey){
   const user = localStorage.getItem('arcadeUser') || '匿名';
   const comments = getComments();
   if(!comments[gameKey]) comments[gameKey] = [];
-  comments[gameKey].push({ user, text, time: Date.now() });
+  const entry = { user, text, time: Date.now() };
+  comments[gameKey].push(entry);
   saveComments(comments);
+  if(typeof CloudSync !== 'undefined') CloudSync.addComment(gameKey, user, text);
   input.value = '';
   renderGameStats();
 }
 
-function deleteComment(gameKey, index){
+function deleteComment(gameKey, indexOrId){
   const comments = getComments();
   if(comments[gameKey]){
-    comments[gameKey].splice(index, 1);
+    const item = comments[gameKey][indexOrId];
+    if(item && item._id && typeof CloudSync !== 'undefined'){
+      CloudSync.deleteComment(item._id, gameKey);
+    }
+    if(typeof indexOrId === 'number'){
+      comments[gameKey].splice(indexOrId, 1);
+    } else {
+      comments[gameKey] = comments[gameKey].filter(c => c._id !== indexOrId);
+    }
     saveComments(comments);
   }
   renderGameStats();
@@ -524,7 +534,8 @@ function renderComments(gameKey){
       html += '<div class="cmt-avatar">' + (c.user||'匿')[0] + '</div>';
       html += '<div class="cmt-body"><span class="cmt-user">' + c.user + '</span> <span class="cmt-time">' + timeStr + '</span>';
       html += '<div class="cmt-text">' + c.text + '</div></div>';
-      html += '<button class="cmt-del" title="删除" onclick="deleteComment(\''+gameKey+'\','+i+')">✕</button>';
+      const delArg = c._id ? ("'"+c._id+"'") : i;
+      html += '<button class="cmt-del" title="删除" onclick="deleteComment(\''+gameKey+'\','+delArg+')">✕</button>';
       html += '</div>';
     });
   }
@@ -687,6 +698,16 @@ document.getElementById('authInput').focus();
 
 // Initial render if already authed
 if(localStorage.getItem(AUTH_KEY) === '1') renderAll();
+
+// 异步从云端拉取数据后刷新
+function refreshFromCloud(){
+  if(typeof CloudSync === 'undefined') return;
+  Promise.all([CloudSync.loadAllProfiles(), CloudSync.loadPlayCounts(), CloudSync.loadComments()])
+    .then(() => renderAll()).catch(() => {});
+}
+refreshFromCloud();
 </script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/4.0.0/cloudbase.full.js"></script>
+<script src="shared/cloudSync.js"></script>
 </body>
 </html>

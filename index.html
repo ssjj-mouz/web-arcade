@@ -1743,6 +1743,10 @@
                 const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
                 all[name] = data;
                 localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                // 异步同步到云端
+                const favs = JSON.parse(localStorage.getItem('arcadeFavorites') || '[]');
+                const theme = localStorage.getItem('arcadeTheme') || 'neon';
+                if (typeof CloudSync !== 'undefined') CloudSync.saveProfile(name, data, favs, theme);
             } catch(e) {}
         }
 
@@ -2051,6 +2055,13 @@
 
             document.getElementById('themePanel').classList.remove('open');
             localStorage.setItem('arcadeTheme', name);
+            // 异步同步到云端
+            const user = localStorage.getItem('arcadeUser');
+            if (user && typeof CloudSync !== 'undefined') {
+              const profile = getUserProfile(user);
+              const favs = JSON.parse(localStorage.getItem('arcadeFavorites') || '[]');
+              CloudSync.saveProfile(user, profile, favs, name);
+            }
         }
 
         // 恢复上次的皮肤
@@ -2117,6 +2128,12 @@
                 if (card) favs.push(card.dataset.game);
             });
             localStorage.setItem('arcadeFavorites', JSON.stringify(favs));
+            const user = localStorage.getItem('arcadeUser');
+            if (user && typeof CloudSync !== 'undefined') {
+              const profile = getUserProfile(user);
+              const theme = localStorage.getItem('arcadeTheme') || 'neon';
+              CloudSync.saveProfile(user, profile, favs, theme);
+            }
         }
         function isFavorited(name) {
             return getFavorites().includes(name);
@@ -2134,6 +2151,7 @@
             const counts = getPlayCounts();
             counts[name] = (counts[name] || 0) + 1;
             localStorage.setItem('arcadePlayCounts', JSON.stringify(counts));
+            if (typeof CloudSync !== 'undefined') CloudSync.incrementPlayCount(name);
         }
 
         // 联合过滤（分类 + 搜索 + 收藏）
@@ -2931,5 +2949,7 @@
             })();
         })();
     </script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/4.0.0/cloudbase.full.js"></script>
+<script src="shared/cloudSync.js"></script>
 </body>
 </html>
