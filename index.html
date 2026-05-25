@@ -172,32 +172,34 @@
             pointer-events: none;
         }
 
-        /* ========== 组件入场动画 ========== */
+        /* ========== 组件入场动画 — 科技风透明渐变 ========== */
         .entrance-waiting { opacity: 0; }
 
         .entrance-done {
-            animation: fadeReveal 1.35s var(--entrance-delay, 0s) cubic-bezier(0.33, 1, 0.68, 1) forwards;
+            animation: techReveal 1.4s var(--entrance-delay, 0s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
-        @keyframes fadeReveal {
-            0%   { opacity: 0; }
-            100% { opacity: 1; }
+        @keyframes techReveal {
+            0%   { opacity: 0; filter: blur(12px); transform: translateY(8px); }
+            30%  { opacity: 0.25; filter: blur(6px); }
+            60%  { opacity: 0.65; filter: blur(2px); transform: translateY(2px); }
+            100% { opacity: 1;   filter: blur(0);  transform: translateY(0); }
         }
 
-        /* 每个组件自己的渐变光幕 — 从左到右扫过一次 */
-        .entrance-done::before {
-            content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 99;
-            animation: gradientWipe 1.35s var(--entrance-delay, 0s) ease-out forwards;
+        /* 大组件加扫描线 — 细白线从上扫到下 */
+        header.entrance-done::after,
+        .search-bar.entrance-done::after {
+            content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px; pointer-events: none; z-index: 99;
+            background: rgba(255,255,255,0.25);
+            box-shadow: 0 0 20px rgba(255,255,255,0.15), 0 0 50px rgba(255,255,255,0.04);
+            animation: scanLine 1.4s var(--entrance-delay, 0s) ease-out forwards;
             border-radius: inherit;
         }
-        @keyframes gradientWipe {
-            0%   { background: linear-gradient(105deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.35) 0%, rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.15) 3%, transparent 7%); }
-            30%  { background: linear-gradient(105deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3) 38%, rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.14) 44%, transparent 52%); }
-            65%  { background: linear-gradient(105deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08) 78%, transparent 90%); }
-            100% { background: transparent; }
+        @keyframes scanLine {
+            0%   { top: 0; opacity: 0; }
+            6%   { top: 0; opacity: 1; }
+            80%  { top: calc(100% - 2px); opacity: 0.5; }
+            100% { top: 100%; opacity: 0; }
         }
-
-        /* 小元素只要淡入，不需要光幕 */
-        .carousel-nav .nav-dot.entrance-done::before { display: none; }
 
         /* 滚动条 */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -2559,29 +2561,22 @@
 
             reveal('header', 0);
             reveal('.carousel-container', 0.1);
-            reveal('.section-title', 0.22);
-            reveal('.filter-bar', 0.34);
-            reveal('.search-bar', 0.44);
+            reveal('.section-title', 0.24);
+            reveal('.filter-bar', 0.38);
+            reveal('.search-bar', 0.5);
 
             document.querySelectorAll('.game-card').forEach((c, i) => {
-                reveal(c, 0.52 + i * 0.08);
+                reveal(c, 0.6 + i * 0.1);
             });
             document.querySelectorAll('.carousel-nav .nav-dot').forEach((d, i) => {
-                reveal(d, 0.7 + i * 0.05);
+                reveal(d, 0.8 + i * 0.06);
             });
 
-            reveal('.mini-runner', 0.75);
-
-            // 入场完成后清除 ::before 光幕
-            setTimeout(() => {
-                document.querySelectorAll('.entrance-done').forEach(el => {
-                    el.classList.remove('entrance-done');
-                });
-            }, 2400);
+            reveal('.mini-runner', 0.9);
         }
 
         initEntrance();
-        setTimeout(playEntrance, 300);
+        setTimeout(playEntrance, 250);
 
         // ========== 6. 实时互动 · 光速反应 ==========
         (() => {
