@@ -368,22 +368,20 @@
             padding: 28px 30px 70px;
         }
 
-        /* ========== 3D 全息轮播 (Win+Tab 风格) ========== */
+        /* ========== 3D 平行四边形层叠轮播 ========== */
         .carousel-container {
             position: relative;
             width: 100%;
-            height: 400px;
+            height: 430px;
             margin-bottom: 40px;
-            perspective: 1400px;
-            perspective-origin: 50% 50%;
+            perspective: 1500px;
+            perspective-origin: 50% 45%;
             transform-style: preserve-3d;
             border-radius: 28px;
             overflow: hidden;
             border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--card-border-alpha));
-            box-shadow:
-                0 24px 50px -15px rgba(0,0,0,0.7),
-                inset 0 1px 0 rgba(255,255,255,0.03);
-            background: #0a0a14;
+            box-shadow: 0 24px 50px -15px rgba(0,0,0,0.7);
+            background: #080812;
         }
         .carousel-container::after {
             content: '';
@@ -392,85 +390,124 @@
             border-radius: 28px;
             pointer-events: none;
             z-index: 20;
-            box-shadow: inset 0 0 80px rgba(0,0,0,0.4), inset 0 0 10px rgba(0,0,0,0.6);
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.7);
         }
 
-        /* ---- 3D 卡片基类 ---- */
+        /* ---- 入场动画（禁用过渡） ---- */
+        .carousel-entrance .carousel-slide,
+        .carousel-entrance .carousel-slide::before,
+        .carousel-entrance .carousel-slide::after { transition: none !important; }
+
+        /* ---- 卡片基类: 平行四边形 + 嵌套框架 ---- */
         .carousel-slide {
             position: absolute;
-            top: 30px; bottom: 50px; left: 12%; right: 12%;
-            border-radius: 22px;
+            top: 28px; bottom: 48px; left: 10%; right: 10%;
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 24px;
-            overflow: hidden;
+            padding: 28px 32px;
+            overflow: visible;
             backface-visibility: hidden;
             will-change: transform, opacity;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 20px 60px -20px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 25px 70px -25px rgba(0,0,0,0.7);
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* 3D 位置状态 */
-        .carousel-slide.pos-current {
-            transform: translateX(0) translateZ(0) rotateY(0deg) scale(1);
-            opacity: 1;
-            z-index: 10;
-            filter: brightness(1.05);
-            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .carousel-slide.pos-prev {
-            transform: translateX(-40%) translateZ(-160px) rotateY(22deg) scale(0.82);
-            opacity: 0.65;
-            z-index: 6;
-            filter: brightness(0.55);
-            pointer-events: none;
-            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .carousel-slide.pos-next {
-            transform: translateX(40%) translateZ(-160px) rotateY(-22deg) scale(0.82);
-            opacity: 0.65;
-            z-index: 6;
-            filter: brightness(0.55);
-            pointer-events: none;
-            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .carousel-slide.pos-far-prev {
-            transform: translateX(-70%) translateZ(-280px) rotateY(35deg) scale(0.6);
-            opacity: 0;
-            z-index: 2;
-            pointer-events: none;
-            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .carousel-slide.pos-far-next {
-            transform: translateX(70%) translateZ(-280px) rotateY(-35deg) scale(0.6);
-            opacity: 0;
-            z-index: 2;
-            pointer-events: none;
-            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .carousel-slide.pos-hidden {
-            transform: translateX(0) translateZ(-400px) rotateY(0deg) scale(0.4);
-            opacity: 0;
-            z-index: 1;
-            pointer-events: none;
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        /* ---- 光泽条 (卡片顶部扫光) ---- */
+        /* -- 嵌套框架第一层 (稍大, 平行四边形) -- */
         .carousel-slide::before {
             content: '';
             position: absolute;
-            top: -1px; left: 10%; right: 10%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-            z-index: 3;
+            inset: -12px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            z-index: -1;
+            pointer-events: none;
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+            transform: skewX(-4deg);
+        }
+        /* -- 嵌套框架第二层 (更大, 平行四边形) -- */
+        .carousel-slide::after {
+            content: '';
+            position: absolute;
+            inset: -26px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.015);
+            border: 1px solid rgba(255,255,255,0.03);
+            z-index: -2;
+            pointer-events: none;
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+            transform: skewX(-5deg);
+        }
+
+        /* ---- 3D 位置状态 (skewX 创建平行四边形) ---- */
+        .carousel-slide.pos-current {
+            transform: translateX(0) translateZ(0) rotateY(0deg) scale(1) skewX(-3deg);
+            opacity: 1;
+            z-index: 12;
+            filter: brightness(1.08);
         }
         .carousel-slide.pos-current::before {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-            left: 5%; right: 5%;
+            border-color: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 0 60px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.1);
+        }
+        .carousel-slide.pos-current::after {
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: 0 0 80px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.05);
+        }
+        .carousel-slide.pos-prev {
+            transform: translateX(-30%) translateZ(-180px) rotateY(18deg) scale(0.8) skewX(-3deg);
+            opacity: 0.7;
+            z-index: 8;
+            filter: brightness(0.5);
+            pointer-events: none;
+        }
+        .carousel-slide.pos-next {
+            transform: translateX(30%) translateZ(-180px) rotateY(-18deg) scale(0.8) skewX(-3deg);
+            opacity: 0.7;
+            z-index: 8;
+            filter: brightness(0.5);
+            pointer-events: none;
+        }
+        .carousel-slide.pos-far-prev {
+            transform: translateX(-55%) translateZ(-320px) rotateY(30deg) scale(0.58) skewX(-3deg);
+            opacity: 0.35;
+            z-index: 4;
+            pointer-events: none;
+            filter: brightness(0.35);
+        }
+        .carousel-slide.pos-far-next {
+            transform: translateX(55%) translateZ(-320px) rotateY(-30deg) scale(0.58) skewX(-3deg);
+            opacity: 0.35;
+            z-index: 4;
+            pointer-events: none;
+            filter: brightness(0.35);
+        }
+        .carousel-slide.pos-hidden {
+            transform: translateX(0) translateZ(-450px) rotateY(0deg) scale(0.35) skewX(-3deg);
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* 内容轻微反倾斜保持可读 */
+        .slide-icon, .slide-badge, .slide-title, .slide-desc, .slide-btn {
+            transform: skewX(3deg);
+        }
+
+        /* 当前卡片光扫 */
+        .carousel-slide.pos-current::before {
+            animation: framePulse 2.5s ease-in-out infinite;
+        }
+        @keyframes framePulse {
+            0%, 100% { border-color: rgba(255,255,255,0.18); }
+            50% { border-color: rgba(255,255,255,0.35); }
         }
 
         .slide-overlay {
@@ -478,10 +515,11 @@
             inset: 0;
             background: rgba(0,0,0,0.2);
             z-index: 1;
-            border-radius: 22px;
+            border-radius: 20px;
+            pointer-events: none;
         }
         [data-theme="light"] .slide-overlay {
-            background: rgba(0,0,0,0.05);
+            background: rgba(0,0,0,0.06);
         }
 
         .slide-icon {
@@ -629,69 +667,51 @@
             pointer-events: none;
         }
 
-        /* ---- 各游戏专属渐变背景 (增强) ---- */
+        /* ---- 各游戏专属渐变背景 ---- */
         .slide-sky {
             background: radial-gradient(ellipse at 30% 20%, rgba(30,144,255,0.55) 0%, transparent 55%),
                         radial-gradient(ellipse at 75% 80%, rgba(0,200,255,0.3) 0%, transparent 45%),
-                        radial-gradient(ellipse at 50% 50%, rgba(0,100,200,0.2) 0%, transparent 60%),
-                        linear-gradient(140deg, #0a2a4a 0%, #144a80 40%, #1e90ff 100%);
-            box-shadow: 0 0 60px rgba(30,144,255,0.15);
+                        linear-gradient(150deg, #0a2a4a 0%, #144a80 40%, #1e90ff 100%);
         }
         .slide-match {
             background: radial-gradient(ellipse at 70% 20%, rgba(32,178,170,0.5) 0%, transparent 55%),
                         radial-gradient(ellipse at 25% 80%, rgba(0,200,180,0.3) 0%, transparent 45%),
-                        radial-gradient(ellipse at 50% 50%, rgba(0,150,140,0.2) 0%, transparent 60%),
-                        linear-gradient(140deg, #032a2a 0%, #0a5550 40%, #20b2aa 100%);
-            box-shadow: 0 0 60px rgba(32,178,170,0.15);
+                        linear-gradient(150deg, #032a2a 0%, #0a5550 40%, #20b2aa 100%);
         }
         .slide-tower {
             background: radial-gradient(ellipse at 50% 20%, rgba(255,165,0,0.5) 0%, transparent 55%),
                         radial-gradient(ellipse at 80% 80%, rgba(200,100,0,0.35) 0%, transparent 45%),
-                        radial-gradient(ellipse at 50% 50%, rgba(180,80,0,0.2) 0%, transparent 60%),
-                        linear-gradient(140deg, #301a05 0%, #6b3a0a 40%, #ffa500 100%);
-            box-shadow: 0 0 60px rgba(255,165,0,0.15);
+                        linear-gradient(150deg, #301a05 0%, #6b3a0a 40%, #ffa500 100%);
         }
         .slide-typist {
             background: radial-gradient(ellipse at 30% 30%, rgba(138,43,226,0.5) 0%, transparent 55%),
                         radial-gradient(ellipse at 70% 70%, rgba(100,0,200,0.3) 0%, transparent 45%),
-                        radial-gradient(ellipse at 50% 50%, rgba(120,0,200,0.2) 0%, transparent 60%),
-                        linear-gradient(140deg, #140a28 0%, #2d1055 40%, #8a2be2 100%);
-            box-shadow: 0 0 60px rgba(138,43,226,0.15);
+                        linear-gradient(150deg, #140a28 0%, #2d1055 40%, #8a2be2 100%);
         }
         .slide-beats {
             background: radial-gradient(ellipse at 60% 20%, rgba(217,70,239,0.5) 0%, transparent 55%),
                         radial-gradient(ellipse at 20% 80%, rgba(255,0,200,0.3) 0%, transparent 45%),
-                        radial-gradient(ellipse at 50% 50%, rgba(200,0,180,0.2) 0%, transparent 60%),
-                        linear-gradient(140deg, #200a2e 0%, #4a1565 40%, #d946ef 100%);
-            box-shadow: 0 0 60px rgba(217,70,239,0.15);
+                        linear-gradient(150deg, #200a2e 0%, #4a1565 40%, #d946ef 100%);
         }
         .slide-particle {
             background: radial-gradient(ellipse at 40% 30%, rgba(44,83,100,0.55) 0%, transparent 55%),
                         radial-gradient(ellipse at 70% 70%, rgba(100,200,200,0.25) 0%, transparent 45%),
-                        radial-gradient(ellipse at 50% 50%, rgba(50,150,160,0.2) 0%, transparent 60%),
-                        linear-gradient(140deg, #0a1a20 0%, #153540 40%, #2c5364 100%);
-            box-shadow: 0 0 60px rgba(44,83,100,0.15);
+                        linear-gradient(150deg, #0a1a20 0%, #153540 40%, #2c5364 100%);
         }
         .slide-coop {
             background: radial-gradient(ellipse at 25% 30%, rgba(59,130,246,0.5) 0%, transparent 55%),
                         radial-gradient(ellipse at 75% 70%, rgba(239,68,68,0.35) 0%, transparent 45%),
-                        radial-gradient(ellipse at 50% 50%, rgba(100,80,200,0.2) 0%, transparent 60%),
-                        linear-gradient(140deg, #161630 0%, #2a2a5a 40%, #3b82f6 100%);
-            box-shadow: 0 0 60px rgba(59,130,246,0.15);
+                        linear-gradient(150deg, #161630 0%, #2a2a5a 40%, #3b82f6 100%);
         }
         .slide-breakout {
             background: radial-gradient(ellipse at 40% 20%, rgba(168,85,247,0.5) 0%, transparent 55%),
                         radial-gradient(ellipse at 70% 80%, rgba(236,72,153,0.35) 0%, transparent 45%),
-                        radial-gradient(ellipse at 50% 50%, rgba(180,80,200,0.2) 0%, transparent 60%),
-                        linear-gradient(140deg, #1e0e2e 0%, #3d1845 40%, #a855f7 100%);
-            box-shadow: 0 0 60px rgba(168,85,247,0.15);
+                        linear-gradient(150deg, #1e0e2e 0%, #3d1845 40%, #a855f7 100%);
         }
         .slide-mole {
             background: radial-gradient(ellipse at 50% 20%, rgba(34,197,94,0.5) 0%, transparent 55%),
                         radial-gradient(ellipse at 60% 80%, rgba(101,67,33,0.35) 0%, transparent 45%),
-                        radial-gradient(ellipse at 50% 50%, rgba(50,160,70,0.2) 0%, transparent 60%),
-                        linear-gradient(140deg, #122a12 0%, #2a5528 40%, #4a7c3f 100%);
-            box-shadow: 0 0 60px rgba(34,197,94,0.15);
+                        linear-gradient(150deg, #122a12 0%, #2a5528 40%, #4a7c3f 100%);
         }
 
         /* ========== OS 过滤器/分类栏 ========== */
@@ -1180,10 +1200,12 @@
         }
 
         @media (max-width: 980px) {
-            .carousel-container { height: 340px; perspective: 1000px; }
-            .carousel-slide { top: 24px; bottom: 44px; left: 10%; right: 10%; }
-            .carousel-slide.pos-prev { transform: translateX(-30%) translateZ(-100px) rotateY(15deg) scale(0.82); }
-            .carousel-slide.pos-next { transform: translateX(30%) translateZ(-100px) rotateY(-15deg) scale(0.82); }
+            .carousel-container { height: 360px; perspective: 1000px; }
+            .carousel-slide { top: 22px; bottom: 44px; left: 8%; right: 8%; }
+            .carousel-slide::before { inset: -9px; }
+            .carousel-slide::after { inset: -18px; }
+            .carousel-slide.pos-prev { transform: translateX(-26%) translateZ(-130px) rotateY(12deg) scale(0.8) skewX(-3deg); }
+            .carousel-slide.pos-next { transform: translateX(26%) translateZ(-130px) rotateY(-12deg) scale(0.8) skewX(-3deg); }
             .carousel-slide.pos-far-prev,
             .carousel-slide.pos-far-next { opacity: 0; pointer-events: none; }
             .slide-title { font-size: 2.2rem; }
@@ -1191,15 +1213,17 @@
         }
 
         @media (max-width: 780px) {
-            .carousel-container { height: 300px; perspective: 800px; }
-            .carousel-slide { top: 20px; bottom: 42px; left: 6%; right: 6%; border-radius: 16px; }
-            .carousel-slide.pos-prev { transform: translateX(-25%) translateZ(-80px) rotateY(10deg) scale(0.85); }
-            .carousel-slide.pos-next { transform: translateX(25%) translateZ(-80px) rotateY(-10deg) scale(0.85); }
+            .carousel-container { height: 290px; perspective: 700px; }
+            .carousel-slide { top: 16px; bottom: 40px; left: 4%; right: 4%; border-radius: 14px; }
+            .carousel-slide::before { inset: -6px; border-radius: 16px; }
+            .carousel-slide::after { inset: -13px; border-radius: 17px; }
+            .carousel-slide.pos-prev { transform: translateX(-20%) translateZ(-100px) rotateY(8deg) scale(0.82) skewX(-3deg); }
+            .carousel-slide.pos-next { transform: translateX(20%) translateZ(-100px) rotateY(-8deg) scale(0.82) skewX(-3deg); }
             .carousel-slide.pos-far-prev,
             .carousel-slide.pos-far-next { opacity: 0; pointer-events: none; }
-            .slide-title { font-size: 1.7rem; }
-            .slide-desc { font-size: 0.85rem; max-width: 90%; }
-            .slide-icon { font-size: 2.8rem; margin-bottom: 8px; }
+            .slide-title { font-size: 1.6rem; }
+            .slide-desc { font-size: 0.82rem; max-width: 90%; }
+            .slide-icon { font-size: 2.6rem; margin-bottom: 6px; }
             .game-grid { grid-template-columns: 1fr; }
             header { padding: 14px 16px; }
             main { padding: 20px 14px 60px; }
@@ -1903,9 +1927,65 @@
             }
         });
 
-        // 初始化
-        updateCarousel();
-        resetAutoPlay();
+        // ---- 入场动画 ----
+        function entranceAnimation() {
+            // 先隐藏所有卡片并禁用过渡
+            carouselEl.classList.add('carousel-entrance');
+            slides.forEach(s => {
+                s.classList.remove('pos-current', 'pos-prev', 'pos-next', 'pos-far-prev', 'pos-far-next');
+                s.classList.add('pos-hidden');
+            });
+            dots.forEach(d => d.classList.remove('active'));
+
+            // 强制重排后恢复过渡
+            void carouselEl.offsetWidth;
+            carouselEl.classList.remove('carousel-entrance');
+
+            // 从中间向外依次飞入（current → prev → next → far-prev → far-next）
+            const order = [0, -1, 1, -2, 2];
+            const delays = [250, 350, 420, 500, 560];
+            order.forEach((off, i) => {
+                setTimeout(() => {
+                    const idx = (currentSlide + off + totalSlides) % totalSlides;
+                    const slide = slides[idx];
+                    slide.classList.remove('pos-hidden', 'pos-prev', 'pos-next', 'pos-far-prev', 'pos-far-next', 'pos-current');
+                    slide.classList.add(posClass(off));
+                }, delays[i]);
+            });
+
+            // 指示器与粒子收尾
+            setTimeout(() => {
+                dots[currentSlide].classList.add('active');
+                spawnEntranceParticles();
+                resetAutoPlay();
+            }, 650);
+        }
+
+        function spawnEntranceParticles() {
+            const cx = particleCanvas.width / 2;
+            const cy = particleCanvas.height / 2;
+            for (let i = 0; i < 120; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 3 + Math.random() * 12;
+                const hue = (currentSlide * 40 + Math.random() * 80) % 360;
+                particles.push({
+                    x: cx + (Math.random() - 0.5) * 80,
+                    y: cy + (Math.random() - 0.5) * 60,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 3,
+                    life: 1,
+                    decay: 0.008 + Math.random() * 0.02,
+                    size: 2 + Math.random() * 5,
+                    hue
+                });
+            }
+            if (!particleRAF) {
+                particleRAF = requestAnimationFrame(animateParticles);
+            }
+        }
+
+        // 初始化 — 入场动画
+        entranceAnimation();
 
         // ========== 3. 换肤系统 ==========
         const THEMES = {
