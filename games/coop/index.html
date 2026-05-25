@@ -1341,6 +1341,7 @@
         }
 
         function hideLobby() {
+            if (roomsPollTimer) { clearInterval(roomsPollTimer); roomsPollTimer = null; }
             document.getElementById('lobbyOverlay').classList.remove('show');
             document.getElementById('modeOverlay').classList.remove('hidden');
         }
@@ -1595,14 +1596,17 @@ async function initLobby() {
     const list = document.getElementById('roomList');
     if (roomsPollTimer) { clearInterval(roomsPollTimer); roomsPollTimer = null; }
     await refreshRoomList();
-    roomsPollTimer = setInterval(refreshRoomList, 8000);
+    roomsPollTimer = setInterval(refreshRoomList, 3000);
 }
 
 async function refreshRoomList() {
     const list = document.getElementById('roomList');
     try {
-        const result = await callCF('room.list');
-        const rooms = result.rooms || [];
+        const res = await db.collection('rooms')
+            .where({ state: 'waiting' })
+            .limit(20)
+            .get();
+        const rooms = (res && Array.isArray(res.data)) ? res.data : [];
         list.innerHTML = rooms.length === 0
             ? '<div class="empty">暂无可用房间，创建一个吧</div>'
             : rooms.map(r => {
@@ -1617,6 +1621,7 @@ async function refreshRoomList() {
             </div>`;
             }).join('');
     } catch(e) {
+        console.error('[refreshRoomList] error:', e);
         list.innerHTML = '<div class="empty">加载房间失败</div>';
     }
 }
@@ -1639,18 +1644,19 @@ async function createRoom(diff) {
         updateNavForDifficulty(diff);
         document.getElementById('difficulty-overlay').style.display = 'none';
 
-        // 轮询等待客机加入（云函数，等待阶段短不影响配额）
+        // 轮询等待客机加入（直接读 DB，不走云函数）
         let roomPollTimer = null;
         roomPollTimer = setInterval(async () => {
             try {
-                const data = await callCF('room.get', { roomId: code });
-                if (!data || !data.room) {
+                const res = await db.collection('rooms').doc(code).get();
+                const room = parseDoc(res);
+                if (!room) {
                     clearInterval(roomPollTimer);
                     document.getElementById('waitingOverlay').classList.remove('show');
                     document.getElementById('modeOverlay').classList.remove('hidden');
                     return;
                 }
-                if (data.room.state === 'ready' && data.room.guestname) {
+                if (room.state === 'ready' && room.guestname) {
                     clearInterval(roomPollTimer);
                     document.getElementById('waitingOverlay').classList.remove('show');
                     currentLevel = 1;
