@@ -2350,6 +2350,7 @@
         window.addEventListener('resize', () => {
             resizeStarfield();
             initStars();
+            initFloatParticles();
             meteors = [];
             sparkParticles = [];
         });
@@ -2412,6 +2413,29 @@
         }
 
         initStars();
+
+        // 漂浮粒子 + 鼠标跟踪
+        let floatParticles = [];
+        let mouseX = -1000, mouseY = -1000;
+        function initFloatParticles() {
+            floatParticles = [];
+            const count = Math.floor((starW * starH) / 14000);
+            for (let i = 0; i < count; i++) {
+                floatParticles.push({
+                    x: Math.random() * starW,
+                    y: Math.random() * starH,
+                    vx: (Math.random() - 0.5) * 0.25,
+                    vy: (Math.random() - 0.5) * 0.25 - 0.1,
+                    r: 0.4 + Math.random() * 1.6,
+                    phase: Math.random() * Math.PI * 2,
+                    speed: 0.003 + Math.random() * 0.01,
+                    hue: Math.random() < 0.2 ? 'accent' : (Math.random() < 0.1 ? 'accent2' : 'white')
+                });
+            }
+        }
+        initFloatParticles();
+        document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+        document.addEventListener('mouseleave', () => { mouseX = -1000; mouseY = -1000; });
 
         function drawStarfield(time) {
             starCtx.clearRect(0, 0, starW, starH);
@@ -2536,6 +2560,67 @@
 
             starCtx.globalAlpha = 1;
             starCtx.shadowBlur = 0;
+
+            // 漂浮粒子 + 连线
+            for (let i = 0; i < floatParticles.length; i++) {
+                const fp = floatParticles[i];
+                fp.x += fp.vx + Math.sin(time * fp.speed + fp.phase) * 0.18;
+                fp.y += fp.vy + Math.cos(time * fp.speed + fp.phase + 1) * 0.15;
+                // 鼠标轻微吸引
+                const dx = mouseX - fp.x;
+                const dy = mouseY - fp.y;
+                const distToMouse = Math.sqrt(dx * dx + dy * dy);
+                if (distToMouse < 250 && distToMouse > 1) {
+                    fp.x += dx / distToMouse * 0.28;
+                    fp.y += dy / distToMouse * 0.28;
+                }
+                // 环绕
+                if (fp.x < -20) fp.x = starW + 20;
+                if (fp.x > starW + 20) fp.x = -20;
+                if (fp.y < -20) fp.y = starH + 20;
+                if (fp.y > starH + 20) fp.y = -20;
+
+                const pulse = 0.5 + Math.sin(time * 0.002 + fp.phase) * 0.5;
+                const alpha = 0.15 + pulse * 0.35;
+                let fr, fg, fb;
+                if (fp.hue === 'accent') { fr = ar; fg = ag; fb = ab; }
+                else if (fp.hue === 'accent2') { fr = a2r; fg = a2g; fb = a2b; }
+                else { fr = 255; fg = 255; fb = 255; }
+
+                // 光晕
+                const glowGrad = starCtx.createRadialGradient(fp.x, fp.y, 0, fp.x, fp.y, fp.r * 3);
+                glowGrad.addColorStop(0, `rgba(${fr},${fg},${fb},${alpha})`);
+                glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                starCtx.fillStyle = glowGrad;
+                starCtx.beginPath();
+                starCtx.arc(fp.x, fp.y, fp.r * 3, 0, Math.PI * 2);
+                starCtx.fill();
+
+                // 核心点
+                starCtx.fillStyle = `rgba(${fr},${fg},${fb},${alpha * 1.4})`;
+                starCtx.beginPath();
+                starCtx.arc(fp.x, fp.y, fp.r * 0.7, 0, Math.PI * 2);
+                starCtx.fill();
+
+                // 连线
+                for (let j = i + 1; j < floatParticles.length; j++) {
+                    const fp2 = floatParticles[j];
+                    const ldx = fp.x - fp2.x;
+                    const ldy = fp.y - fp2.y;
+                    const dist = Math.sqrt(ldx * ldx + ldy * ldy);
+                    const maxDist = 150;
+                    if (dist < maxDist) {
+                        const lineAlpha = (1 - dist / maxDist) * 0.12 * Math.min(alpha, 0.18 + Math.sin(time * 0.002 + fp2.phase) * 0.5 + 0.5);
+                        starCtx.strokeStyle = `rgba(${fr},${fg},${fb},${lineAlpha})`;
+                        starCtx.lineWidth = 0.3;
+                        starCtx.beginPath();
+                        starCtx.moveTo(fp.x, fp.y);
+                        starCtx.lineTo(fp2.x, fp2.y);
+                        starCtx.stroke();
+                    }
+                }
+            }
+
             requestAnimationFrame(drawStarfield);
         }
         requestAnimationFrame(drawStarfield);
