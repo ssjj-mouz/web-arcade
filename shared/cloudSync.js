@@ -1,12 +1,12 @@
 /**
- * CloudSync — CloudBase 数据同步模块
+ * CloudSync — CloudBase 直连数据库同步模块
  * 所有数据优先读写 CloudBase，localStorage 作为离线缓存
  */
 (function () {
   'use strict';
 
   const ENV_ID = 'games-d3g5ler2z3252069c';
-  let app = null;
+  let app = null, db = null, _ = null;
   let ready = false;
   let readyPromise = null;
 
@@ -21,10 +21,12 @@
       }
       try {
         app = cloudbase.init({ env: ENV_ID });
+        db = app.database();
+        _ = db.command;
         app.auth().signInAnonymously()
           .then(() => {
             ready = true;
-            console.log('[CloudSync] CloudBase 已连接');
+            console.log('[CloudSync] CloudBase 直连已就绪');
             resolve(true);
           })
           .catch((e) => {
@@ -39,14 +41,7 @@
     return readyPromise;
   }
 
-  async function callCF(action, data) {
-    await init();
-    if (!app || !ready) throw new Error('CloudBase 不可用');
-    const res = await app.callFunction({ name: 'gameApi', data: { action, ...data } });
-    if (!res || !res.result) throw new Error('响应为空');
-    if (res.result.error) throw new Error(res.result.error);
-    return res.result;
-  }
+  function ensureReady() { return ready && db && _; }
 
   // ====================== 用户档案 ======================
   async function saveProfile(username, scores, favorites, theme) {
@@ -59,29 +54,36 @@
       if (theme !== undefined) localStorage.setItem('arcadeTheme', theme);
     } catch (e) { /* ignore */ }
 
-    // 同步到 CloudBase
+    // 直连写入 CloudBase
+    if (!ensureReady()) return;
     try {
-      await callCF('profile.save', { username, scores, favorites, theme });
+      const doc = { scores: scores || {}, favorites: favorites || [], theme: theme || 'neon', updatedAt: Date.now() };
+      const { data } = await db.collection('user_data').doc(username).get();
+      if (data && data[0]) {
+        await db.collection('user_data').doc(username).update(doc);
+      } else {
+        await db.collection('user_data').doc(username).set({ ...doc, createdAt: Date.now() });
+      }
     } catch (e) {
-      console.warn('[CloudSync] 档案保存到云端失败:', e.message);
+      console.warn('[CloudSync] 档案写入云端失败:', e.message);
     }
   }
 
   async function loadAllProfiles() {
+    if (!ensureReady()) {
+      try { return JSON.parse(localStorage.getItem('arcadeProfiles') || '{}'); } catch (e) { return {}; }
+    }
     try {
-      const result = await callCF('profile.list');
+      const { data } = await db.collection('user_data').limit(200).get();
       const profiles = {};
-      (result.profiles || []).forEach(p => {
-        profiles[p._id] = p.scores || {};
-      });
+      (data || []).forEach(p => { profiles[p._id] = p.scores || {}; });
       if (Object.keys(profiles).length > 0) {
         localStorage.setItem('arcadeProfiles', JSON.stringify(profiles));
         return profiles;
       }
     } catch (e) {
-      console.warn('[CloudSync] 从云端加载档案失败:', e.message);
+      console.warn('[CloudSync] 云端档案加载失败:', e.message);
     }
-    // Fallback to localStorage
     try { return JSON.parse(localStorage.getItem('arcadeProfiles') || '{}'); } catch (e) { return {}; }
   }
 
@@ -92,8 +94,9 @@
       localStorage.setItem('arcadeProfiles', JSON.stringify(all));
     } catch (e) { /* ignore */ }
 
+    if (!ensureReady()) return;
     try {
-      await callCF('profile.delete', { username });
+      await db.collection('user_data').doc(username).remove();
     } catch (e) {
       console.warn('[CloudSync] 删除云端档案失败:', e.message);
     }
@@ -108,37 +111,40 @@
       localStorage.setItem('arcadeComments', JSON.stringify(comments));
     } catch (e) { /* ignore */ }
 
+    if (!ensureReady()) return;
     try {
-      await callCF('comment.add', { gameKey, user, text });
+      await db.collection('comments').add({ gameKey, user, text, time: Date.now() });
     } catch (e) {
-      console.warn('[CloudSync] 评论同步到云端失败:', e.message);
+      console.warn('[CloudSync] 评论写入云端失败:', e.message);
     }
   }
 
   async function loadComments(gameKey) {
+    if (!ensureReady()) {
+      try {
+        const all = JSON.parse(localStorage.getItem('arcadeComments') || '{}');
+        return gameKey ? (all[gameKey] || []) : all;
+      } catch (e) { return gameKey ? [] : {}; }
+    }
     try {
-      const result = await callCF('comment.list', gameKey ? { gameKey } : {});
-      const comments = result.comments || [];
-      // Update localStorage cache
+      let query = db.collection('comments');
+      if (gameKey) query = query.where({ gameKey });
+      const { data } = await query.orderBy('time', 'desc').limit(200).get();
+      const comments = data || [];
       const grouped = {};
       comments.forEach(c => {
         if (!grouped[c.gameKey]) grouped[c.gameKey] = [];
         grouped[c.gameKey].push({ user: c.user, text: c.text, time: c.time, _id: c._id });
       });
-      // Don't replace entire localStorage, just this game's data
-      if (comments.length > 0) {
-        localStorage.setItem('arcadeComments', JSON.stringify(grouped));
-      }
+      localStorage.setItem('arcadeComments', JSON.stringify(grouped));
       if (gameKey) return grouped[gameKey] || [];
       return grouped;
     } catch (e) {
-      console.warn('[CloudSync] 加载云端评论失败:', e.message);
+      console.warn('[CloudSync] 云端评论加载失败:', e.message);
     }
-    // Fallback
     try {
       const all = JSON.parse(localStorage.getItem('arcadeComments') || '{}');
-      if (gameKey) return all[gameKey] || [];
-      return all;
+      return gameKey ? (all[gameKey] || []) : all;
     } catch (e) { return gameKey ? [] : {}; }
   }
 
@@ -151,8 +157,9 @@
       }
     } catch (e) { /* ignore */ }
 
+    if (!ensureReady()) return;
     try {
-      await callCF('comment.delete', { commentId });
+      await db.collection('comments').doc(commentId).remove();
     } catch (e) {
       console.warn('[CloudSync] 删除云端评论失败:', e.message);
     }
@@ -166,26 +173,33 @@
       localStorage.setItem('arcadePlayCounts', JSON.stringify(counts));
     } catch (e) { /* ignore */ }
 
+    if (!ensureReady()) return;
     try {
-      await callCF('stats.update', { gameKey });
+      const { data } = await db.collection('play_counts').doc(gameKey).get();
+      if (data && data[0]) {
+        await db.collection('play_counts').doc(gameKey).update({ count: _.inc(1) });
+      } else {
+        await db.collection('play_counts').doc(gameKey).set({ count: 1 });
+      }
     } catch (e) {
-      console.warn('[CloudSync] 统计同步到云端失败:', e.message);
+      console.warn('[CloudSync] 统计写入云端失败:', e.message);
     }
   }
 
   async function loadPlayCounts() {
+    if (!ensureReady()) {
+      try { return JSON.parse(localStorage.getItem('arcadePlayCounts') || '{}'); } catch (e) { return {}; }
+    }
     try {
-      const result = await callCF('stats.list');
+      const { data } = await db.collection('play_counts').get();
       const counts = {};
-      (result.stats || []).forEach(s => {
-        counts[s._id] = s.count || 0;
-      });
+      (data || []).forEach(s => { counts[s._id] = s.count || 0; });
       if (Object.keys(counts).length > 0) {
         localStorage.setItem('arcadePlayCounts', JSON.stringify(counts));
         return counts;
       }
     } catch (e) {
-      console.warn('[CloudSync] 加载云端统计失败:', e.message);
+      console.warn('[CloudSync] 云端统计加载失败:', e.message);
     }
     try { return JSON.parse(localStorage.getItem('arcadePlayCounts') || '{}'); } catch (e) { return {}; }
   }
@@ -203,6 +217,5 @@
     loadPlayCounts
   };
 
-  // 自动初始化
   init();
 })();
