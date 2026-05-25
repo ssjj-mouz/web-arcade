@@ -745,10 +745,10 @@
                         radial-gradient(ellipse at 70% 80%, rgba(236,72,153,0.35) 0%, transparent 45%),
                         linear-gradient(150deg, #1e0e2e 0%, #3d1845 40%, #a855f7 100%);
         }
-        .slide-mole {
-            background: radial-gradient(ellipse at 50% 20%, rgba(34,197,94,0.55) 0%, transparent 55%),
-                        radial-gradient(ellipse at 60% 80%, rgba(0,255,200,0.3) 0%, transparent 45%),
-                        linear-gradient(150deg, #0a1a10 0%, #0f3520 40%, #22c55e 100%);
+        .slide-drawGuess {
+            background: radial-gradient(ellipse at 30% 20%, rgba(245,158,11,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 60%, rgba(251,191,36,0.35) 0%, transparent 45%),
+                        linear-gradient(150deg, #1a1008 0%, #3d2810 40%, #f59e0b 100%);
         }
 
         /* ========== OS 过滤器/分类栏 ========== */
@@ -1489,13 +1489,13 @@
                 <a href="games/coop/index.html" class="slide-btn">组队出发 ▶</a>
             </div>
 
-            <div class="carousel-slide slide-mole">
+            <div class="carousel-slide slide-drawGuess">
                 <div class="slide-overlay"></div>
-                <div class="slide-icon">💠</div>
-                <span class="slide-badge">⚡ 反应 · 限时</span>
-                <h2 class="slide-title">零点反应</h2>
-                <p class="slide-desc">自由配置定位训练参数，静态/动态目标随心组合。红绿反应测试你的极限手速</p>
-                <a href="games/mole/index.html" class="slide-btn">开始击打 ▶</a>
+                <div class="slide-icon">🎨</div>
+                <span class="slide-badge">👥 联机 · 你画我猜</span>
+                <h2 class="slide-title">你画我猜</h2>
+                <p class="slide-desc">创建房间邀请好友，轮流作画猜词，实时同步画板。脑洞与画技的双重对决</p>
+                <a href="games/mole/index.html" class="slide-btn">创建房间 ▶</a>
             </div>
 
             <div class="carousel-slide slide-breakout">
@@ -1608,12 +1608,12 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="action hardcore" onclick="location.href='games/mole/index.html'">
-                <div class="card-cover" style="background: linear-gradient(135deg, #22c55e, #166534);">💠</div>
+            <article class="game-card" data-category="multiplayer casual" onclick="location.href='games/mole/index.html'">
+                <div class="card-cover" style="background: linear-gradient(135deg, #f59e0b, #d97706);">🎨</div>
                 <div class="card-info">
-                    <h2>零点反应</h2>
-                    <p>自由配置定位训练参数，静态/动态目标随心组合。红绿反应测试极限手速。</p>
-                    <div class="card-footer"><div class="tags"><span>反应</span> <span>限时</span></div><span class="btn-play">启动</span></div>
+                    <h2>你画我猜</h2>
+                    <p>创建房间邀请好友，轮流作画猜词，实时同步画板。脑洞与画技的双重对决。</p>
+                    <div class="card-footer"><div class="tags"><span>联机</span> <span>你画我猜</span></div><span class="btn-play">进入</span></div>
                 </div>
             </article>
 
@@ -1637,7 +1637,7 @@
         // 一键重置：清除所有旧用户分数数据，每人从0开始
         if (!localStorage.getItem('arcadeDataReset_v2')) {
             localStorage.removeItem('arcadeProfiles');
-            ['skyDefenseHighScore','matchHighScore','towerHighScore','typistHighScore','beatsHighScore','coopHighScore','breakoutHighScore','moleBest','arcadeUser','arcadeRatings','arcadeFavorites'].forEach(k => localStorage.removeItem(k));
+            ['skyDefenseHighScore','matchHighScore','towerHighScore','typistHighScore','beatsHighScore','coopHighScore','breakoutHighScore','drawGuessBest','arcadeUser','arcadeRatings','arcadeFavorites'].forEach(k => localStorage.removeItem(k));
             localStorage.setItem('arcadeDataReset_v2', '1');
         }
 
@@ -1704,10 +1704,10 @@
 
             // 迁移旧分数到用户档案
             const profile = getUserProfile(name);
-            const gamesKeys = ['skyDefense','match','tower','typist','beats','particle','coop','breakout','mole'];
+            const gamesKeys = ['skyDefense','match','tower','typist','beats','particle','coop','drawGuess','breakout'];
             let changed = false;
             gamesKeys.forEach(game => {
-                const key = game === 'mole' ? 'moleBest' : game + 'HighScore';
+                const key = game === 'drawGuess' ? 'drawGuessBest' : game + 'HighScore';
                 const val = parseInt(localStorage.getItem(key)) || 0;
                 if (val > 0 && (!profile[game] || val > profile[game])) {
                     profile[game] = val;
@@ -1717,7 +1717,7 @@
             if (changed) saveUserProfile(name, profile);
 
             // 迁移后清除旧全局键，防止下个用户重复迁移
-            const oldKeys = ['skyDefenseHighScore','matchHighScore','towerHighScore','typistHighScore','beatsHighScore','coopHighScore','breakoutHighScore','moleBest'];
+            const oldKeys = ['skyDefenseHighScore','matchHighScore','towerHighScore','typistHighScore','beatsHighScore','coopHighScore','breakoutHighScore','drawGuessBest'];
             oldKeys.forEach(k => localStorage.removeItem(k));
 
             document.getElementById('login-overlay').classList.remove('show');
@@ -1766,7 +1766,7 @@
         function readUserScore(game) {
             const user = localStorage.getItem('arcadeUser');
             if (!user) {
-                const key = game === 'mole' ? 'moleBest' : game + 'HighScore';
+                const key = game === 'drawGuess' ? 'drawGuessBest' : game + 'HighScore';
                 return parseInt(localStorage.getItem(key)) || 0;
             }
             const profile = getUserProfile(user);
@@ -1806,7 +1806,7 @@
         function renderLeaderboard() {
             const body = document.getElementById('lbBody');
             const currentUser = localStorage.getItem('arcadeUser');
-            const gamesKeys = ['skyDefense','match','tower','typist','beats','particle','coop','breakout','mole'];
+            const gamesKeys = ['skyDefense','match','tower','typist','beats','particle','coop','drawGuess','breakout'];
 
             try {
                 const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
@@ -1822,7 +1822,7 @@
                 if (!currentUser) {
                     let guestTotal = 0;
                     gamesKeys.forEach(game => {
-                        const key = game === 'mole' ? 'moleBest' : game + 'HighScore';
+                        const key = game === 'drawGuess' ? 'drawGuessBest' : game + 'HighScore';
                         guestTotal += parseInt(localStorage.getItem(key)) || 0;
                     });
                     if (guestTotal > 0) entries.push({ name: '游客', total: guestTotal });
@@ -2080,7 +2080,7 @@
         const searchCount = document.getElementById('searchCount');
 
         // 为每个游戏卡添加收藏按钮 + data-game 属性
-        const gameNames = ['天空防卫局','深海寻宝','云端筑梦师','极客骇客','光音记忆','星海流沙','双子星探险','零点反应','宝石消消乐'];
+        const gameNames = ['天空防卫局','深海寻宝','云端筑梦师','极客骇客','光音记忆','星海流沙','双子星探险','你画我猜','宝石消消乐'];
         gameCards.forEach((card, i) => {
             const name = gameNames[i] || 'game' + i;
             card.dataset.game = name;
@@ -2208,7 +2208,7 @@
         const scoreSpan = document.getElementById('global-score');
 
         function fetchAllScores() {
-            const gamesKeys = ['skyDefense','match','tower','typist','beats','particle','coop','breakout','mole'];
+            const gamesKeys = ['skyDefense','match','tower','typist','beats','particle','coop','drawGuess','breakout'];
             let total = 0;
             gamesKeys.forEach(game => {
                 total += readUserScore(game);

@@ -3,1235 +3,901 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>零点反应 · 定位训练</title>
+<title>你画我猜</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--accent:#f59e0b;--bg:#0f0f14;--panel:#161622;--border:rgba(245,158,11,0.12);--text:#e0e0e0;--muted:#6a6a7a}
+body{background:var(--bg);font-family:'Segoe UI','Inter',system-ui,sans-serif;height:100vh;overflow:hidden;color:var(--text)}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
 
-:root{ --accent: #00ffc8; --accent2: #ff40c8; }
-
-body{
-  background:#060810;
-  font-family:'Segoe UI','Inter',system-ui,sans-serif;
-  height:100vh;width:100vw;
-  overflow:hidden;
-  cursor:none;
-  color:#e0e8ff;
-}
-
-canvas{ position:fixed;inset:0; display:block; }
-
-/* 自定义光标 */
-#cursor{
-  position:fixed;pointer-events:none;z-index:9999;
-  width:26px;height:26px;
-  transform:translate(-50%,-50%);
-}
-#cursor::before{
-  content:'';position:absolute;
-  top:50%;left:0;width:100%;height:1px;
-  background:rgba(0,255,200,0.5);
-  box-shadow:0 0 6px rgba(0,255,200,0.3);
-}
-#cursor::after{
-  content:'';position:absolute;
-  left:50%;top:0;height:100%;width:1px;
-  background:rgba(0,255,200,0.5);
-  box-shadow:0 0 6px rgba(0,255,200,0.3);
-}
-#cursor .dot{
-  position:absolute;top:50%;left:50%;
-  width:5px;height:5px;border-radius:50%;
-  background:#00ffc8;
-  transform:translate(-50%,-50%);
-  box-shadow:0 0 10px #00ffc8, 0 0 20px rgba(0,255,200,0.4);
-}
-
-/* HUD */
-.hud{ position:fixed;z-index:100;pointer-events:none; }
-#hud-top{
-  top:18px;left:50%;transform:translateX(-50%);
-  display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;
-}
-.hud-item{
-  padding:6px 16px;
-  background:rgba(6,8,16,0.7);backdrop-filter:blur(10px);
-  border:1px solid rgba(0,255,200,0.1);
-  border-radius:10px;
-  font-size:0.78rem;font-weight:600;color:#6a7a9a;
-  text-align:center;min-width:70px;
-}
-.hud-item .val{
-  display:block;font-size:1.35rem;font-weight:800;
-  color:#00ffc8;text-shadow:0 0 12px rgba(0,255,200,0.3);
-  line-height:1.15;
-}
-.hud-item .lbl{font-size:0.6rem;letter-spacing:1px;text-transform:uppercase}
-
-#hud-bottom{
-  bottom:22px;left:50%;transform:translateX(-50%);
-  font-size:0.68rem;color:#3a4a6a;letter-spacing:1px;
-}
-
-/* 弹出 */
-.pop{
-  position:fixed;pointer-events:none;z-index:200;
-  font-weight:900;font-size:1.1rem;
-  animation:popUp 0.7s ease-out forwards;
-  text-shadow:0 0 12px currentColor;
-}
-@keyframes popUp{
-  0%{opacity:1;transform:translate(-50%,0) scale(0.5)}
-  100%{opacity:0;transform:translate(-50%,-55px) scale(1.2)}
-}
-.combo-pop{
-  position:fixed;pointer-events:none;z-index:200;
-  font-weight:900;font-size:0.9rem;color:#ff40c8;
-  text-shadow:0 0 14px rgba(255,64,200,0.5);
-  animation:comboUp 0.8s ease-out forwards;
-  letter-spacing:1px;
-}
-@keyframes comboUp{
-  0%{opacity:1;transform:translate(-50%,0) scale(0.3)}
-  50%{transform:translate(-50%,-16px) scale(1.15)}
-  100%{opacity:0;transform:translate(-50%,-45px) scale(1)}
-}
-
-/* 覆盖层 */
-.overlay{
-  position:fixed;inset:0;z-index:500;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(4,6,12,0.94);backdrop-filter:blur(14px);
-  overflow:auto;padding:20px;
-}
+/* Overlay */
+.overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(8,8,16,0.94);backdrop-filter:blur(12px)}
 .overlay.hidden{display:none}
 
-.card{
-  text-align:center;
-  padding:28px 30px;
-  background:rgba(10,14,26,0.6);
-  border:1px solid rgba(0,255,200,0.08);
-  border-radius:20px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.5), 0 0 80px rgba(0,180,200,0.04);
-  width:min(92vw,520px);
-  max-height:90vh;overflow:auto;
-}
-.card h1{
-  font-size:1.3rem;font-weight:800;letter-spacing:3px;margin-bottom:4px;
-  background:linear-gradient(135deg,#00ffc8,#00aaff,#c840ff);
-  -webkit-background-clip:text;color:transparent;
-}
-.card .sub{ font-size:0.76rem;color:#4a5a7a;margin-bottom:16px;line-height:1.5; }
+.card{padding:32px 28px;background:var(--panel);border:1px solid var(--border);border-radius:18px;width:min(90vw,380px);text-align:center}
+.card h1{font-size:1.4rem;font-weight:800;letter-spacing:2px;margin-bottom:6px;color:var(--accent)}
+.card .sub{font-size:0.78rem;color:var(--muted);margin-bottom:20px}
+.card input{width:100%;padding:10px 14px;font-size:0.88rem;background:rgba(255,255,255,0.04);color:var(--text);border:1px solid var(--border);border-radius:10px;outline:none;margin-bottom:12px;text-align:center;letter-spacing:2px}
+.card input:focus{border-color:rgba(245,158,11,0.4)}
+.card .btn{display:block;width:100%;padding:11px;font-size:0.85rem;font-weight:700;border:none;border-radius:12px;margin-bottom:8px;letter-spacing:1px;transition:0.2s}
+.btn-accent{background:linear-gradient(135deg,#f59e0b,#d97706);color:#111;box-shadow:0 0 20px rgba(245,158,11,0.2)}
+.btn-accent:hover{transform:scale(1.03);box-shadow:0 0 30px rgba(245,158,11,0.35)}
+.btn-ghost{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid rgba(255,255,255,0.06)}
+.btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,0.15)}
+.code-display{font-size:2rem;font-weight:900;letter-spacing:6px;color:var(--accent);margin:12px 0;text-shadow:0 0 20px rgba(245,158,11,0.3)}
+.wait-text{font-size:0.8rem;color:var(--muted);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
 
-/* 标签切换 */
-.tab-row{ display:flex;gap:6px;margin-bottom:18px;justify-content:center; }
-.tab-btn{
-  flex:1;padding:10px 8px;font-size:0.76rem;font-weight:600;font-family:inherit;
-  background:rgba(255,255,255,0.02);color:#6a7a9a;
-  border:1px solid rgba(255,255,255,0.06);border-radius:10px;
-  cursor:pointer;transition:0.25s;text-align:center;
-}
-.tab-btn .icon{ display:block;font-size:1.3rem;margin-bottom:3px; }
-.tab-btn:hover{ border-color:rgba(0,255,200,0.2);color:#a0b8d0; }
-.tab-btn.sel{
-  border-color:rgba(0,255,200,0.35);color:#00ffc8;
-  background:rgba(0,255,200,0.04);
-  box-shadow:0 0 20px rgba(0,255,200,0.06);
-}
+/* Game layout */
+#gameUI{position:fixed;inset:0;z-index:50;display:none;flex-direction:column}
+#gameUI.active{display:flex}
 
-/* 参数面板 */
-.param-section{ margin-bottom:12px;display:none; }
-.param-section.active{ display:block; }
+.game-top{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--border);gap:10px;flex-shrink:0}
+.game-top .room-code{font-size:0.75rem;color:var(--muted);letter-spacing:1px}
+.game-top .round-info{font-size:0.8rem;font-weight:700;color:var(--accent)}
+.game-top .timer{font-size:0.9rem;font-weight:800;color:#ef4444;min-width:36px}
+.game-top .scores{font-size:0.72rem;color:var(--muted)}
 
-.param-label{
-  font-size:0.64rem;color:#4a5a7a;letter-spacing:1px;margin-bottom:4px;text-transform:uppercase;
-  display:flex;justify-content:space-between;
-}
-.param-label .pv{color:#00ffc8;}
+.game-main{display:flex;flex:1;min-height:0}
+/* Canvas area */
+.draw-area{flex:1;position:relative;background:#fff;border-radius:0;overflow:hidden;min-width:0}
+.draw-area canvas{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+#drawCanvas{cursor:crosshair}
 
-.param-row{ display:flex;gap:8px;align-items:center;margin-bottom:10px; }
-.param-slider{
-  flex:1;-webkit-appearance:none;appearance:none;
-  height:4px;border-radius:2px;
-  background:rgba(255,255,255,0.08);
-  outline:none;
-}
-.param-slider::-webkit-slider-thumb{
-  -webkit-appearance:none;width:18px;height:18px;
-  border-radius:50%;background:#00ffc8;
-  cursor:pointer;box-shadow:0 0 12px rgba(0,255,200,0.3);
-}
-.param-val{
-  width:28px;text-align:center;font-size:0.8rem;font-weight:700;color:#00ffc8;
-}
+/* Toolbar - below canvas on mobile, on side on desktop */
+.toolbar{display:flex;gap:6px;padding:7px 10px;background:var(--panel);border-bottom:1px solid var(--border);align-items:center;flex-wrap:wrap;flex-shrink:0}
+.toolbar .color{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:0.15s;flex-shrink:0}
+.toolbar .color.sel{border-color:#fff;box-shadow:0 0 10px currentColor}
+.toolbar .size-btn{padding:4px 10px;font-size:0.7rem;font-weight:700;background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid rgba(255,255,255,0.06);border-radius:6px}
+.toolbar .size-btn.sel{background:rgba(245,158,11,0.15);color:var(--accent);border-color:rgba(245,158,11,0.3)}
+.toolbar .tool-btn{padding:5px 10px;font-size:0.7rem;font-weight:700;background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid rgba(255,255,255,0.06);border-radius:6px}
+.toolbar .tool-btn:hover{color:var(--text)}
+.toolbar .tool-btn.eraser.sel{background:rgba(239,68,68,0.15);color:#ef4444;border-color:rgba(239,68,68,0.3)}
 
-/* 形状选择 */
-.shape-grid{ display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:10px; }
-.shape-chip{
-  padding:6px 12px;font-size:0.7rem;font-weight:600;font-family:inherit;
-  background:rgba(255,255,255,0.02);color:#6a7a9a;
-  border:1px solid rgba(255,255,255,0.06);border-radius:8px;
-  cursor:pointer;transition:0.25s;
-}
-.shape-chip:hover{ border-color:rgba(0,255,200,0.2);color:#a0b8d0; }
-.shape-chip.sel{
-  border-color:rgba(0,255,200,0.35);color:#00ffc8;
-  background:rgba(0,255,200,0.04);
+/* Side panel */
+.side-panel{width:260px;display:flex;flex-direction:column;background:var(--panel);border-left:1px solid var(--border);flex-shrink:0}
+.chat-area{flex:1;display:flex;flex-direction:column;min-height:0}
+.chat-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:4px}
+.chat-msg{font-size:0.72rem;padding:4px 8px;border-radius:6px;line-height:1.4;word-break:break-word}
+.chat-msg.system{color:var(--muted);font-size:0.66rem;text-align:center}
+.chat-msg.correct{background:rgba(34,197,94,0.12);color:#22c55e;font-weight:700}
+.chat-msg.wrong{color:#ef4444}
+.chat-input-row{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border)}
+.chat-input-row input{flex:1;padding:8px 10px;font-size:0.78rem;background:rgba(255,255,255,0.04);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none}
+.chat-input-row input:focus{border-color:rgba(245,158,11,0.3)}
+.chat-input-row button{padding:8px 14px;font-size:0.75rem;font-weight:700;background:var(--accent);color:#111;border:none;border-radius:8px;white-space:nowrap}
+
+/* Word display for drawer */
+.word-banner{text-align:center;padding:6px;background:rgba(245,158,11,0.08);border-bottom:1px solid var(--border);font-size:0.75rem;color:var(--accent);font-weight:700;letter-spacing:1px;flex-shrink:0}
+.word-banner .theword{font-size:1.1rem;letter-spacing:2px}
+
+/* Word picker */
+.word-picker{display:flex;gap:8px;justify-content:center;padding:12px;flex-wrap:wrap}
+.word-picker button{padding:10px 20px;font-size:0.9rem;font-weight:700;background:rgba(255,255,255,0.04);color:var(--text);border:1px solid var(--border);border-radius:10px;transition:0.2s}
+.word-picker button:hover{border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08);color:var(--accent)}
+
+/* Mobile responsive */
+@media(max-width:768px){
+  .game-main{flex-direction:column}
+  .side-panel{width:100%;height:40vh;border-left:none;border-top:1px solid var(--border)}
+  .draw-area{height:40vh}
+  .word-picker button{padding:8px 14px;font-size:0.8rem}
 }
 
-/* 速度档位 */
-.speed-row{ display:flex;gap:6px;margin-bottom:10px;justify-content:center; }
-.speed-btn{
-  flex:1;padding:7px 6px;font-size:0.7rem;font-weight:600;font-family:inherit;
-  background:rgba(255,255,255,0.02);color:#6a7a9a;
-  border:1px solid rgba(255,255,255,0.05);border-radius:8px;
-  cursor:pointer;transition:0.25s;text-align:center;
-}
-.speed-btn:hover{ color:#b0c8e0;border-color:rgba(255,255,255,0.12); }
-.speed-btn.sel{ border-color:rgba(0,255,200,0.3);color:#00ffc8; }
+/* Result */
+.stat-row{display:flex;justify-content:center;gap:32px;margin:16px 0}
+.stat .n{display:block;font-size:1.8rem;font-weight:800;color:var(--accent)}
+.stat .t{font-size:0.65rem;color:var(--muted);letter-spacing:1px}
 
-.start-btn{
-  width:100%;padding:12px;font-size:0.88rem;font-weight:700;font-family:inherit;
-  border:none;border-radius:12px;cursor:pointer;transition:0.25s;
-  background:linear-gradient(135deg,#00ffc8,#00aacc);color:#051015;
-  box-shadow:0 0 25px rgba(0,255,200,0.2);
-  letter-spacing:1px;margin-top:6px;
-}
-.start-btn:hover{ transform:scale(1.04);box-shadow:0 0 40px rgba(0,255,200,0.35); }
-.start-btn.green{ background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 0 25px rgba(34,197,94,0.2); }
-
-/* 结算 */
-.stat-row{ display:flex;justify-content:center;gap:24px;margin-bottom:20px;flex-wrap:wrap; }
-.stat .n{ display:block;font-size:1.7rem;font-weight:800;color:#e0e8ff;line-height:1.1; }
-.stat .t{ font-size:0.6rem;color:#4a5a7a;letter-spacing:1px }
-.btn-row{ display:flex;gap:8px;justify-content:center;margin-top:16px; }
-.btn{
-  padding:10px 22px;font-size:0.8rem;font-weight:700;font-family:inherit;
-  border:none;border-radius:10px;cursor:pointer;transition:0.25s;
-  background:linear-gradient(135deg,#00ffc8,#00aacc);color:#051015;
-  box-shadow:0 0 20px rgba(0,255,200,0.2);
-}
-.btn:hover{transform:scale(1.06);box-shadow:0 0 35px rgba(0,255,200,0.35)}
-.btn-ghost{
-  padding:10px 22px;font-size:0.8rem;font-weight:700;font-family:inherit;
-  background:rgba(255,255,255,0.03);color:#6a7a9a;
-  border:1px solid rgba(255,255,255,0.06);border-radius:10px;
-  cursor:pointer;transition:0.25s;
-}
-.btn-ghost:hover{color:#a0b8d0;border-color:rgba(255,255,255,0.15)}
-
-.back-btn{
-  position:fixed;top:18px;left:18px;z-index:600;
-  padding:7px 14px;
-  font-size:0.74rem;font-weight:600;font-family:inherit;
-  background:rgba(6,8,16,0.6);backdrop-filter:blur(10px);
-  color:#6a7a9a;border:1px solid rgba(255,255,255,0.06);
-  border-radius:9px;cursor:pointer;transition:0.25s;
-  text-decoration:none;
-}
-.back-btn:hover{color:#00ffc8;border-color:rgba(0,255,200,0.2);box-shadow:0 0 20px rgba(0,255,200,0.06)}
-
-/* 红绿全屏 */
-#reactionFull{
-  position:fixed;inset:0;z-index:300;cursor:pointer;
-  display:none;align-items:center;justify-content:center;
-}
-#reactionFull .big-text{
-  font-size:3rem;font-weight:900;letter-spacing:4px;text-align:center;
-}
-#reactionFull .small-text{
-  font-size:1rem;color:#6a7a9a;letter-spacing:1px;margin-top:8px;
-}
-#reactionFull .round-info{
-  position:absolute;top:24px;left:50%;transform:translateX(-50%);
-  font-size:0.8rem;color:#4a5a7a;letter-spacing:2px;
-}
+/* Back button */
+.back-btn{position:fixed;top:10px;left:10px;z-index:200;padding:6px 12px;font-size:0.7rem;font-weight:600;font-family:inherit;background:rgba(6,8,16,0.7);color:var(--muted);border:1px solid rgba(255,255,255,0.06);border-radius:8px;text-decoration:none;backdrop-filter:blur(8px)}
+.back-btn:hover{color:var(--accent)}
 </style>
 </head>
 <body>
 
-<canvas id="c"></canvas>
-<div id="cursor"><div class="dot"></div></div>
-
 <a class="back-btn" href="../../index.html">← 大厅</a>
 
-<!-- HUD -->
-<div class="hud" id="hud-top">
-  <div class="hud-item"><span class="val" id="hudScore">0</span><span class="lbl">分数</span></div>
-  <div class="hud-item"><span class="val" id="hudTime">30</span><span class="lbl">剩余</span></div>
-  <div class="hud-item"><span class="val" id="hudAcc">—</span><span class="lbl">精度</span></div>
-  <div class="hud-item"><span class="val" id="hudCombo">0</span><span class="lbl">连击</span></div>
-  <div class="hud-item" id="hudHitItem"><span class="val" id="hudHits">0</span><span class="lbl">命中</span></div>
-</div>
-<div class="hud" id="hud-bottom">点击目标 · Click to hit</div>
-
-<!-- 红绿全屏 -->
-<div id="reactionFull">
-  <div class="round-info" id="reactionRound"></div>
-  <div>
-    <div class="big-text" id="reactionBig"></div>
-    <div class="small-text" id="reactionSmall"></div>
+<!-- Lobby -->
+<div class="overlay" id="lobbyOverlay">
+  <div class="card" id="lobbyCard">
+    <h1>🎨 你画我猜</h1>
+    <p class="sub">创建房间，邀请好友，轮流作画猜词</p>
+    <input id="nameInput" placeholder="输入你的昵称" maxlength="12">
+    <button class="btn btn-accent" onclick="createRoom()">创建房间</button>
+    <div style="margin:8px 0;color:var(--muted);font-size:0.7rem">—— 或 ——</div>
+    <input id="joinCode" placeholder="输入 4 位房间码" maxlength="4" style="letter-spacing:4px;text-transform:uppercase">
+    <button class="btn btn-ghost" onclick="joinRoom()">加入房间</button>
   </div>
 </div>
 
-<!-- 开始 -->
-<div class="overlay" id="startOverlay">
+<!-- Waiting room -->
+<div class="overlay hidden" id="waitOverlay">
   <div class="card">
-    <h1>◇ 零点反应</h1>
-    <p class="sub">全屏定位训练 & 红绿反应测试</p>
-
-    <div class="tab-row">
-      <button class="tab-btn sel" data-tab="position">
-        <span class="icon">⊙</span>定位训练
-      </button>
-      <button class="tab-btn" data-tab="reaction">
-        <span class="icon">⏱</span>红绿反应
-      </button>
-    </div>
-
-    <!-- 定位训练参数 -->
-    <div class="param-section active" id="paramPosition">
-      <div class="param-label"><span>静态目标数</span><span class="pv" id="pvStatic">3</span></div>
-      <div class="param-row">
-        <input type="range" class="param-slider" id="cfgStatic" min="1" max="20" value="3">
-      </div>
-
-      <div class="param-label"><span>动态目标数</span><span class="pv" id="pvMoving">2</span></div>
-      <div class="param-row">
-        <input type="range" class="param-slider" id="cfgMoving" min="0" max="15" value="2">
-      </div>
-
-      <div class="param-label"><span>目标形状</span></div>
-      <div class="shape-grid" id="shapeGrid">
-        <button class="shape-chip sel" data-shape="diamond">◇ 菱形</button>
-        <button class="shape-chip sel" data-shape="hexagon">⬡ 六边</button>
-        <button class="shape-chip sel" data-shape="circle">○ 圆形</button>
-        <button class="shape-chip sel" data-shape="cross">✚ 十字</button>
-      </div>
-
-      <div class="param-label"><span>目标大小</span><span class="pv" id="pvSize">28</span></div>
-      <div class="param-row">
-        <input type="range" class="param-slider" id="cfgSize" min="12" max="55" value="28">
-      </div>
-
-      <div class="param-label"><span>最大同屏数量</span><span class="pv" id="pvMax">5</span></div>
-      <div class="param-row">
-        <input type="range" class="param-slider" id="cfgMax" min="1" max="15" value="3">
-      </div>
-
-      <div class="param-label"><span>移动速度</span></div>
-      <div class="speed-row">
-        <button class="speed-btn" data-speed="slow">慢速</button>
-        <button class="speed-btn sel" data-speed="normal">标准</button>
-        <button class="speed-btn" data-speed="fast">快速</button>
-      </div>
-
-      <div class="param-label"><span>总时长 (秒)</span><span class="pv" id="pvDur">30</span></div>
-      <div class="param-row">
-        <input type="range" class="param-slider" id="cfgDur" min="10" max="120" value="30">
-      </div>
-
-      <div class="param-label"><span>静态目标停留 (秒)</span><span class="pv" id="pvStay">2.0</span></div>
-      <div class="param-row">
-        <input type="range" class="param-slider" id="cfgStay" min="0.5" max="6" step="0.1" value="2">
-      </div>
-
-      <button class="start-btn" onclick="startPosition()">▶ 开始定位训练</button>
-    </div>
-
-    <!-- 红绿反应参数 -->
-    <div class="param-section" id="paramReaction">
-      <div class="param-label"><span>测试轮数</span><span class="pv" id="pvRounds">10</span></div>
-      <div class="param-row">
-        <input type="range" class="param-slider" id="cfgRounds" min="5" max="50" value="10">
-      </div>
-
-      <div class="param-label"><span>随机延迟范围 (秒)</span><span class="pv" id="pvDelay">1.0 - 3.0</span></div>
-      <div class="param-row">
-        <span style="font-size:0.7rem;color:#6a7a9a">短</span>
-        <input type="range" class="param-slider" id="cfgDelayMin" min="0.5" max="5" step="0.1" value="1">
-        <input type="range" class="param-slider" id="cfgDelayMax" min="1" max="8" step="0.1" value="3">
-        <span style="font-size:0.7rem;color:#6a7a9a">长</span>
-      </div>
-
-      <div class="param-label"><span>红绿比例</span><span class="pv" id="pvRatio">绿 80% / 红 20%</span></div>
-      <div class="param-row">
-        <input type="range" class="param-slider" id="cfgGreenPct" min="50" max="100" value="80">
-      </div>
-
-      <button class="start-btn green" onclick="startReaction()">▶ 开始红绿反应测试</button>
-    </div>
+    <h1>🎨 等待对手</h1>
+    <div class="code-display" id="roomCodeDisplay"></div>
+    <p class="wait-text" id="waitMsg">等待对手加入...</p>
+    <button class="btn btn-ghost" onclick="cancelRoom()" style="margin-top:16px">取消房间</button>
   </div>
 </div>
 
-<!-- 结算 -->
+<!-- Word picker overlay -->
+<div class="overlay hidden" id="wordOverlay">
+  <div class="card">
+    <h1>📝 选择词语</h1>
+    <p class="sub">选一个你来画的词</p>
+    <div class="word-picker" id="wordPicker"></div>
+  </div>
+</div>
+
+<!-- Result overlay -->
 <div class="overlay hidden" id="resultOverlay">
   <div class="card">
-    <div style="font-size:2.6rem;margin-bottom:4px" id="resultEmoji">◇</div>
+    <div style="font-size:2.4rem;margin-bottom:6px" id="resultEmoji">🎉</div>
     <div class="stat-row">
-      <div class="stat"><span class="n" id="resultScore" style="color:#00ffc8">0</span><span class="t">得分</span></div>
-      <div class="stat"><span class="n" id="resultAcc">0%</span><span class="t">精度</span></div>
-      <div class="stat"><span class="n" id="resultAvg">0ms</span><span class="t">均时</span></div>
+      <div class="stat"><span class="n" id="myScore">0</span><span class="t">我的得分</span></div>
+      <div class="stat"><span class="n" id="theirScore">0</span><span class="t">对手得分</span></div>
     </div>
-    <div class="stat-row" style="margin-bottom:14px">
-      <div class="stat"><span class="n" id="resultCombo" style="font-size:1.2rem">0</span><span class="t">最大连击</span></div>
-      <div class="stat"><span class="n" id="resultHits" style="font-size:1.2rem">0</span><span class="t">命中</span></div>
-      <div class="stat"><span class="n" id="resultBest" style="font-size:1.2rem">0</span><span class="t">记录</span></div>
+    <div class="stat-row">
+      <div class="stat"><span class="n" id="myHits">0</span><span class="t">猜中</span></div>
+      <div class="stat"><span class="n" id="myDraws">0</span><span class="t">作画</span></div>
     </div>
-    <div class="btn-row">
-      <button class="btn" id="replayBtn">再来一局</button>
-      <button class="btn-ghost" onclick="showStart()">换模式</button>
+    <button class="btn btn-accent" onclick="playAgain()">再来一局</button>
+    <button class="btn btn-ghost" onclick="backToLobby()">返回大厅</button>
+  </div>
+</div>
+
+<!-- Game UI -->
+<div id="gameUI">
+  <div class="game-top">
+    <span class="room-code">🏠 <span id="topRoomCode"></span></span>
+    <span class="round-info" id="roundInfo">第 1 轮</span>
+    <span class="scores"><span id="topMyScore">0</span> : <span id="topTheirScore">0</span></span>
+    <span class="timer" id="roundTimer"></span>
+  </div>
+  <div class="word-banner" id="wordBanner" style="display:none">
+    你的词：<span class="theword" id="theWord"></span>
+  </div>
+  <div class="toolbar" id="toolbar">
+    <button class="color sel" style="background:#111;color:#111" data-color="#111" onclick="pickColor(this,'#111')"></button>
+    <button class="color" style="background:#e03131" data-color="#e03131" onclick="pickColor(this,'#e03131')"></button>
+    <button class="color" style="background:#1971c2" data-color="#1971c2" onclick="pickColor(this,'#1971c2')"></button>
+    <button class="color" style="background:#2f9e44" data-color="#2f9e44" onclick="pickColor(this,'#2f9e44')"></button>
+    <button class="color" style="background:#f08c00" data-color="#f08c00" onclick="pickColor(this,'#f08c00')"></button>
+    <button class="color" style="background:#9c36b5" data-color="#9c36b5" onclick="pickColor(this,'#9c36b5')"></button>
+    <button class="size-btn sel" data-size="3" onclick="pickSize(this,3)">细</button>
+    <button class="size-btn" data-size="6" onclick="pickSize(this,6)">中</button>
+    <button class="size-btn" data-size="12" onclick="pickSize(this,12)">粗</button>
+    <button class="tool-btn eraser" id="eraserBtn" onclick="toggleEraser()">🧹 橡皮</button>
+    <button class="tool-btn" onclick="clearCanvas()">🔄 清屏</button>
+  </div>
+  <div class="game-main">
+    <div class="draw-area">
+      <canvas id="drawCanvas"></canvas>
+    </div>
+    <div class="side-panel">
+      <div class="chat-area">
+        <div class="chat-msgs" id="chatMsgs"></div>
+        <div class="chat-input-row">
+          <input id="chatInput" placeholder="输入你的猜测..." maxlength="30" onkeydown="if(event.key==='Enter')sendGuess()">
+          <button onclick="sendGuess()">发送</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
+<script src="https://imgcache.qq.com/qcloud/cloudbase-js-sdk/4.0.0/cloudbase.full.js"></script>
 <script>
-// ======================= AUDIO =======================
-let actx = null;
-function ensureAudio(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); }
-function playTone(freq, dur, type, vol, delay){
-  try{
-    ensureAudio();
-    const t = actx.currentTime + (delay||0);
-    const o = actx.createOscillator();
-    const g = actx.createGain();
-    o.type=type||'sine'; o.frequency.value=freq;
-    g.gain.setValueAtTime(vol||0.08, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t+dur);
-    o.connect(g); g.connect(actx.destination);
-    o.start(t); o.stop(t+dur);
-  }catch(e){}
+// ====================== CloudBase ======================
+const ENV_ID = 'games-d3g5ler2z3252069c';
+let db = null, _ = null, cloudReady = false;
+
+const app = cloudbase.init({ env: ENV_ID });
+db = app.database();
+_ = db.command;
+app.auth().signInAnonymously().then(() => {
+  cloudReady = true;
+  console.log('[你画我猜] CloudBase 已就绪');
+}).catch(e => console.warn('[你画我猜] CloudBase 登录失败:', e.message));
+
+// ====================== Word Bank ======================
+const WORDS = [
+  '苹果','香蕉','橘子','西瓜','草莓','葡萄','芒果','菠萝','樱桃','柠檬',
+  '熊猫','老虎','狮子','大象','长颈鹿','企鹅','海豚','兔子','猫咪','小狗',
+  '汽车','飞机','火车','自行车','火箭','轮船','直升机','坦克','公交车','地铁',
+  '太阳','月亮','星星','彩虹','闪电','雪花','火焰','海浪','山峰','森林',
+  '手机','电脑','键盘','耳机','眼镜','时钟','雨伞','剪刀','椅子','台灯',
+  '篮球','足球','乒乓球','羽毛球','游泳','跑步','跳舞','唱歌','滑雪','钓鱼',
+  '汉堡','披萨','蛋糕','冰淇淋','面条','饺子','火锅','寿司','薯条','巧克力',
+  '医生','警察','消防员','老师','厨师','画家','宇航员','飞行员','歌手','科学家',
+  '城堡','金字塔','长城','铁塔','桥','风车','灯塔','帐篷','教堂','宫殿',
+  '爱心','笑脸','星星','月亮','云朵','花朵','树叶','贝壳','蝴蝶','彩虹',
+  '鞋子','帽子','围巾','手套','袜子','书包','戒指','项链','手表','墨镜',
+  '恐龙','鲨鱼','鲸鱼','螃蟹','乌龟','蝴蝶','蜻蜓','瓢虫','蜗牛','蜘蛛',
+  '玫瑰花','向日葵','仙人掌','竹子','蘑菇','枫叶','椰子树','樱花','荷花','蒲公英',
+  '棒球','高尔夫','拳击','击剑','射箭','帆船','滑板','蹦床','秋千','跷跷板',
+  '吉他','钢琴','小提琴','鼓','话筒','喇叭','望远镜','放大镜','指南针','地图'
+];
+
+function randomWords(n) {
+  const pick = [];
+  const pool = [...WORDS];
+  for (let i = 0; i < n && pool.length > 0; i++) {
+    const idx = Math.floor(Math.random() * pool.length);
+    pick.push(pool.splice(idx, 1)[0]);
+  }
+  return pick;
 }
-function sfxHit(){ playTone(700,0.04,'sine',0.06);setTimeout(()=>playTone(1000,0.04,'sine',0.05),25); }
-function sfxPerfect(){ playTone(1000,0.06,'sine',0.08);setTimeout(()=>playTone(1400,0.06,'sine',0.06),40);setTimeout(()=>playTone(1800,0.08,'sine',0.05),80); }
-function sfxMiss(){ playTone(160,0.05,'sawtooth',0.04); }
-function sfxStart(){ playTone(440,0.08,'sine',0.06);setTimeout(()=>playTone(660,0.08,'sine',0.06),70);setTimeout(()=>playTone(880,0.12,'sine',0.05),140); }
-function sfxEnd(){ playTone(880,0.08,'sine',0.06);setTimeout(()=>playTone(1100,0.08,'sine',0.06),90);setTimeout(()=>playTone(1500,0.14,'sine',0.05),180); }
-function sfxReactionFast(){ playTone(1200,0.04,'sine',0.07);setTimeout(()=>playTone(1800,0.06,'sine',0.06),30); }
-function sfxReactionWrong(){ playTone(80,0.3,'sawtooth',0.06); }
 
-// ======================= CONFIG STATE =======================
-let gameMode = 'position'; // 'position' | 'reaction'
-
-// Position config
-let cfgStatic = 3;
-let cfgMoving = 2;
-let cfgShapes = ['diamond','hexagon','circle','cross'];
-let cfgSize = 28;
-let cfgMaxTargets = 3;
-let cfgSpeed = 'normal';
-let cfgDuration = 30;
-let cfgStayTime = 2.0;
-
-let speedMult = { slow: 0.5, normal: 1.0, fast: 2.0 };
-
-// Reaction config
-let cfgRounds = 10;
-let cfgDelayMin = 1.0;
-let cfgDelayMax = 3.0;
-let cfgGreenPct = 80;
-
-// ======================= GAME STATE =======================
-let score = 0, combo = 0, maxCombo = 0;
-let gameActive = false, timeLeft = 0;
+// ====================== Game State ======================
+let myName = '';
+let roomId = '';
+let isHost = false;
+let myRole = ''; // 'drawer' | 'guesser'
+let currentWord = '';
+let round = 0;
+let totalRounds = 6;
+let myScoreVal = 0, theirScoreVal = 0;
+let myHitsCount = 0, myDrawsCount = 0;
+let roundActive = false;
+let roundTimeLeft = 60;
 let timerInterval = null;
-let targets = [];
-let totalClicks = 0, totalDist = 0, totalHits = 0;
-let lastHitTime = 0;
-let accRunning = 0;
-let bestScore = parseInt(localStorage.getItem('moleBest') || '0');
-let bestReaction = parseInt(localStorage.getItem('reactionBest') || '999');
-let spawnTimer = null;
-let staticRemaining = 0, movingRemaining = 0;
-let spawnQueue = [];
+let pollTimer = null;
 
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const cursorEl = document.getElementById('cursor');
+// Drawing
+let penColor = '#111';
+let penSize = 3;
+let isEraser = false;
+let strokes = [];
+let pendingStrokes = [];
+let lastSyncedLen = 0;
 
-let W, H;
-function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-window.addEventListener('resize', resize);
-resize();
+// ====================== Canvas ======================
+const drawCanvas = document.getElementById('drawCanvas');
+const dctx = drawCanvas.getContext('2d');
+let drawing = false;
 
-// ======================= UI SETUP =======================
-// Tab switching
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('sel'));
-    btn.classList.add('sel');
-    gameMode = btn.dataset.tab;
-    document.querySelectorAll('.param-section').forEach(s => s.classList.remove('active'));
-    document.getElementById(gameMode === 'position' ? 'paramPosition' : 'paramReaction').classList.add('active');
-  });
+function resizeCanvas() {
+  const area = drawCanvas.parentElement;
+  drawCanvas.width = area.clientWidth;
+  drawCanvas.height = area.clientHeight;
+  redrawAll();
+}
+window.addEventListener('resize', resizeCanvas);
+
+function canvasPos(e) {
+  const rect = drawCanvas.getBoundingClientRect();
+  const scaleX = drawCanvas.width / rect.width;
+  const scaleY = drawCanvas.height / rect.height;
+  return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+}
+
+drawCanvas.addEventListener('pointerdown', e => {
+  if (myRole !== 'drawer' || !roundActive) return;
+  drawing = true;
+  const p = canvasPos(e);
+  dctx.beginPath();
+  dctx.moveTo(p.x, p.y);
+  pendingStrokes.push({ type: 'down', x: p.x, y: p.y, color: isEraser ? '#ffffff' : penColor, width: isEraser ? 20 : penSize });
 });
 
-// Shape chips
-document.querySelectorAll('.shape-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    chip.classList.toggle('sel');
-    updateShapeCfg();
-  });
+drawCanvas.addEventListener('pointermove', e => {
+  if (!drawing || myRole !== 'drawer' || !roundActive) return;
+  const p = canvasPos(e);
+  dctx.lineTo(p.x, p.y);
+  dctx.strokeStyle = isEraser ? '#ffffff' : penColor;
+  dctx.lineWidth = isEraser ? 20 : penSize;
+  dctx.lineCap = 'round';
+  dctx.lineJoin = 'round';
+  dctx.stroke();
+  dctx.beginPath();
+  dctx.moveTo(p.x, p.y);
+  pendingStrokes.push({ type: 'move', x: p.x, y: p.y });
 });
 
-function updateShapeCfg(){
-  cfgShapes = [];
-  document.querySelectorAll('.shape-chip.sel').forEach(c => cfgShapes.push(c.dataset.shape));
-  if(cfgShapes.length === 0){ cfgShapes = ['diamond']; document.querySelector('.shape-chip[data-shape="diamond"]').classList.add('sel'); }
-}
-
-// Speed buttons
-document.querySelectorAll('.speed-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('sel'));
-    btn.classList.add('sel');
-    cfgSpeed = btn.dataset.speed;
-  });
+drawCanvas.addEventListener('pointerup', () => {
+  if (!drawing) return;
+  drawing = false;
+  dctx.beginPath();
+  pendingStrokes.push({ type: 'up' });
+  flushStrokes();
 });
 
-// Sliders
-function bindSlider(id, setter, fmt){
-  const s = document.getElementById(id);
-  s.addEventListener('input', () => {
-    const v = parseFloat(s.value);
-    setter(v);
-    const pv = document.getElementById(s.id.replace('cfg','pv'));
-    if(pv) pv.textContent = fmt ? fmt(v) : v;
-  });
-}
-
-bindSlider('cfgStatic', v => cfgStatic = v);
-bindSlider('cfgMoving', v => cfgMoving = v);
-bindSlider('cfgSize', v => cfgSize = v);
-bindSlider('cfgMax', v => cfgMaxTargets = v);
-bindSlider('cfgDur', v => cfgDuration = v);
-bindSlider('cfgStay', v => cfgStayTime = v, v => v.toFixed(1));
-bindSlider('cfgRounds', v => cfgRounds = v);
-bindSlider('cfgDelayMin', v => { cfgDelayMin = Math.min(v, cfgDelayMax - 0.1); document.getElementById('cfgDelayMin').value = cfgDelayMin; }, v => v.toFixed(1));
-bindSlider('cfgDelayMax', v => { cfgDelayMax = Math.max(v, cfgDelayMin + 0.1); document.getElementById('cfgDelayMax').value = cfgDelayMax; }, v => v.toFixed(1));
-bindSlider('cfgGreenPct', v => cfgGreenPct = v, v => v + '%');
-
-// update PV display for range sliders
-['cfgDelayMin','cfgDelayMax'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    document.getElementById('pvDelay').textContent =
-      cfgDelayMin.toFixed(1) + ' - ' + cfgDelayMax.toFixed(1);
-  });
-});
-document.getElementById('cfgGreenPct').addEventListener('input', () => {
-  document.getElementById('pvRatio').textContent = '绿 ' + cfgGreenPct + '% / 红 ' + (100 - cfgGreenPct) + '%';
+drawCanvas.addEventListener('pointerleave', () => {
+  if (drawing) { drawing = false; dctx.beginPath(); pendingStrokes.push({ type: 'up' }); flushStrokes(); }
 });
 
-// ======================= POSITION MODE =======================
-let ripples = [];
-
-function spawnTarget(){
-  if(!gameActive) return;
-  if(targets.length >= cfgMaxTargets) return;
-
-  const margin = cfgSize + 20;
-  const isTracking = spawnQueue.length > 0 ? spawnQueue.shift() : false;
-
-  let x, y, vx = 0, vy = 0;
-  const sm = speedMult[cfgSpeed];
-
-  if(isTracking){
-    const edge = Math.floor(Math.random() * 4);
-    switch(edge){
-      case 0: x = -margin; y = Math.random() * H; vx = (1 + Math.random() * 1.5) * sm; vy = (Math.random() - 0.5) * 2 * sm; break;
-      case 1: x = W + margin; y = Math.random() * H; vx = -(1 + Math.random() * 1.5) * sm; vy = (Math.random() - 0.5) * 2 * sm; break;
-      case 2: x = Math.random() * W; y = -margin; vx = (Math.random() - 0.5) * 2 * sm; vy = (1 + Math.random() * 1.5) * sm; break;
-      default: x = Math.random() * W; y = H + margin; vx = (Math.random() - 0.5) * 2 * sm; vy = -(1 + Math.random() * 1.5) * sm; break;
-    }
-  } else {
-    x = margin + Math.random() * (W - margin * 2);
-    y = margin + Math.random() * (H - margin * 2);
-  }
-
-  const t = {
-    x, y, vx, vy,
-    size: cfgSize,
-    maxSize: cfgSize,
-    shape: cfgShapes[Math.floor(Math.random() * cfgShapes.length)],
-    isTracking,
-    startTime: Date.now(),
-    opacity: 1,
-    hit: false,
-    hue: Math.random() < 0.15 ? 45 : 170
-  };
-
-  if(!isTracking){
-    const stay = cfgStayTime * 1000;
-    t.timer = setTimeout(() => {
-      if(!t.hit){ onMiss(); removeTarget(t); }
-    }, stay);
-  }
-
-  targets.push(t);
+function pickColor(btn, color) {
+  document.querySelectorAll('.toolbar .color').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  penColor = color;
+  isEraser = false;
+  document.getElementById('eraserBtn').classList.remove('sel');
 }
 
-function removeTarget(t){
-  const idx = targets.indexOf(t);
-  if(idx >= 0) targets.splice(idx, 1);
-  if(t.timer){ clearTimeout(t.timer); t.timer = null; }
+function pickSize(btn, size) {
+  document.querySelectorAll('.toolbar .size-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  penSize = size;
 }
 
-function onMiss(){
-  combo = 0;
-  updateHUD();
-  sfxMiss();
+function toggleEraser() {
+  isEraser = !isEraser;
+  document.getElementById('eraserBtn').classList.toggle('sel', isEraser);
+  if (isEraser) document.querySelectorAll('.toolbar .color').forEach(b => b.classList.remove('sel'));
 }
 
-function scheduleNext(){
-  if(!gameActive) return;
-  if(spawnTimer){ clearTimeout(spawnTimer); }
-
-  // Prioritize spawning from queue
-  if(spawnQueue.length > 0 && targets.length < cfgMaxTargets){
-    spawnTarget();
-  }
-
-  // Determine interval: dynamic based on remaining targets and duration
-  const totalRemaining = staticRemaining + movingRemaining;
-  if(totalRemaining <= 0 && targets.length === 0){
-    // All spawned, game will end when timer runs out or all cleared
-    return;
-  }
-
-  const avgInterval = (cfgDuration * 1000) / Math.max(totalRemaining, 1);
-  const interval = Math.max(200, Math.min(avgInterval, 1500));
-  spawnTimer = setTimeout(() => { spawnTarget(); scheduleNext(); }, interval);
+function clearCanvas() {
+  if (myRole !== 'drawer' || !roundActive) return;
+  dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  strokes = [];
+  pendingStrokes = [];
+  lastSyncedLen = 0;
+  syncClear();
 }
 
-// ======================= CLICK =======================
-canvas.addEventListener('click', e => {
-  if(!gameActive || gameMode !== 'position') return;
-  const mx = e.clientX;
-  const my = e.clientY;
-
-  let best = null, bestDist = Infinity;
-  for(const t of targets){
-    if(t.hit) continue;
-    const dx = mx - t.x;
-    const dy = my - t.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if(dist <= t.size && dist < bestDist){
-      best = t;
-      bestDist = dist;
+function redrawAll() {
+  dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  for (const s of strokes) {
+    if (s.type === 'clear') { dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height); continue; }
+    if (s.type === 'down') {
+      dctx.beginPath();
+      dctx.moveTo(s.x, s.y);
+    } else if (s.type === 'move') {
+      dctx.lineTo(s.x, s.y);
+      dctx.strokeStyle = s.color;
+      dctx.lineWidth = s.width;
+      dctx.lineCap = 'round';
+      dctx.lineJoin = 'round';
+      dctx.stroke();
+      dctx.beginPath();
+      dctx.moveTo(s.x, s.y);
+    } else if (s.type === 'up') {
+      dctx.beginPath();
     }
   }
+}
 
-  if(best){
-    best.hit = true;
-    totalHits++;
-    totalClicks++;
-    totalDist += bestDist;
-
-    const now = Date.now();
-    const COMBO_TIMEOUT = 1800;
-    if(now - lastHitTime < COMBO_TIMEOUT){ combo++; if(combo > maxCombo) maxCombo = combo; }
-    else { combo = 0; }
-    lastHitTime = now;
-
-    const acc = 1 - (bestDist / best.size);
-    let pts = Math.round(10 + acc * 40);
-    if(combo >= 3) pts = Math.round(pts * (1 + combo * 0.1));
-    score += pts;
-
-    accRunning = Math.round((1 - totalDist / (totalClicks * best.size)) * 100);
-    accRunning = Math.max(0, Math.min(100, accRunning));
-
-    if(acc > 0.85){ sfxPerfect(); showPop(mx, my, '+' + pts, '#ffd700'); }
-    else { sfxHit(); showPop(mx, my, '+' + pts, '#00ffc8'); }
-
-    if(combo >= 4) showComboPop(mx, my, combo);
-
-    spawnRipple(best.x, best.y, acc);
-    removeTarget(best);
-    updateHUD();
-
-    // Spawn next if there are more in queue
-    if(spawnQueue.length > 0 && targets.length < cfgMaxTargets){
-      spawnTarget();
-    }
-  }
-});
-
-// ======================= RIPPLE PARTICLES =======================
-function spawnRipple(x, y, acc){
-  const count = acc > 0.85 ? 14 : 7;
-  const hue = acc > 0.85 ? 'gold' : 'cyan';
-  for(let i=0;i<count;i++){
-    const angle = (Math.PI*2/count)*i + Math.random()*0.5;
-    const speed = 2 + Math.random() * 6;
-    ripples.push({
-      x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
-      life: 1, decay: 0.02 + Math.random() * 0.03, hue
+// ====================== Sync ======================
+async function flushStrokes() {
+  if (pendingStrokes.length === 0 || !cloudReady) return;
+  const batch = [...pendingStrokes];
+  pendingStrokes = [];
+  strokes.push(...batch);
+  try {
+    await db.collection('game_sessions').doc(roomId).update({
+      drawStrokes: _.push(batch),
+      drawVer: _.inc(1)
     });
-  }
+  } catch(e) { console.warn('sync write err:', e.message); }
 }
 
-// ======================= POPUPS =======================
-function showPop(x, y, text, color){
-  const el = document.createElement('div');
-  el.className = 'pop';
-  el.style.left = x + 'px'; el.style.top = y + 'px';
-  el.style.color = color;
-  el.textContent = text;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 700);
+async function syncClear() {
+  if (!cloudReady) return;
+  try {
+    await db.collection('game_sessions').doc(roomId).update({
+      drawStrokes: _.push([{ type: 'clear' }]),
+      drawVer: _.inc(1)
+    });
+  } catch(e) { console.warn('sync clear err:', e.message); }
 }
 
-function showComboPop(x, y, n){
-  const el = document.createElement('div');
-  el.className = 'combo-pop';
-  el.style.left = x + 'px'; el.style.top = (y - 22) + 'px';
-  el.textContent = n + 'x COMBO';
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 800);
+async function syncWord(action, data) {
+  if (!cloudReady) return;
+  try {
+    await db.collection('game_sessions').doc(roomId).update({
+      wordAction: _.set({ action, data, time: Date.now() })
+    });
+  } catch(e) { console.warn('sync word err:', e.message); }
 }
 
-// ======================= HUD =======================
-function updateHUD(){
-  document.getElementById('hudScore').textContent = score;
-  document.getElementById('hudCombo').textContent = combo;
-  document.getElementById('hudAcc').textContent = totalClicks > 0 ? accRunning + '%' : '—';
-  document.getElementById('hudHits').textContent = totalHits;
+async function syncChat(sender, text, cls) {
+  if (!cloudReady) return;
+  try {
+    await db.collection('game_sessions').doc(roomId).update({
+      chatMsg: _.set({ sender, text, cls, time: Date.now() })
+    });
+  } catch(e) { console.warn('sync chat err:', e.message); }
 }
 
-// ======================= RENDER =======================
-function drawShape(t){
-  const { x, y, size: s, shape, opacity: alpha, hue } = t;
-  const r = s * 0.7;
-  const col = hue === 45
-    ? `rgba(255,200,0,${alpha})`
-    : `rgba(0,255,200,${alpha})`;
-  const glowCol = hue === 45
-    ? `rgba(255,200,0,${0.5*alpha})`
-    : `rgba(0,255,200,${0.5*alpha})`;
+async function syncScoreFinal(hostScore, guestScore) {
+  if (!cloudReady) return;
+  try {
+    await db.collection('game_sessions').doc(roomId).update({
+      gameScore: _.set({ hostScore: hostScore, guestScore: guestScore, time: Date.now() })
+    });
+  } catch(e) {}
+}
 
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.shadowColor = glowCol;
-  ctx.shadowBlur = s * 0.7;
-  ctx.fillStyle = col;
-  ctx.strokeStyle = col;
-  ctx.lineWidth = 1.5;
+async function syncGameEvent(action, data) {
+  if (!cloudReady) return;
+  try {
+    await db.collection('game_sessions').doc(roomId).update({
+      gameEvent: _.set({ action, data: data || null, time: Date.now() })
+    });
+  } catch(e) {}
+}
 
-  switch(shape){
-    case 'diamond':
-      ctx.beginPath();
-      ctx.moveTo(0, -r);
-      ctx.lineTo(r * 0.7, 0);
-      ctx.lineTo(0, r);
-      ctx.lineTo(-r * 0.7, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.shadowBlur = s * 0.3;
-      ctx.fillStyle = `rgba(255,255,255,${0.5*alpha})`;
-      ctx.beginPath();
-      ctx.moveTo(0, -r * 0.4);
-      ctx.lineTo(r * 0.25, 0);
-      ctx.lineTo(0, r * 0.4);
-      ctx.lineTo(-r * 0.25, 0);
-      ctx.closePath();
-      ctx.fill();
-      break;
+// ====================== Poll ======================
+let lastDrawVer = 0;
+let lastWordTime = 0;
+let lastChatTime = 0;
+let lastScoreTime = 0;
+let lastEventTime = 0;
+let lastGuestReady = false;
 
-    case 'hexagon':
-      ctx.beginPath();
-      for(let i=0;i<6;i++){
-        const a = Math.PI/6 + i * Math.PI/3;
-        const px = Math.cos(a) * r;
-        const py = Math.sin(a) * r;
-        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+async function poll() {
+  if (!cloudReady || !roomId) return;
+  try {
+    const { data } = await db.collection('game_sessions').doc(roomId).get();
+    const doc = (data && data[0]) || {};
+    const ds = doc.drawStrokes || [];
+    const dv = doc.drawVer || 0;
+    const wa = doc.wordAction || { time: 0 };
+    const cm = doc.chatMsg || { time: 0 };
+    const gs = doc.gameScore || { time: 0 };
+    const ge = doc.gameEvent || { time: 0 };
+
+    // New strokes
+    if (dv > lastDrawVer && ds.length > 0) {
+      const newStrokes = ds.slice(-(dv - lastDrawVer) * 2); // approximate
+      for (const s of newStrokes) {
+        strokes.push(s);
+        if (s.type === 'clear') {
+          dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        } else if (s.type === 'down') {
+          dctx.beginPath();
+          dctx.moveTo(s.x, s.y);
+        } else if (s.type === 'move') {
+          dctx.lineTo(s.x, s.y);
+          dctx.strokeStyle = s.color;
+          dctx.lineWidth = s.width;
+          dctx.lineCap = 'round';
+          dctx.lineJoin = 'round';
+          dctx.stroke();
+          dctx.beginPath();
+          dctx.moveTo(s.x, s.y);
+        } else if (s.type === 'up') {
+          dctx.beginPath();
+        }
       }
-      ctx.closePath();
-      ctx.fill();
-      ctx.shadowBlur = s * 0.3;
-      ctx.fillStyle = `rgba(255,255,255,${0.4*alpha})`;
-      ctx.beginPath();
-      for(let i=0;i<6;i++){
-        const a = Math.PI/6 + i * Math.PI/3;
-        const px = Math.cos(a) * r * 0.45;
-        const py = Math.sin(a) * r * 0.45;
-        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.closePath();
-      ctx.fill();
-      break;
-
-    case 'circle':
-      ctx.beginPath();
-      ctx.arc(0, 0, r, 0, Math.PI*2);
-      ctx.fill();
-      ctx.shadowBlur = s * 0.3;
-      ctx.fillStyle = `rgba(255,255,255,${0.45*alpha})`;
-      ctx.beginPath();
-      ctx.arc(0, 0, r * 0.4, 0, Math.PI*2);
-      ctx.fill();
-      break;
-
-    case 'cross':
-      const w = r * 0.3;
-      ctx.beginPath();
-      ctx.moveTo(-w, -r);
-      ctx.lineTo(w, -r);
-      ctx.lineTo(w, -w);
-      ctx.lineTo(r, -w);
-      ctx.lineTo(r, w);
-      ctx.lineTo(w, w);
-      ctx.lineTo(w, r);
-      ctx.lineTo(-w, r);
-      ctx.lineTo(-w, w);
-      ctx.lineTo(-r, w);
-      ctx.lineTo(-r, -w);
-      ctx.lineTo(-w, -w);
-      ctx.closePath();
-      ctx.fill();
-      ctx.shadowBlur = s * 0.2;
-      ctx.fillStyle = `rgba(255,255,255,${0.4*alpha})`;
-      ctx.beginPath();
-      ctx.moveTo(-w*0.4, -r*0.5);
-      ctx.lineTo(w*0.4, -r*0.5);
-      ctx.lineTo(w*0.4, -w*0.4);
-      ctx.lineTo(r*0.5, -w*0.4);
-      ctx.lineTo(r*0.5, w*0.4);
-      ctx.lineTo(w*0.4, w*0.4);
-      ctx.lineTo(w*0.4, r*0.5);
-      ctx.lineTo(-w*0.4, r*0.5);
-      ctx.lineTo(-w*0.4, w*0.4);
-      ctx.lineTo(-r*0.5, w*0.4);
-      ctx.lineTo(-r*0.5, -w*0.4);
-      ctx.lineTo(-w*0.4, -w*0.4);
-      ctx.closePath();
-      ctx.fill();
-      break;
-  }
-
-  ctx.restore();
-}
-
-function render(){
-  ctx.clearRect(0, 0, W, H);
-
-  // Dot grid
-  const gap = 42;
-  ctx.fillStyle = 'rgba(255,255,255,0.018)';
-  for(let x = gap; x < W; x += gap){
-    for(let y = gap; y < H; y += gap){
-      ctx.beginPath(); ctx.arc(x, y, 0.5, 0, Math.PI*2); ctx.fill();
-    }
-  }
-
-  // Ripples
-  for(let i=ripples.length-1;i>=0;i--){
-    const r = ripples[i];
-    r.x += r.vx; r.y += r.vy;
-    r.life -= r.decay;
-    if(r.life <= 0){ ripples.splice(i,1); continue; }
-    ctx.beginPath();
-    ctx.arc(r.x, r.y, 2.5, 0, Math.PI*2);
-    ctx.fillStyle = r.hue === 'gold' ? `rgba(255,200,0,${r.life*0.7})` : `rgba(0,255,200,${r.life*0.7})`;
-    ctx.fill();
-  }
-
-  // Targets
-  for(const t of targets){
-    if(t.hit) continue;
-
-    if(t.isTracking){
-      t.x += t.vx;
-      t.y += t.vy;
-      if(t.x < -60 || t.x > W + 60 || t.y < -60 || t.y > H + 60){
-        if(!t.hit){ onMiss(); }
-        removeTarget(t);
-        continue;
-      }
+      lastDrawVer = dv;
     }
 
-    if(!t.isTracking){
-      const elapsed = Date.now() - t.startTime;
-      const totalStay = cfgStayTime * 1000;
-      const progress = Math.min(elapsed / totalStay, 1);
-      t.size = t.maxSize * (1 - progress * 0.55);
-      t.opacity = 1 - progress * 0.4;
+    // Word action
+    if (wa.time > lastWordTime) {
+      lastWordTime = wa.time;
+      handleWordAction(wa.action, wa.data);
     }
 
-    drawShape(t);
-  }
+    // Chat message
+    if (cm.time > lastChatTime) {
+      lastChatTime = cm.time;
+      addChatMsg(cm.sender, cm.text, cm.cls);
+    }
 
-  requestAnimationFrame(render);
+    // Score update
+    if (gs.time > lastScoreTime) {
+      lastScoreTime = gs.time;
+      if (isHost) { myScoreVal = gs.hostScore || 0; theirScoreVal = gs.guestScore || 0; }
+      else { myScoreVal = gs.guestScore || 0; theirScoreVal = gs.hostScore || 0; }
+      updateScoreDisplay();
+    }
+
+    // Game event
+    if (ge.time > lastEventTime) {
+      lastEventTime = ge.time;
+      handleGameEvent(ge.action, ge.data);
+    }
+
+    // Guest joined
+    const room = await getRoom();
+    if (room && room.state === 'ready' && !lastGuestReady) {
+      lastGuestReady = true;
+      document.getElementById('waitMsg').textContent = '对手已加入！';
+      setTimeout(startGame, 800);
+    }
+  } catch(e) {}
 }
 
-// ======================= POSITION GAME FLOW =======================
-function startPosition(){
-  score = 0; combo = 0; maxCombo = 0;
-  totalClicks = 0; totalDist = 0; totalHits = 0;
-  gameActive = true; timeLeft = cfgDuration; lastHitTime = 0;
-  accRunning = 0;
-  targets = [];
-  ripples = [];
-  staticRemaining = cfgStatic;
-  movingRemaining = cfgMoving;
-
-  // Build spawn queue
-  spawnQueue = [];
-  for(let i=0;i<cfgStatic;i++) spawnQueue.push(false);
-  for(let i=0;i<cfgMoving;i++) spawnQueue.push(true);
-  // Shuffle
-  for(let i=spawnQueue.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [spawnQueue[i], spawnQueue[j]] = [spawnQueue[j], spawnQueue[i]];
+function handleWordAction(action, data) {
+  if (action === 'pickWord') {
+    // Drawer picked a word - guesser sees blank
+    document.getElementById('theWord').textContent = '对方正在画...';
+    document.getElementById('wordBanner').style.display = 'block';
+  } else if (action === 'revealWord') {
+    document.getElementById('theWord').textContent = data;
+    document.getElementById('wordBanner').style.display = 'block';
+  } else if (action === 'correctGuess') {
+    addChatMsg('系统', data + ' 猜对了！答案是：' + currentWord, 'correct');
+    if (myRole === 'drawer') myDrawsCount++;
   }
-
-  document.getElementById('startOverlay').classList.add('hidden');
-  document.getElementById('resultOverlay').classList.add('hidden');
-  document.getElementById('hudTime').style.color = '';
-  document.getElementById('hudAcc').textContent = '—';
-  document.getElementById('hudHitItem').style.display = '';
-  updateHUD();
-  document.getElementById('hudTime').textContent = timeLeft;
-  document.getElementById('hud-bottom').textContent = '点击目标 · Click to hit';
-  document.getElementById('cursor').style.display = '';
-
-  sfxStart();
-  startTimer();
-  spawnTarget();
-  scheduleNext();
 }
 
-function startTimer(){
+function handleGameEvent(action, data) {
+  if (action === 'startGame') {
+    document.getElementById('waitOverlay').classList.add('hidden');
+    document.getElementById('gameUI').classList.add('active');
+    resizeCanvas();
+  } else if (action === 'roundStart') {
+    round = data || (round + 1);
+    document.getElementById('roundInfo').textContent = '第 ' + round + ' / ' + totalRounds + ' 轮';
+    startRoundLocal();
+  } else if (action === 'roundEnd') {
+    endRoundLocal();
+  } else if (action === 'gameEnd') {
+    endGameLocal();
+  } else if (action === 'playAgain') {
+    resetGame();
+  }
+}
+
+function updateScoreDisplay() {
+  document.getElementById('topMyScore').textContent = myScoreVal;
+  document.getElementById('topTheirScore').textContent = theirScoreVal;
+}
+
+// ====================== Room Management ======================
+function genCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  let c = '';
+  for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * chars.length)];
+  return c;
+}
+
+async function createRoom() {
+  myName = document.getElementById('nameInput').value.trim() || '画家';
+  roomId = genCode();
+  isHost = true;
+  myRole = 'drawer';
+
+  if (!cloudReady) { alert('正在连接服务器，请稍等...'); return; }
+
+  try {
+    await db.collection('rooms').doc(roomId).set({
+      hostname: myName, difficulty: 'normal', state: 'waiting', guestname: '',
+      createdAt: Date.now()
+    });
+    await db.collection('game_sessions').doc(roomId).set({
+      state: {},
+      stateVer: 0,
+      drawStrokes: [],
+      drawVer: 0,
+      wordAction: { time: 0 },
+      chatMsg: { time: 0 },
+      gameScore: { time: 0 },
+      gameEvent: { time: 0 }
+    });
+
+    document.getElementById('lobbyOverlay').classList.add('hidden');
+    document.getElementById('roomCodeDisplay').textContent = roomId;
+    document.getElementById('waitOverlay').classList.remove('hidden');
+    lastGuestReady = false;
+    pollTimer = setInterval(poll, 500);
+  } catch(e) {
+    alert('创建房间失败: ' + e.message);
+  }
+}
+
+async function joinRoom() {
+  myName = document.getElementById('nameInput').value.trim() || '猜猜侠';
+  roomId = document.getElementById('joinCode').value.trim().toUpperCase();
+  if (!roomId || roomId.length !== 4) { alert('请输入 4 位房间码'); return; }
+  isHost = false;
+  myRole = 'guesser';
+
+  if (!cloudReady) { alert('正在连接服务器，请稍等...'); return; }
+
+  try {
+    const { data } = await db.collection('rooms').doc(roomId).get();
+    const room = data && data[0];
+    if (!room || room.state !== 'waiting') {
+      alert('房间不存在或已满'); return;
+    }
+    await db.collection('rooms').doc(roomId).update({
+      guestname: myName, state: 'ready'
+    });
+
+    document.getElementById('lobbyOverlay').classList.add('hidden');
+    document.getElementById('roomCodeDisplay').textContent = roomId;
+    document.getElementById('waitMsg').textContent = '已加入，等待开始...';
+    document.getElementById('waitOverlay').classList.remove('hidden');
+    lastGuestReady = true;
+    pollTimer = setInterval(poll, 500);
+    // Tell host we joined
+    setTimeout(() => syncGameEvent('guestReady'), 300);
+  } catch(e) {
+    alert('加入房间失败: ' + e.message);
+  }
+}
+
+async function getRoom() {
+  try {
+    const { data } = await db.collection('rooms').doc(roomId).get();
+    return (data && data[0]) || null;
+  } catch(e) { return null; }
+}
+
+async function cancelRoom() {
+  if (pollTimer) clearInterval(pollTimer);
+  if (cloudReady) {
+    try { await db.collection('rooms').doc(roomId).remove(); } catch(e) {}
+    try { await db.collection('game_sessions').doc(roomId).remove(); } catch(e) {}
+  }
+  document.getElementById('waitOverlay').classList.add('hidden');
+  document.getElementById('lobbyOverlay').classList.remove('hidden');
+}
+
+// ====================== Game Flow ======================
+async function startGame() {
+  round = 0;
+  myScoreVal = 0; theirScoreVal = 0;
+  myHitsCount = 0; myDrawsCount = 0;
+
+  document.getElementById('topRoomCode').textContent = roomId;
+  updateScoreDisplay();
+  document.getElementById('gameUI').classList.add('active');
+  document.getElementById('waitOverlay').classList.add('hidden');
+  resizeCanvas();
+
+  if (cloudReady && isHost) {
+    try {
+      await db.collection('game_sessions').doc(roomId).update({
+        drawStrokes: _.set([]),
+        drawVer: _.set(0),
+        wordAction: _.set({ time: 0 }),
+        chatMsg: _.set({ time: 0 }),
+        gameScore: _.set({ time: 0 }),
+        gameEvent: _.set({ time: 0 })
+      });
+    } catch(e) {}
+  }
+  lastDrawVer = 0; lastWordTime = 0; lastChatTime = 0; lastScoreTime = 0; lastEventTime = 0;
+  strokes = []; pendingStrokes = []; lastSyncedLen = 0;
+  dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+
+  if (isHost) {
+    syncGameEvent('startGame');
+    nextRound();
+  }
+}
+
+function nextRound() {
+  round++;
+  if (round > totalRounds) { endGame(); return; }
+  document.getElementById('roundInfo').textContent = '第 ' + round + ' / ' + totalRounds + ' 轮';
+
+  if (isHost) syncGameEvent('roundStart', round);
+  startRoundLocal();
+}
+
+function startRoundLocal() {
+  // Determine role: host draws odd rounds, guest draws even rounds
+  myRole = (round % 2 === 1) === isHost ? 'drawer' : 'guesser';
+
+  // Reset
+  strokes = []; pendingStrokes = []; lastSyncedLen = 0;
+  dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  document.getElementById('chatMsgs').innerHTML = '';
+  document.getElementById('chatInput').value = '';
+  document.getElementById('roundTimer').style.color = '#ef4444';
+
+  if (myRole === 'drawer') {
+    // Show word picker
+    const words = randomWords(3);
+    const picker = document.getElementById('wordPicker');
+    picker.innerHTML = '';
+    words.forEach(w => {
+      const btn = document.createElement('button');
+      btn.textContent = w;
+      btn.onclick = () => pickWord(w);
+      picker.appendChild(btn);
+    });
+    document.getElementById('wordOverlay').classList.remove('hidden');
+    document.getElementById('wordBanner').style.display = 'none';
+  } else {
+    document.getElementById('wordBanner').style.display = 'block';
+    document.getElementById('theWord').textContent = '对方正在选词...';
+    document.getElementById('chatInput').disabled = false;
+    document.getElementById('chatInput').placeholder = '输入你的猜测...';
+  }
+  setToolbarEnabled(myRole === 'drawer');
+}
+
+function pickWord(word) {
+  currentWord = word;
+  document.getElementById('wordOverlay').classList.add('hidden');
+  document.getElementById('wordBanner').style.display = 'block';
+  document.getElementById('theWord').textContent = word;
+  syncWord('pickWord', word.length + ' 个字');
+  if (myRole === 'drawer') syncClear();
+  beginRoundTimer();
+}
+
+function beginRoundTimer() {
+  roundActive = true;
+  roundTimeLeft = 60;
+  document.getElementById('roundTimer').textContent = roundTimeLeft;
+  document.getElementById('roundTimer').style.color = '';
+
   timerInterval = setInterval(() => {
-    timeLeft--;
-    document.getElementById('hudTime').textContent = timeLeft;
-    if(timeLeft <= 5 && timeLeft > 0){
-      document.getElementById('hudTime').style.color = '#ff4050';
-    }
-    if(timeLeft <= 0) endPosition();
+    roundTimeLeft--;
+    document.getElementById('roundTimer').textContent = roundTimeLeft;
+    if (roundTimeLeft <= 5) document.getElementById('roundTimer').style.color = '#ef4444';
+    if (roundTimeLeft <= 0) endRound();
   }, 1000);
 }
 
-function endPosition(){
-  gameActive = false;
-  if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
-  if(spawnTimer){ clearTimeout(spawnTimer); spawnTimer = null; }
-  targets.forEach(t => { if(t.timer) clearTimeout(t.timer); });
-  targets = [];
+function endRound() {
+  roundActive = false;
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  document.getElementById('roundTimer').textContent = '0';
+  document.getElementById('roundTimer').style.color = '#ef4444';
 
-  sfxEnd();
-
-  const avgAcc = accRunning;
-  const avgTime = totalHits > 0 ? Math.round(cfgDuration * 1000 / totalHits) : 0;
-
-  if(score > bestScore){
-    bestScore = score;
-    localStorage.setItem('moleBest', bestScore);
-    if(typeof window._syncScore === 'function') _syncScore('mole', score);
+  if (myRole === 'guesser' && currentWord) {
+    addChatMsg('系统', '时间到！答案是：' + currentWord, 'system');
   }
+  syncWord('revealWord', currentWord);
+  if (isHost) syncGameEvent('roundEnd');
 
-  const emoji = score >= 300 ? '👑' : score >= 180 ? '💎' : score >= 80 ? '⚡' : '◇';
-  document.getElementById('resultEmoji').textContent = emoji;
-  document.getElementById('resultScore').textContent = score;
-  document.getElementById('resultAcc').textContent = Math.max(0, Math.min(100, avgAcc)) + '%';
-  document.getElementById('resultAvg').textContent = avgTime + 'ms';
-  document.getElementById('resultCombo').textContent = maxCombo;
-  document.getElementById('resultHits').textContent = totalHits;
-  document.getElementById('resultBest').textContent = bestScore;
+  setTimeout(() => { if (isHost) nextRound(); }, 3000);
+}
+
+function endRoundLocal() {
+  roundActive = false;
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  document.getElementById('roundTimer').textContent = '0';
+  setTimeout(() => { if (isHost) nextRound(); }, 3000);
+}
+
+function endGame() {
+  roundActive = false;
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  if (isHost) syncGameEvent('gameEnd');
+  endGameLocal();
+}
+
+function endGameLocal() {
+  document.getElementById('gameUI').classList.remove('active');
+  document.getElementById('resultEmoji').textContent = myScoreVal >= theirScoreVal ? '🏆' : '😅';
+  document.getElementById('myScore').textContent = myScoreVal;
+  document.getElementById('theirScore').textContent = theirScoreVal;
+  document.getElementById('myHits').textContent = myHitsCount;
+  document.getElementById('myDraws').textContent = myDrawsCount;
   document.getElementById('resultOverlay').classList.remove('hidden');
 
-  document.getElementById('hudTime').textContent = '0';
-  document.getElementById('hudTime').style.color = '';
+  try {
+    const best = parseInt(localStorage.getItem('drawGuessBest') || '0');
+    if (myScoreVal > best) localStorage.setItem('drawGuessBest', myScoreVal);
+  } catch(e) {}
 }
-
-// ======================= RED/GREEN REACTION MODE =======================
-let reactionState = null; // { round, totalRounds, times:[], greenRound, reactionStart, waiting, showResult }
-
-function startReaction(){
-  document.getElementById('startOverlay').classList.add('hidden');
   document.getElementById('resultOverlay').classList.add('hidden');
-  document.getElementById('cursor').style.display = 'none';
-  document.getElementById('hudHitItem').style.display = 'none';
-  document.getElementById('hudTime').style.color = '';
-  updateHUD();
-
-  reactionState = {
-    round: 0,
-    totalRounds: cfgRounds,
-    times: [],
-    wrongClicks: 0,
-    greenRound: true,
-    reactionStart: 0,
-    waiting: false,
-    phase: 'wait' // wait | ready | result
-  };
-
-  document.getElementById('reactionFull').style.display = 'flex';
-  document.getElementById('reactionFull').style.background = 'rgba(4,6,12,0.95)';
-  document.getElementById('reactionRound').textContent = '第 1 / ' + cfgRounds + ' 轮';
-  document.getElementById('reactionBig').textContent = '准备';
-  document.getElementById('reactionBig').style.color = '#6a7a9a';
-  document.getElementById('reactionSmall').textContent = '看到绿色立即点击 | 看到红色不要点击';
-
-  gameActive = true;
-  document.getElementById('hud-bottom').textContent = '绿=点击 · 红=别动';
-
-  nextRound();
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  if (cloudReady) {
+    try { db.collection('rooms').doc(roomId).remove(); } catch(e) {}
+    try { db.collection('game_sessions').doc(roomId).remove(); } catch(e) {}
+  }
+  document.getElementById('gameUI').classList.remove('active');
+  document.getElementById('lobbyOverlay').classList.remove('hidden');
 }
 
-function nextRound(){
-  if(!gameActive) return;
-  reactionState.round++;
+function playAgain() {
+  document.getElementById('resultOverlay').classList.add('hidden');
+  resetGame();
+  if (isHost) syncGameEvent('playAgain');
+  startGame();
+}
 
-  if(reactionState.round > reactionState.totalRounds){
-    endReaction();
+function resetGame() {
+  strokes = []; pendingStrokes = []; lastSyncedLen = 0;
+  lastDrawVer = 0; lastWordTime = 0; lastChatTime = 0; lastScoreTime = 0; lastEventTime = 0;
+  dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  round = 0;
+  myScoreVal = 0; theirScoreVal = 0;
+  myHitsCount = 0; myDrawsCount = 0;
+  updateScoreDisplay();
+}
+
+// ====================== Chat / Guess ======================
+function sendGuess() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  addChatMsg(myName, text, 'user');
+
+  if (myRole === 'guesser' && roundActive && currentWord && text === currentWord) {
+    // Correct guess!
+    addChatMsg('系统', '✓ 猜对了！答案：' + currentWord, 'correct');
+    const timeBonus = Math.round(roundTimeLeft / 60 * 50);
+    myScoreVal += 100 + timeBonus;
+    theirScoreVal += 80 + timeBonus;
+    myHitsCount++;
+    updateScoreDisplay();
+    syncChat('系统', '✓ ' + myName + ' 猜对了！', 'correct');
+    syncScoreFinal(
+      isHost ? myScoreVal : theirScoreVal,
+      isHost ? theirScoreVal : myScoreVal
+    );
+    syncWord('correctGuess', myName);
+    endRound();
     return;
   }
 
-  reactionState.phase = 'wait';
-  reactionState.waiting = false;
-
-  document.getElementById('reactionRound').textContent =
-    '第 ' + reactionState.round + ' / ' + reactionState.totalRounds + ' 轮';
-  document.getElementById('reactionFull').style.background = 'rgba(4,6,12,0.95)';
-  document.getElementById('reactionBig').textContent = '准备';
-  document.getElementById('reactionBig').style.color = '#6a7a9a';
-  document.getElementById('reactionSmall').textContent = '等待颜色变化...';
-
-  // Decide green or red
-  reactionState.greenRound = Math.random() * 100 < cfgGreenPct;
-
-  // Random delay
-  const delay = (cfgDelayMin + Math.random() * (cfgDelayMax - cfgDelayMin)) * 1000;
-  reactionState.waitTimer = setTimeout(() => {
-    reactionState.phase = 'ready';
-    reactionState.waiting = true;
-    reactionState.reactionStart = performance.now();
-
-    if(reactionState.greenRound){
-      document.getElementById('reactionFull').style.background = 'rgba(0,200,80,0.92)';
-      document.getElementById('reactionBig').textContent = '⚡ 点击!';
-      document.getElementById('reactionBig').style.color = '#fff';
-      document.getElementById('reactionSmall').textContent = '';
-    } else {
-      document.getElementById('reactionFull').style.background = 'rgba(230,30,40,0.90)';
-      document.getElementById('reactionBig').textContent = '✋ 别动!';
-      document.getElementById('reactionBig').style.color = '#fff';
-      document.getElementById('reactionSmall').textContent = '红色不要点击';
-    }
-  }, delay);
+  syncChat(myName, text, myRole === 'guesser' && roundActive ? 'guess' : 'user');
 }
 
-document.getElementById('reactionFull').addEventListener('click', e => {
-  if(!gameActive || gameMode !== 'reaction') return;
-  if(!reactionState) return;
+function addChatMsg(sender, text, cls) {
+  const container = document.getElementById('chatMsgs');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + (cls || '');
+  div.textContent = (cls === 'system' || cls === 'correct') ? text : (sender + ': ' + text);
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
 
-  if(reactionState.phase === 'wait' && !reactionState.waiting){
-    // Clicked too early
-    clearTimeout(reactionState.waitTimer);
-    reactionState.times.push({ time: -1, type: 'early' });
-    sfxReactionWrong();
-    document.getElementById('reactionBig').textContent = '⚠ 太早了!';
-    document.getElementById('reactionBig').style.color = '#ff4050';
-    document.getElementById('reactionSmall').textContent = '等待颜色变化后再点击';
-    reactionState.phase = 'result';
-    setTimeout(() => nextRound(), 800);
-    return;
-  }
+// ====================== Toolbar Enable/Disable ======================
+function setToolbarEnabled(enabled) {
+  const toolbar = document.getElementById('toolbar');
+  toolbar.style.opacity = enabled ? '1' : '0.4';
+  toolbar.style.pointerEvents = enabled ? 'auto' : 'none';
+}
 
-  if(reactionState.phase === 'ready' && reactionState.waiting){
-    const reactionTime = Math.round(performance.now() - reactionState.reactionStart);
-    reactionState.waiting = false;
-    reactionState.phase = 'result';
+// ====================== Init ======================
+document.getElementById('nameInput').value = localStorage.getItem('arcadeUser') || '';
+resizeCanvas();
 
-    if(reactionState.greenRound){
-      // Correct - green clicked
-      reactionState.times.push({ time: reactionTime, type: 'hit' });
-      sfxReactionFast();
-      document.getElementById('reactionBig').textContent = reactionTime + 'ms';
-      document.getElementById('reactionBig').style.color = '#00ffc8';
-      document.getElementById('reactionSmall').textContent = '✓ 反应迅速';
-      document.getElementById('reactionFull').style.background = 'rgba(0,200,80,0.5)';
-    } else {
-      // Wrong - red clicked!
-      reactionState.times.push({ time: reactionTime, type: 'wrong' });
-      reactionState.wrongClicks++;
-      sfxReactionWrong();
-      document.getElementById('reactionBig').textContent = '✗ 误触!';
-      document.getElementById('reactionBig').style.color = '#ff4050';
-      document.getElementById('reactionSmall').textContent = '红色不应该点击';
-      document.getElementById('reactionFull').style.background = 'rgba(230,30,40,0.7)';
-    }
-    setTimeout(() => nextRound(), 700);
+// Clean up old game data on leaving
+window.addEventListener('beforeunload', () => {
+  if (roomId && isHost && cloudReady) {
+    try { db.collection('rooms').doc(roomId).remove(); } catch(e) {}
+    try { db.collection('game_sessions').doc(roomId).remove(); } catch(e) {}
   }
 });
-
-// If red appears and user correctly does NOT click, timer fires
-// We need a timeout for red rounds too
-function scheduleRedTimeout(){
-  // For red rounds, if user doesn't click within 1.5s, it's correct restraint
-  if(reactionState && reactionState.phase === 'ready' && reactionState.waiting && !reactionState.greenRound){
-    if(reactionState.redTimer) clearTimeout(reactionState.redTimer);
-    reactionState.redTimer = setTimeout(() => {
-      if(reactionState.phase === 'ready' && reactionState.waiting && !reactionState.greenRound){
-        reactionState.waiting = false;
-        reactionState.phase = 'result';
-        reactionState.times.push({ time: 0, type: 'restrained' });
-        document.getElementById('reactionFull').style.background = 'rgba(4,6,12,0.95)';
-        document.getElementById('reactionBig').textContent = '✓ 克制';
-        document.getElementById('reactionBig').style.color = '#00ffc8';
-        document.getElementById('reactionSmall').textContent = '正确没有点击红色';
-        setTimeout(() => nextRound(), 700);
-      }
-    }, 1500);
-  }
-}
-
-// Patch nextRound to also schedule red timeout
-const _origNextRound = nextRound;
-nextRound = function(){
-  _origNextRound();
-  // After the delay, schedule red check
-  setTimeout(() => scheduleRedTimeout(), (cfgDelayMin + 0.1) * 1000 + 100);
-};
-
-function endReaction(){
-  gameActive = false;
-  if(reactionState.waitTimer) clearTimeout(reactionState.waitTimer);
-  if(reactionState.redTimer) clearTimeout(reactionState.redTimer);
-
-  document.getElementById('reactionFull').style.display = 'none';
-
-  const times = reactionState.times;
-  const hits = times.filter(t => t.type === 'hit');
-  const wrongs = times.filter(t => t.type === 'wrong');
-  const earlies = times.filter(t => t.type === 'early');
-  const restrained = times.filter(t => t.type === 'restrained');
-
-  const validTimes = hits.map(t => t.time);
-  const avgTime = validTimes.length > 0
-    ? Math.round(validTimes.reduce((a,b) => a+b, 0) / validTimes.length)
-    : 999;
-  const minTime = validTimes.length > 0 ? Math.min(...validTimes) : 999;
-
-  // Save best
-  if(minTime < bestReaction && minTime > 0){
-    bestReaction = minTime;
-    localStorage.setItem('reactionBest', bestReaction);
-  }
-
-  const totalEvents = times.length;
-  const accuracy = totalEvents > 0 ? Math.round((hits.length + restrained.length) / totalEvents * 100) : 0;
-
-  sfxEnd();
-
-  const emoji = minTime < 200 ? '👑' : minTime < 280 ? '💎' : minTime < 350 ? '⚡' : '⏱';
-  document.getElementById('resultEmoji').textContent = emoji;
-  document.getElementById('resultScore').textContent = minTime === 999 ? '—' : minTime;
-  document.getElementById('resultScore').style.color = '#ff40c8';
-  document.getElementById('resultAcc').textContent = accuracy + '%';
-  document.getElementById('resultAvg').textContent = avgTime === 999 ? '—' : avgTime + 'ms';
-  document.getElementById('resultCombo').textContent = hits.length;
-  document.getElementById('resultHits').textContent = wrongs.length + earlies.length;
-  document.getElementById('resultBest').textContent = bestReaction === 999 ? '—' : bestReaction;
-  document.getElementById('resultBest').parentElement.querySelector('.t').textContent = '最快(ms)';
-  document.getElementById('resultOverlay').classList.remove('hidden');
-
-  // Update result labels
-  document.querySelector('#resultAcc').parentElement.querySelector('.t').textContent = '正确率';
-  document.querySelector('#resultCombo').parentElement.querySelector('.t').textContent = '命中';
-  document.querySelector('#resultHits').parentElement.querySelector('.t').textContent = '失误';
-
-  document.getElementById('hudTime').textContent = '—';
-}
-
-// ======================= SHARED =======================
-function showStart(){
-  document.getElementById('resultOverlay').classList.add('hidden');
-  document.getElementById('startOverlay').classList.remove('hidden');
-  document.getElementById('cursor').style.display = '';
-  document.getElementById('hudTime').textContent = '—';
-  document.getElementById('hudScore').textContent = '0';
-  document.getElementById('hudAcc').textContent = '—';
-  document.getElementById('hudCombo').textContent = '0';
-  document.getElementById('hudHits').textContent = '0';
-  document.getElementById('hudHitItem').style.display = '';
-  document.getElementById('hudTime').style.color = '';
-  document.getElementById('hud-bottom').textContent = '点击目标 · Click to hit';
-  document.getElementById('reactionFull').style.display = 'none';
-  gameActive = false;
-  if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
-  if(spawnTimer){ clearTimeout(spawnTimer); spawnTimer = null; }
-}
-
-document.getElementById('replayBtn').addEventListener('click', () => {
-  if(gameMode === 'position') startPosition();
-  else startReaction();
-});
-
-// ======================= CURSOR =======================
-document.addEventListener('mousemove', e => {
-  cursorEl.style.left = e.clientX + 'px';
-  cursorEl.style.top = e.clientY + 'px';
-});
-
-// ======================= BOOT =======================
-render();
-
-try {
-  const _user = localStorage.getItem('arcadeUser');
-  if(_user){
-    window._syncScore = function(game, sc){
-      try {
-        const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
-        if(!all[_user]) all[_user] = {};
-        if(!all[_user][game] || sc > all[_user][game]){
-          all[_user][game] = sc;
-          localStorage.setItem('arcadeProfiles', JSON.stringify(all));
-        }
-      } catch(e){}
-    };
-  }
-} catch(e){}
 </script>
 <!-- ====================== COMMENT WIDGET ====================== -->
 <style>
-.cmt-trigger{position:fixed;bottom:20px;right:20px;z-index:9998;width:42px;height:42px;border-radius:50%;background:rgba(6,8,16,0.85);backdrop-filter:blur(8px);border:1px solid rgba(0,255,200,0.15);color:#00ffc8;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.25s;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
-.cmt-trigger:hover{transform:scale(1.1);box-shadow:0 0 25px rgba(0,255,200,0.15);border-color:rgba(0,255,200,0.3)}
+.cmt-trigger{position:fixed;bottom:20px;right:20px;z-index:9998;width:42px;height:42px;border-radius:50%;background:rgba(6,8,16,0.85);backdrop-filter:blur(8px);border:1px solid rgba(245,158,11,0.15);color:#f59e0b;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.25s;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
+.cmt-trigger:hover{transform:scale(1.1);box-shadow:0 0 25px rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.3)}
 .cmt-trigger .badge{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:8px;background:#ff40c8;color:#fff;font-size:0.6rem;display:flex;align-items:center;justify-content:center;padding:0 4px;font-weight:700}
-.cmt-panel{position:fixed;bottom:0;left:0;right:0;z-index:9997;background:rgba(8,12,22,0.97);backdrop-filter:blur(16px);border-top:1px solid rgba(0,255,200,0.1);transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);max-height:55vh;display:flex;flex-direction:column;box-shadow:0 -20px 60px rgba(0,0,0,0.5)}
+.cmt-panel{position:fixed;bottom:0;left:0;right:0;z-index:9997;background:rgba(8,12,22,0.97);backdrop-filter:blur(16px);border-top:1px solid rgba(245,158,11,0.1);transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);max-height:55vh;display:flex;flex-direction:column;box-shadow:0 -20px 60px rgba(0,0,0,0.5)}
 .cmt-panel.open{transform:translateY(0)}
-.cmt-panel-header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.78rem;font-weight:700;color:#00ffc8;letter-spacing:1px}
+.cmt-panel-header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.78rem;font-weight:700;color:#f59e0b;letter-spacing:1px}
 .cmt-panel-header button{background:none;border:none;color:#6a7a9a;font-size:1rem;cursor:pointer;padding:4px 8px;transition:0.2s}
 .cmt-panel-header button:hover{color:#ff4050}
 .cmt-list{flex:1;overflow-y:auto;padding:8px 16px;min-height:60px;max-height:35vh}
 .cmt-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.78rem}
-.cmt-item .avatar{width:26px;height:26px;border-radius:50%;flex-shrink:0;background:rgba(0,255,200,0.1);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:#00ffc8}
+.cmt-item .avatar{width:26px;height:26px;border-radius:50%;flex-shrink:0;background:rgba(245,158,11,0.1);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:#f59e0b}
 .cmt-item .body{flex:1;min-width:0}
-.cmt-item .uname{font-weight:600;color:#00ffc8;font-size:0.7rem}
+.cmt-item .uname{font-weight:600;color:#f59e0b;font-size:0.7rem}
 .cmt-item .text{color:#c0d0e0;line-height:1.4;word-break:break-word;margin-top:2px;font-size:0.72rem}
 .cmt-item .time{font-size:0.6rem;color:#4a5a7a}
 .cmt-empty{text-align:center;color:#4a5a7a;padding:16px 0;font-size:0.72rem}
 .cmt-input-row{display:flex;gap:8px;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.04)}
-.cmt-input-row input{flex:1;padding:8px 12px;font-size:0.75rem;font-family:inherit;background:rgba(255,255,255,0.04);color:#e0e8ff;border:1px solid rgba(0,255,200,0.1);border-radius:8px;outline:none;transition:0.2s}
-.cmt-input-row input:focus{border-color:rgba(0,255,200,0.3)}
+.cmt-input-row input{flex:1;padding:8px 12px;font-size:0.75rem;font-family:inherit;background:rgba(255,255,255,0.04);color:#e0e8ff;border:1px solid rgba(245,158,11,0.1);border-radius:8px;outline:none;transition:0.2s}
+.cmt-input-row input:focus{border-color:rgba(245,158,11,0.3)}
 .cmt-input-row input::placeholder{color:rgba(255,255,255,0.15)}
-.cmt-input-row button{padding:8px 16px;font-size:0.72rem;font-weight:700;font-family:inherit;background:rgba(0,255,200,0.1);color:#00ffc8;border:1px solid rgba(0,255,200,0.2);border-radius:8px;cursor:pointer;white-space:nowrap;transition:0.2s}
-.cmt-input-row button:hover{background:rgba(0,255,200,0.2)}
+.cmt-input-row button{padding:8px 16px;font-size:0.72rem;font-weight:700;font-family:inherit;background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);border-radius:8px;cursor:pointer;white-space:nowrap;transition:0.2s}
+.cmt-input-row button:hover{background:rgba(245,158,11,0.2)}
 </style>
 <div class="cmt-trigger" id="cmtTrigger" onclick="toggleComments()" title="评论">💬<span class="badge" id="cmtBadge" style="display:none">0</span></div>
 <div class="cmt-panel" id="cmtPanel">
-<div class="cmt-panel-header"><span>💬 零点反应 · 玩家评论</span><button onclick="toggleComments()">✕</button></div>
+<div class="cmt-panel-header"><span>💬 你画我猜 · 玩家评论</span><button onclick="toggleComments()">✕</button></div>
 <div class="cmt-list" id="cmtList"></div>
-<div class="cmt-input-row"><input id="cmtInput" placeholder="写下你的评价..." maxlength="200" onkeydown="if(event.key==='Enter')addComment()"><button onclick="addComment()">发送</button></div>
+<div class="cmt-input-row"><input id="cmtInput" placeholder="写下你的评价..." maxlength="200" onkeydown="if(event.key==='Enter')addCmt()"><button onclick="addCmt()">发送</button></div>
 </div>
 <script>
 (function(){
-var GK='mole';
-window.toggleComments=function(){var p=document.getElementById('cmtPanel');p.classList.toggle('open');if(p.classList.contains('open'))loadComments();};
+var GK='drawGuess';
+window.toggleComments=function(){var p=document.getElementById('cmtPanel');p.classList.toggle('open');if(p.classList.contains('open'))loadCmt();};
 function gc(){try{return JSON.parse(localStorage.getItem('arcadeComments')||'{}')}catch(e){return{}}}
 function sc(c){localStorage.setItem('arcadeComments',JSON.stringify(c))}
-window.addComment=function(){var t=document.getElementById('cmtInput').value.trim();if(!t)return;var u=localStorage.getItem('arcadeUser')||'匿名玩家';var c=gc();if(!c[GK])c[GK]=[];c[GK].push({user:u,text:t,time:Date.now()});sc(c);if(typeof CloudSync!=='undefined')CloudSync.addComment(GK,u,t);document.getElementById('cmtInput').value='';loadComments()};
-window.loadComments=function(){var c=gc();var l=c[GK]||[];var h='';if(l.length===0){h='<div class="cmt-empty">还没有评论，来说两句吧</div>'}else{for(var i=l.length-1;i>=0;i--){var o=l[i];var d=new Date(o.time);var ts=d.toLocaleDateString('zh-CN')+' '+d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});h+='<div class="cmt-item"><div class="avatar">'+o.user[0]+'</div><div class="body"><span class="uname">'+o.user+'</span> <span class="time">'+ts+'</span><div class="text">'+o.text+'</div></div></div>'}}document.getElementById('cmtList').innerHTML=h;var b=document.getElementById('cmtBadge');b.textContent=l.length;b.style.display=l.length>0?'flex':'none'};
+window.addCmt=function(){var t=document.getElementById('cmtInput').value.trim();if(!t)return;var u=localStorage.getItem('arcadeUser')||'匿名玩家';var c=gc();if(!c[GK])c[GK]=[];c[GK].push({user:u,text:t,time:Date.now()});sc(c);if(typeof CloudSync!=='undefined')CloudSync.addComment(GK,u,t);document.getElementById('cmtInput').value='';loadCmt()};
+window.loadCmt=function(){var c=gc();var l=c[GK]||[];var h='';if(l.length===0){h='<div class="cmt-empty">还没有评论，来说两句吧</div>'}else{for(var i=l.length-1;i>=0;i--){var o=l[i];var d=new Date(o.time);var ts=d.toLocaleDateString('zh-CN')+' '+d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});h+='<div class="cmt-item"><div class="avatar">'+o.user[0]+'</div><div class="body"><span class="uname">'+o.user+'</span> <span class="time">'+ts+'</span><div class="text">'+o.text+'</div></div></div>'}}document.getElementById('cmtList').innerHTML=h;var b=document.getElementById('cmtBadge');b.textContent=l.length;b.style.display=l.length>0?'flex':'none'};
 var ic=gc();var il=ic[GK]||[];if(il.length>0){var b=document.getElementById('cmtBadge');b.textContent=il.length;b.style.display='flex'}
 })();
 </script>
