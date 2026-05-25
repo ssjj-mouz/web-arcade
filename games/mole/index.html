@@ -3,118 +3,353 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>打地鼠</title>
+<title>霓虹晶核 · 赛博打地鼠</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none}
-body{background:#4a7c3f;font-family:'Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;color:#f0f4ff;overflow:hidden}
+body{
+  background:#070b14;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(0,255,200,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 80%, rgba(200,0,255,0.04) 0%, transparent 45%),
+    linear-gradient(180deg, #0a0e1a 0%, #060910 100%);
+  font-family:'Segoe UI','Inter',system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;
+  min-height:100vh;color:#e0e8ff;overflow-x:hidden;
+}
 
-.nav{display:flex;justify-content:space-between;align-items:center;width:min(540px,94vw);padding:10px 18px;margin-top:10px;background:rgba(0,0,0,0.2);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.08);border-radius:12px}
-.nav h1{font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;color:transparent}
-.nav-info{display:flex;gap:14px;align-items:center;font-size:0.82rem;color:#d4e8d0}
-.nav-info strong{color:#fff}
-.btn-back{padding:5px 12px;font-size:0.78rem;font-weight:600;background:rgba(0,0,0,0.15);color:#d4e8d0;border:1px solid rgba(255,255,255,0.08);border-radius:8px;cursor:pointer;text-decoration:none;transition:0.2s}
-.btn-back:hover{color:#fff;border-color:rgba(255,255,255,0.2)}
-.btn-ghost{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#d4e8d0;cursor:pointer;padding:5px 12px;font-size:0.78rem;font-weight:600;transition:0.2s}
-.btn-ghost:hover{color:#fff;border-color:rgba(255,255,255,0.25)}
+/* ---- 顶部导航 ---- */
+.nav{
+  display:flex;justify-content:space-between;align-items:center;
+  width:min(560px,94vw);padding:12px 20px;margin-top:12px;
+  background:rgba(10,14,26,0.6);backdrop-filter:blur(14px);
+  border:1px solid rgba(0,255,200,0.12);border-radius:14px;
+  box-shadow:0 4px 30px rgba(0,0,0,0.5);
+}
+.nav h1{
+  font-size:1.05rem;font-weight:800;letter-spacing:2px;
+  background:linear-gradient(135deg,#00ffc8,#00aaff,#c840ff);
+  -webkit-background-clip:text;color:transparent;
+  text-shadow:none;
+}
+.nav-info{display:flex;gap:16px;align-items:center;font-size:0.8rem;color:#6a7a9a}
+.nav-info strong{color:#e0e8ff;font-weight:700}
+.btn-back,.btn-ghost{
+  padding:6px 14px;font-size:0.76rem;font-weight:600;
+  background:rgba(0,255,200,0.05);color:#8a9ab0;
+  border:1px solid rgba(0,255,200,0.1);border-radius:8px;
+  cursor:pointer;text-decoration:none;transition:0.25s;
+  font-family:inherit;
+}
+.btn-back:hover,.btn-ghost:hover{
+  color:#00ffc8;border-color:rgba(0,255,200,0.3);
+  box-shadow:0 0 20px rgba(0,255,200,0.08);
+}
 
-#game-wrap{position:relative;width:min(540px,94vw);margin-top:12px}
-#game-board{position:relative;width:100%;aspect-ratio:1;background:radial-gradient(ellipse at 50% 70%,#5a9e4a,#3d6b34);border-radius:16px;border:2px solid rgba(255,255,255,0.06);box-shadow:0 12px 40px rgba(0,0,0,0.4);overflow:hidden}
+/* ---- 游戏主区域 ---- */
+#game-wrap{position:relative;width:min(560px,94vw);margin-top:14px}
+#game-board{
+  position:relative;width:100%;aspect-ratio:1;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(10,20,40,0.6) 0%, rgba(5,8,16,0.9) 100%),
+    linear-gradient(0deg, rgba(0,255,200,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,200,0.03) 1px, transparent 1px);
+  background-size:100% 100%, 20px 20px, 20px 20px;
+  border-radius:20px;
+  border:1px solid rgba(0,255,200,0.1);
+  box-shadow:
+    0 16px 60px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(255,255,255,0.02),
+    0 0 80px rgba(0,180,200,0.06);
+  overflow:hidden;
+}
 
-.board-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:4%}
+/* 角落装饰 */
+#game-board::before{
+  content:'';position:absolute;inset:-1px;border-radius:20px;
+  padding:1px;
+  background:linear-gradient(135deg, rgba(0,255,200,0.15), transparent 40%, transparent 60%, rgba(200,0,255,0.15));
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  pointer-events:none;z-index:0;
+}
 
-.hole-cell{position:relative;overflow:hidden}
+/* ---- 3×3 网格 ---- */
+.board-grid{
+  position:absolute;inset:0;display:grid;
+  grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  padding:5%;gap:2%;
+}
+.cell{position:relative;display:flex;align-items:flex-end;justify-content:center}
 
-/* 洞 - 盖在 mole 前面，制造从洞中冒出的效果 */
-.hole{position:absolute;bottom:0;left:0;width:100%;height:52%;background:radial-gradient(ellipse at 50% 80%,#0a0503 0%,#170f08 20%,#2a1a0a 35%,#5a8a4a 52%,transparent 68%);border-radius:50%;z-index:5;pointer-events:none}
+/* ---- 能量裂隙 (替代洞) ---- */
+.rift{
+  position:absolute;bottom:5%;left:10%;width:80%;height:40%;
+  border-radius:50%;
+  background:radial-gradient(ellipse at 50% 60%, rgba(0,0,0,0.6) 0%, transparent 70%);
+  z-index:5;pointer-events:none;
+}
+.rift-ring{
+  position:absolute;bottom:12%;left:8%;width:84%;height:22%;
+  border-radius:50%;
+  border:2px solid rgba(0,255,200,0.25);
+  box-shadow:0 0 16px rgba(0,255,200,0.2), 0 0 40px rgba(0,255,200,0.06), inset 0 0 8px rgba(0,255,200,0.04);
+  z-index:4;pointer-events:none;
+  animation:riftPulse 2s ease-in-out infinite;
+}
+.rift-ring.outer{
+  bottom:6%;left:4%;width:92%;height:30%;
+  border-width:1px;border-color:rgba(180,0,255,0.2);
+  box-shadow:0 0 20px rgba(180,0,255,0.12), 0 0 50px rgba(180,0,255,0.04);
+  animation:riftPulse 2s ease-in-out 0.7s infinite;
+}
+@keyframes riftPulse{
+  0%,100%{opacity:0.7;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.04)}
+}
 
-/* 地鼠 - 直接放在 hole-cell 中，用 bottom 控制上下 */
-.mole{position:absolute;left:14%;width:72%;bottom:-60%;pointer-events:auto;z-index:3;cursor:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><path d="M2 28 L12 18 L16 22 L28 2 L22 0 L18 8 L14 4 L4 14 L8 18 L-2 30 Z" fill="%23aaa" stroke="%23666" stroke-width="1"/></svg>') 4 4,pointer;transition:bottom 0.1s ease-out}
-.mole.up{bottom:22%;transition:bottom 0.08s cubic-bezier(0.34, 1.56, 0.64, 1)}
-.mole.hidden{bottom:-60%;transition:bottom 0.07s ease-in}
+/* ---- 能量晶核 (替代地鼠) ---- */
+.crystal{
+  position:absolute;left:15%;width:70%;bottom:-70%;
+  z-index:6;cursor:pointer;pointer-events:auto;
+  transition:bottom 0.12s ease-out;
+}
+.crystal.up{bottom:38%;transition:bottom 0.1s cubic-bezier(0.34, 1.56, 0.64, 1)}
+.crystal.hidden{bottom:-70%;transition:bottom 0.08s ease-in}
 
-/* 洞边阴影 - 增加立体感 */
-.hole-rim{position:absolute;bottom:28%;left:4%;width:92%;height:12%;background:radial-gradient(ellipse at 50% 100%,rgba(0,0,0,0.15),transparent 70%);border-radius:50%;z-index:6;pointer-events:none}
+/* 晶核本体 - 菱形 */
+.crystal-core{
+  width:100%;aspect-ratio:0.85;
+  background:linear-gradient(180deg, #00ffc8 0%, #0088aa 30%, #005566 60%, #003344 100%);
+  clip-path:polygon(50% 0%, 100% 35%, 85% 100%, 15% 100%, 0% 35%);
+  position:relative;
+  box-shadow:
+    0 0 20px rgba(0,255,200,0.5),
+    0 0 50px rgba(0,255,200,0.2),
+    0 8px 24px rgba(0,0,0,0.5),
+    inset 0 -4px 12px rgba(0,0,0,0.3);
+  animation:crystalGlow 1.5s ease-in-out infinite;
+}
+@keyframes crystalGlow{
+  0%,100%{filter:brightness(1)}
+  50%{filter:brightness(1.2)}
+}
 
-.mole-body{width:100%;aspect-ratio:1;background:radial-gradient(circle at 40% 35%,#d4a87a,#8B5E3C);border-radius:50%;position:relative;box-shadow:0 4px 10px rgba(0,0,0,0.3),inset 0 2px 6px rgba(255,255,255,0.15)}
-.mole-body::before{content:'';position:absolute;top:-8%;left:10%;width:80%;height:20%;background:radial-gradient(ellipse,#dcb090,#b08060);border-radius:50%;box-shadow:0 -2px 4px rgba(0,0,0,0.1)}
-.mole-eyes{position:absolute;top:30%;left:50%;transform:translateX(-50%);display:flex;gap:22%;width:58%}
-.mole-eye{width:34%;aspect-ratio:1;background:radial-gradient(circle at 40% 35%,#fff,#e0e0e0);border-radius:50%;position:relative;box-shadow:inset 0 1px 3px rgba(0,0,0,0.15)}
-.mole-eye::after{content:'';position:absolute;top:28%;left:22%;width:55%;height:55%;background:radial-gradient(circle at 45% 40%,#2a1a0a,#111);border-radius:50%}
-.mole-nose{position:absolute;top:46%;left:50%;transform:translateX(-50%);width:18%;aspect-ratio:1.2;background:#ff6b8a;border-radius:40%;box-shadow:inset 0 -1px 3px rgba(0,0,0,0.2)}
-.mole-mouth{position:absolute;top:56%;left:50%;transform:translateX(-50%);width:26%;height:7%;background:#4a2a1a;border-radius:0 0 50% 50%}
-.mole-teeth{position:absolute;top:53%;left:50%;transform:translateX(-50%);display:flex;gap:2px;width:18%}
-.mole-tooth{width:40%;aspect-ratio:0.6;background:#f8f4e8;border-radius:0 0 3px 3px;border:1px solid #ddd8cc;border-top:none}
-.mole-cheek{position:absolute;top:44%;width:18%;aspect-ratio:1;background:rgba(255,150,150,0.2);border-radius:50%}
-.mole-cheek.l{left:4%}.mole-cheek.r{right:4%}
+/* 晶核高光 */
+.crystal-core::before{
+  content:'';position:absolute;
+  top:8%;left:30%;width:40%;height:30%;
+  background:linear-gradient(180deg, rgba(255,255,255,0.6), transparent);
+  clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
+}
+/* 内部能量线 */
+.crystal-core::after{
+  content:'';position:absolute;
+  top:35%;left:25%;width:50%;height:35%;
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:2px;
+  transform:rotate(45deg);
+  box-shadow:0 0 8px rgba(255,255,255,0.1);
+}
 
-/* 被敲 */
-.mole-whacked .mole-body{background:radial-gradient(circle at 40% 35%,#a07040,#6a3a1a)!important}
-.mole-whacked .mole-eye::after{top:40%;height:25%}
+/* 晶核被击中 */
+.crystal-whacked .crystal-core{
+  background:linear-gradient(180deg, #334455 0%, #223344 30%, #112233 60%, #0a1520 100%)!important;
+  box-shadow:0 0 8px rgba(100,120,140,0.3),0 4px 12px rgba(0,0,0,0.6)!important;
+  filter:brightness(0.4)!important;animation:none!important;
+}
 
-/* 金色地鼠 */
-.mole-golden .mole-body{background:radial-gradient(circle at 40% 35%,#ffd700,#b8860b)!important;box-shadow:0 0 25px rgba(255,215,0,0.6),0 0 50px rgba(255,215,0,0.2)!important}
-@keyframes goldenGlow{0%{filter:brightness(1)}50%{filter:brightness(1.3)}100%{filter:brightness(1)}}
-.mole-golden{animation:goldenGlow 0.4s ease-in-out infinite}
+/* ---- 金色晶核 (稀有) ---- */
+.crystal-golden .crystal-core{
+  background:linear-gradient(180deg, #ffd700 0%, #ff8800 30%, #cc6600 60%, #883300 100%)!important;
+  box-shadow:
+    0 0 30px rgba(255,200,0,0.7),
+    0 0 60px rgba(255,180,0,0.3),
+    0 0 100px rgba(255,150,0,0.15),
+    0 8px 24px rgba(0,0,0,0.5)!important;
+  animation:goldenPulse 0.4s ease-in-out infinite!important;
+}
+@keyframes goldenPulse{
+  0%,100%{filter:brightness(1)}
+  50%{filter:brightness(1.4)}
+}
 
-.hit-effect{position:absolute;pointer-events:none;z-index:20}
-.hit-star{position:absolute;width:6px;height:6px;background:#fbbf24;border-radius:50%;animation:starBurst 0.5s ease-out forwards}
-.hit-star.golden{background:#fff;box-shadow:0 0 6px #ffd700}
-@keyframes starBurst{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
+/* ---- 打击特效 ---- */
+.hit-fx{
+  position:absolute;pointer-events:none;z-index:20;
+  width:0;height:0;
+}
+.hit-particle{
+  position:absolute;width:5px;height:5px;
+  background:#00ffc8;border-radius:1px;
+  box-shadow:0 0 6px #00ffc8;
+  animation:particleBurst 0.6s ease-out forwards;
+}
+.hit-particle.golden{background:#ffd700;box-shadow:0 0 10px #ffd700,0 0 20px #ffa000}
+@keyframes particleBurst{
+  0%{opacity:1;transform:translate(0,0) scale(1) rotate(0deg)}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0) rotate(var(--rot))}
+}
 
-/* overlays */
-.overlay{position:absolute;inset:0;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(20,40,15,0.92);backdrop-filter:blur(8px);border-radius:16px;padding:24px}
+/* 冲击环 */
+.hit-ring{
+  position:absolute;width:20px;height:20px;
+  border:2px solid #00ffc8;
+  border-radius:50%;
+  animation:ringExpand 0.5s ease-out forwards;
+  pointer-events:none;z-index:19;
+}
+.hit-ring.golden{border-color:#ffd700;box-shadow:0 0 12px #ffd700}
+@keyframes ringExpand{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(0.5)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(3.5)}
+}
+
+/* ---- 浮动分数 ---- */
+.score-pop{
+  position:absolute;pointer-events:none;z-index:25;
+  font-size:1.15rem;font-weight:900;color:#00ffc8;
+  text-shadow:0 0 14px rgba(0,255,200,0.6);
+  animation:scoreUp 0.7s ease-out forwards;
+}
+.score-pop.golden{font-size:1.5rem;color:#ffd700;text-shadow:0 0 20px rgba(255,200,0,0.7)}
+@keyframes scoreUp{
+  0%{opacity:1;transform:translateY(0) scale(0.8)}
+  100%{opacity:0;transform:translateY(-60px) scale(1.3)}
+}
+
+/* ---- 连击提示 ---- */
+.combo-pop{
+  position:absolute;pointer-events:none;z-index:25;
+  font-size:1rem;font-weight:900;color:#ff40c8;
+  text-shadow:0 0 16px rgba(255,64,200,0.5);
+  animation:comboUp 0.9s ease-out forwards;
+  letter-spacing:1px;
+}
+@keyframes comboUp{
+  0%{opacity:1;transform:translateY(0) scale(0.3)}
+  50%{transform:translateY(-24px) scale(1.3)}
+  100%{opacity:0;transform:translateY(-60px) scale(1)}
+}
+
+/* ---- 倒计时闪烁 ---- */
+.tick-cover{position:absolute;inset:0;pointer-events:none;z-index:12}
+.tick-flash{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 50%, rgba(255,50,50,0.06), transparent 70%);
+  animation:tickIn 0.6s ease-out forwards;
+}
+@keyframes tickIn{0%{opacity:1}100%{opacity:0}}
+
+/* ---- 覆盖层 ---- */
+.overlay{
+  position:absolute;inset:0;z-index:100;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(5,8,16,0.93);backdrop-filter:blur(12px);
+  border-radius:20px;padding:28px;
+}
 .overlay.show{display:flex}
-.overlay h1{font-size:1.6rem;font-weight:800;margin-bottom:4px;background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;color:transparent}
-.overlay .sub{font-size:0.82rem;color:#94a38a;margin-bottom:18px;text-align:center}
-.overlay .big-score{font-size:2.6rem;font-weight:800;color:#fbbf24;margin-bottom:2px}
-.overlay .stat{font-size:0.82rem;color:#94a38a}
-.overlay .stat b{color:#e8f0e0}
 
-.diff-card{background:rgba(0,0,0,0.2);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:22px 24px 18px;width:min(85%,260px);text-align:center}
-.diff-card h1{font-size:1.2rem;margin-bottom:2px}
-.diff-card .sub{font-size:0.78rem;margin-bottom:14px}
+/* 难度卡片 */
+.card{
+  background:rgba(10,14,26,0.7);backdrop-filter:blur(10px);
+  border:1px solid rgba(0,255,200,0.1);
+  border-radius:16px;padding:26px 28px 22px;
+  width:min(88%,280px);text-align:center;
+  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+}
+.card h1{
+  font-size:1.3rem;font-weight:800;margin-bottom:4px;letter-spacing:1px;
+  background:linear-gradient(135deg,#00ffc8,#00aaff,#c840ff);
+  -webkit-background-clip:text;color:transparent;
+}
+.card .sub{font-size:0.78rem;color:#4a5a7a;margin-bottom:18px}
+.card .big-score{font-size:2.8rem;font-weight:900;color:#00ffc8;margin-bottom:2px;text-shadow:0 0 30px rgba(0,255,200,0.3)}
+.card .stat{font-size:0.8rem;color:#4a5a7a;margin-bottom:3px}
+.card .stat b{color:#a0b8d0}
+
+/* 难度按钮 */
 .diff-btns{display:flex;flex-direction:column;gap:8px}
-.diff-btn{display:flex;align-items:center;padding:10px 14px;font-size:0.85rem;font-weight:600;background:rgba(255,255,255,0.03);color:#e8f0e0;border:1px solid rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;transition:all 0.2s;text-align:left;width:100%}
-.diff-btn:hover{transform:translateY(-1px)}
-.diff-btn.easy{border-color:rgba(34,197,94,0.12)}
-.diff-btn.easy:hover{border-color:#22c55e;background:rgba(34,197,94,0.06);box-shadow:0 0 16px rgba(34,197,94,0.06)}
-.diff-btn.normal{border-color:rgba(251,191,36,0.12)}
-.diff-btn.normal:hover{border-color:#fbbf24;background:rgba(251,191,36,0.06);box-shadow:0 0 16px rgba(251,191,36,0.06)}
-.diff-btn.hard{border-color:rgba(239,68,68,0.12)}
-.diff-btn.hard:hover{border-color:#ef4444;background:rgba(239,68,68,0.06);box-shadow:0 0 16px rgba(239,68,68,0.06)}
+.diff-btn{
+  display:flex;align-items:center;padding:11px 16px;
+  font-size:0.84rem;font-weight:600;font-family:inherit;
+  background:rgba(255,255,255,0.02);color:#b0c8e0;
+  border:1px solid rgba(255,255,255,0.05);border-radius:10px;
+  cursor:pointer;transition:0.25s;text-align:left;width:100%;
+}
+.diff-btn:hover{transform:translateY(-2px)}
+.diff-btn.easy{border-color:rgba(0,255,200,0.15)}
+.diff-btn.easy:hover{border-color:#00ffc8;background:rgba(0,255,200,0.04);box-shadow:0 0 30px rgba(0,255,200,0.08)}
+.diff-btn.normal{border-color:rgba(0,170,255,0.15)}
+.diff-btn.normal:hover{border-color:#0af;background:rgba(0,170,255,0.04);box-shadow:0 0 30px rgba(0,170,255,0.08)}
+.diff-btn.hard{border-color:rgba(255,64,200,0.15)}
+.diff-btn.hard:hover{border-color:#ff40c8;background:rgba(255,64,200,0.04);box-shadow:0 0 30px rgba(255,64,200,0.08)}
 .diff-btn .info{flex:1}
-.diff-btn .label{display:block;font-size:0.85rem;font-weight:600;line-height:1.3}
-.diff-btn .note{display:block;font-size:0.68rem;color:#94a38a;font-weight:normal;margin-top:1px}
-.diff-btn .tag{display:inline-block;font-size:0.58rem;font-weight:700;padding:2px 7px;border-radius:999px;letter-spacing:0.3px;margin-left:auto;flex-shrink:0;background:rgba(255,255,255,0.06);color:#94a38a;border:1px solid rgba(255,255,255,0.06)}
+.diff-btn .label{display:block;font-size:0.84rem;font-weight:600;line-height:1.3}
+.diff-btn .note{display:block;font-size:0.66rem;color:#4a5a7a;font-weight:normal;margin-top:1px}
+.diff-btn .tag{
+  display:inline-block;font-size:0.58rem;font-weight:700;padding:2px 8px;
+  border-radius:999px;letter-spacing:0.5px;margin-left:auto;flex-shrink:0;
+  background:rgba(255,255,255,0.03);color:#4a5a7a;
+  border:1px solid rgba(255,255,255,0.05);
+}
 
-.result-card{background:rgba(0,0,0,0.2);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:24px 28px 20px;width:min(80%,230px);text-align:center}
-.result-card .big-score{font-size:2.4rem;font-weight:800;color:#fbbf24;margin-bottom:2px}
-.result-card .stat{font-size:0.78rem;color:#94a38a;margin-bottom:4px}
-.result-card .stat b{color:#e8f0e0}
-.result-card .btn-group{display:flex;gap:8px;margin-top:14px;justify-content:center}
-.result-card .btn{padding:9px 22px;font-size:0.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:0.2s;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a2a15}
-.result-card .btn:hover{transform:scale(1.05)}
-.result-card .btn-secondary{background:rgba(255,255,255,0.06);color:#94a38a;border:1px solid rgba(255,255,255,0.06)}
-.result-card .btn-secondary:hover{color:#e8f0e0;border-color:rgba(255,255,255,0.15);transform:none}
+/* 结算卡片 */
+.result-card{
+  background:rgba(10,14,26,0.7);backdrop-filter:blur(10px);
+  border:1px solid rgba(0,255,200,0.1);
+  border-radius:16px;padding:28px 30px 24px;
+  width:min(84%,250px);text-align:center;
+  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+}
+.result-card .big-score{font-size:2.6rem;font-weight:900;color:#00ffc8;margin-bottom:2px;text-shadow:0 0 30px rgba(0,255,200,0.3)}
+.result-card .stat{font-size:0.78rem;color:#4a5a7a;margin-bottom:3px}
+.result-card .stat b{color:#a0b8d0}
+.result-card .btn-row{display:flex;gap:10px;margin-top:16px;justify-content:center}
+.btn{
+  padding:10px 24px;font-size:0.82rem;font-weight:700;font-family:inherit;
+  border:none;border-radius:10px;cursor:pointer;transition:0.25s;
+  background:linear-gradient(135deg,#00ffc8,#00aacc);color:#051015;
+  box-shadow:0 0 20px rgba(0,255,200,0.2);
+}
+.btn:hover{transform:scale(1.06);box-shadow:0 0 35px rgba(0,255,200,0.35)}
+.btn-ghost2{
+  padding:10px 24px;font-size:0.82rem;font-weight:700;font-family:inherit;
+  background:rgba(255,255,255,0.03);color:#6a7a9a;
+  border:1px solid rgba(255,255,255,0.06);border-radius:10px;
+  cursor:pointer;transition:0.25s;
+}
+.btn-ghost2:hover{color:#a0b8d0;border-color:rgba(255,255,255,0.15)}
 
-#score-popup{position:absolute;pointer-events:none;z-index:30;font-size:1.1rem;font-weight:800;color:#fbbf24;text-shadow:0 0 10px rgba(251,191,36,0.5);animation:scoreFloat 0.7s ease-out forwards}
-@keyframes scoreFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-50px) scale(1.3)}}
+/* ---- HUD ---- */
+.hud{
+  position:absolute;z-index:8;
+  font-weight:700;
+  background:rgba(5,8,16,0.6);backdrop-filter:blur(8px);
+  border:1px solid rgba(0,255,200,0.1);
+  border-radius:10px;padding:4px 14px;
+}
+#scoreHUD{top:4%;left:5%;font-size:1.1rem;color:#00ffc8;text-shadow:0 0 10px rgba(0,255,200,0.3)}
+#timerHUD{
+  top:4%;right:5%;font-size:1.3rem;color:#e0e8ff;
+  transition:color 0.3s;
+}
+#timerHUD.urgent{color:#ff4050;animation:timerBlink 0.5s ease-in-out infinite}
+@keyframes timerBlink{0%,100%{opacity:1}50%{opacity:0.5}}
 
-#last-tick{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:15}
-#last-tick .tick-flash{position:absolute;inset:0;background:rgba(255,50,50,0.08);animation:tickFlash 0.5s ease-out forwards}
-@keyframes tickFlash{0%{opacity:1}100%{opacity:0}}
-
-.combo-popup{position:absolute;z-index:30;font-size:1rem;font-weight:800;color:#ff6b8a;text-shadow:0 0 12px rgba(255,107,138,0.4);animation:comboFloat 0.8s ease-out forwards;pointer-events:none}
-@keyframes comboFloat{0%{opacity:1;transform:translateY(0) scale(0.5)}50%{transform:translateY(-20px) scale(1.2)}100%{opacity:0;transform:translateY(-50px) scale(1)}}
-
-@media(max-width:500px){.mole-body{border-radius:40% 40% 36% 36%}.mole-eyes{top:30%}.mole-nose{top:45%}}
+@media(max-width:500px){
+  .crystal-core{aspect-ratio:0.75}
+  .rift-ring{bottom:14%;height:18%}
+  .rift-ring.outer{bottom:8%;height:24%}
+  .card,.result-card{width:92%}
+}
 </style>
 </head>
 <body>
 
 <div class="nav">
   <a class="btn-back" href="../../index.html">← 大厅</a>
-  <h1>打地鼠</h1>
+  <h1>⚡ 霓虹晶核</h1>
   <div class="nav-info">
     <span id="diffLabel">简单</span>
     <span>最高 <strong id="bestLabel">0</strong></span>
@@ -124,20 +359,24 @@ body{background:#4a7c3f;font-family:'Segoe UI',system-ui,sans-serif;display:flex
 
 <div id="game-wrap">
   <div id="game-board">
-    <div id="boardGrid" class="board-grid"></div>
+    <div class="board-grid" id="boardGrid"></div>
 
-    <!-- score popup container -->
-    <div id="popupLayer" style="position:absolute;inset:0;pointer-events:none;z-index:30"></div>
-    <div id="tickLayer" style="position:absolute;inset:0;pointer-events:none;z-index:15"></div>
+    <!-- HUD -->
+    <div class="hud" id="scoreHUD">0</div>
+    <div class="hud" id="timerHUD">30</div>
 
-    <!-- Start overlay -->
+    <!-- 粒子层 -->
+    <div id="fxLayer" style="position:absolute;inset:0;pointer-events:none;z-index:22"></div>
+    <div id="tickLayer" style="position:absolute;inset:0;pointer-events:none;z-index:14"></div>
+
+    <!-- 开始 -->
     <div class="overlay show" id="startOverlay">
-      <div class="diff-card">
-        <h1>打地鼠</h1>
-        <p class="sub">限时30秒，敲得越多分越高</p>
+      <div class="card">
+        <h1>⚡ 霓虹晶核</h1>
+        <p class="sub">限时30秒，敲碎能量晶核！</p>
         <div class="diff-btns">
           <button class="diff-btn easy" onclick="startGame('easy')">
-            <span class="info"><span class="label">简单模式</span><span class="note">地鼠出现较慢，节奏舒缓</span></span>
+            <span class="info"><span class="label">简单模式</span><span class="note">晶核出现较慢，节奏舒缓</span></span>
             <span class="tag">慢速</span>
           </button>
           <button class="diff-btn normal" onclick="startGame('normal')">
@@ -145,25 +384,25 @@ body{background:#4a7c3f;font-family:'Segoe UI',system-ui,sans-serif;display:flex
             <span class="tag">适中</span>
           </button>
           <button class="diff-btn hard" onclick="startGame('hard')">
-            <span class="info"><span class="label">困难模式</span><span class="note">地鼠出没飞快，挑战极限</span></span>
+            <span class="info"><span class="label">困难模式</span><span class="note">晶核飞速涌现，极限挑战</span></span>
             <span class="tag">快速</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Result overlay -->
+    <!-- 结算 -->
     <div class="overlay" id="resultOverlay">
       <div class="result-card">
-        <div style="font-size:2rem;margin-bottom:4px" id="resultEmoji">🎯</div>
+        <div style="font-size:2.4rem;margin-bottom:6px" id="resultEmoji">💎</div>
         <div class="big-score" id="resultScore">0</div>
         <div class="stat" style="margin-bottom:10px">得分</div>
         <div class="stat">连击最高 <b id="resultCombo">0</b></div>
         <div class="stat">命中率 <b id="resultAccuracy">0%</b></div>
         <div class="stat">最高记录 <b id="resultBest">0</b></div>
-        <div class="btn-group">
+        <div class="btn-row">
           <button class="btn" id="replayBtn">再来一局</button>
-          <button class="btn btn-secondary" onclick="showDifficulty()">换难度</button>
+          <button class="btn-ghost2" onclick="showDifficulty()">换难度</button>
         </div>
       </div>
     </div>
@@ -186,23 +425,17 @@ const COMBO_TIMEOUT = 1500;
 
 // ======================== STATE ========================
 let difficulty = 'easy';
-let score = 0;
-let combo = 0;
-let maxCombo = 0;
-let hits = 0;
-let misses = 0;
-let gameActive = false;
-let timeLeft = GAME_DURATION;
-let totalMoles = 0;
-let timerInterval = null;
-let popIntervals = [];
-let moles = [];
+let score = 0, combo = 0, maxCombo = 0, hits = 0, misses = 0;
+let gameActive = false, timeLeft = GAME_DURATION, totalCrystals = 0;
+let timerInterval = null, popTimers = [];
+let crystals = [];
 let bestScore = parseInt(localStorage.getItem('moleBest') || '0');
-let freezeCombo = false;
+let lastHitTime = 0;
 
 const boardEl = document.getElementById('boardGrid');
-const popupLayer = document.getElementById('popupLayer');
+const fxLayer = document.getElementById('fxLayer');
 const tickLayer = document.getElementById('tickLayer');
+const board = document.getElementById('game-board');
 
 // ======================== AUDIO ========================
 let actx = null;
@@ -215,287 +448,209 @@ function playTone(freq, dur, type, vol, delay){
     const o = actx.createOscillator();
     const g = actx.createGain();
     o.type=type||'sine'; o.frequency.value=freq;
-    g.gain.setValueAtTime(vol||0.12, t);
+    g.gain.setValueAtTime(vol||0.1, t);
     g.gain.exponentialRampToValueAtTime(0.001, t+dur);
     o.connect(g); g.connect(actx.destination);
     o.start(t); o.stop(t+dur);
   }catch(e){}
 }
 
-function sfxHit(){
-  playTone(600,0.06,'sine',0.1);
-  setTimeout(()=>playTone(900,0.04,'sine',0.06),30);
-}
-function sfxGolden(){
-  playTone(800,0.08,'sine',0.12);
-  setTimeout(()=>playTone(1200,0.08,'sine',0.1),60);
-  setTimeout(()=>playTone(1600,0.1,'sine',0.08),120);
-}
-function sfxMiss(){
-  playTone(200,0.06,'sawtooth',0.06);
-}
-function sfxTick(){ playTone(400,0.04,'square',0.05); }
-function sfxStart(){ playTone(440,0.1,'sine',0.08);setTimeout(()=>playTone(660,0.1,'sine',0.08),100); }
-function sfxEnd(){ playTone(660,0.12,'sine',0.1);setTimeout(()=>playTone(880,0.12,'sine',0.1),120);setTimeout(()=>playTone(1100,0.2,'sine',0.08),240); }
+function sfxHit(){ playTone(800,0.05,'sine',0.08);setTimeout(()=>playTone(1200,0.04,'sine',0.05),25); }
+function sfxGolden(){ playTone(1000,0.06,'sine',0.1);setTimeout(()=>playTone(1500,0.06,'sine',0.08),40);setTimeout(()=>playTone(2000,0.08,'sine',0.06),80); }
+function sfxMiss(){ playTone(180,0.05,'sawtooth',0.05); }
+function sfxTick(){ playTone(500,0.04,'square',0.04); }
+function sfxStart(){ playTone(440,0.1,'sine',0.07);setTimeout(()=>playTone(660,0.1,'sine',0.07),80);setTimeout(()=>playTone(880,0.15,'sine',0.06),160); }
+function sfxEnd(){ playTone(880,0.1,'sine',0.08);setTimeout(()=>playTone(1100,0.1,'sine',0.08),100);setTimeout(()=>playTone(1500,0.18,'sine',0.07),200); }
 
 // ======================== BOARD ========================
 function buildBoard(){
   boardEl.innerHTML = '';
-  moles = [];
+  crystals = [];
   for(let i=0;i<9;i++){
     const cell = document.createElement('div');
-    cell.className = 'hole-cell';
+    cell.className = 'cell';
 
-    const mole = document.createElement('div');
-    mole.className = 'mole hidden';
-    mole.dataset.index = i;
+    // 晶核
+    const crystal = document.createElement('div');
+    crystal.className = 'crystal hidden';
+    crystal.dataset.index = i;
+    const core = document.createElement('div');
+    core.className = 'crystal-core';
+    crystal.appendChild(core);
+    cell.appendChild(crystal);
 
-    const body = document.createElement('div');
-    body.className = 'mole-body';
-    // cheeks
-    const cl = document.createElement('div'); cl.className = 'mole-cheek l';
-    const cr = document.createElement('div'); cr.className = 'mole-cheek r';
-    body.appendChild(cl); body.appendChild(cr);
-    // eyes
-    const eyes = document.createElement('div'); eyes.className = 'mole-eyes';
-    const el = document.createElement('div'); el.className = 'mole-eye';
-    const er = document.createElement('div'); er.className = 'mole-eye';
-    eyes.appendChild(el); eyes.appendChild(er);
-    body.appendChild(eyes);
-    // nose
-    const nose = document.createElement('div'); nose.className = 'mole-nose';
-    body.appendChild(nose);
-    // mouth
-    const mouth = document.createElement('div'); mouth.className = 'mole-mouth';
-    body.appendChild(mouth);
-    // teeth
-    const teeth = document.createElement('div'); teeth.className = 'mole-teeth';
-    const t1 = document.createElement('div'); t1.className = 'mole-tooth';
-    const t2 = document.createElement('div'); t2.className = 'mole-tooth';
-    teeth.appendChild(t1); teeth.appendChild(t2);
-    body.appendChild(teeth);
+    // 裂隙环 (装饰)
+    const ring = document.createElement('div');
+    ring.className = 'rift-ring';
+    cell.appendChild(ring);
+    const ringOuter = document.createElement('div');
+    ringOuter.className = 'rift-ring outer';
+    cell.appendChild(ringOuter);
 
-    mole.appendChild(body);
-    cell.appendChild(mole);
-
-    // Hole (dark ellipse in front of mole)
-    const hole = document.createElement('div');
-    hole.className = 'hole';
-    cell.appendChild(hole);
-
-    // Hole rim shadow
-    const rim = document.createElement('div');
-    rim.className = 'hole-rim';
-    cell.appendChild(rim);
+    // 裂隙 (暗色底)
+    const rift = document.createElement('div');
+    rift.className = 'rift';
+    cell.appendChild(rift);
 
     boardEl.appendChild(cell);
 
-    moles.push({
-      el: mole,
-      isUp: false,
-      isGolden: false,
-      isWhacked: false,
-      timer: null,
-      index: i
-    });
+    crystals.push({ el: crystal, isUp: false, isGolden: false, isWhacked: false, timer: null, index: i });
   }
 }
 
-// ======================== MOLE POP ========================
-function popMole(m){
-  if(!gameActive || m.isUp) return;
+// ======================== CRYSTAL POP ========================
+function popCrystal(c){
+  if(!gameActive || c.isUp) return;
 
   const diff = DIFFICULTY[difficulty];
-  const active = moles.filter(x => x.isUp).length;
+  const active = crystals.filter(x => x.isUp).length;
   if(active >= diff.maxActive) return;
 
-  m.isGolden = Math.random() < GOLDEN_CHANCE;
-  m.isWhacked = false;
-  m.isUp = true;
-  m.el.classList.remove('hidden', 'mole-whacked');
-  m.el.classList.add('up');
-
-  if(m.isGolden){
-    m.el.classList.add('mole-golden');
-  }
+  c.isGolden = Math.random() < GOLDEN_CHANCE;
+  c.isWhacked = false;
+  c.isUp = true;
+  c.el.classList.remove('hidden','crystal-whacked');
+  c.el.classList.add('up');
+  if(c.isGolden) c.el.classList.add('crystal-golden');
 
   const stayTime = diff.stayMin + Math.random() * (diff.stayMax - diff.stayMin);
-
-  m.timer = setTimeout(() => {
-    hideMole(m, false);
-  }, stayTime);
+  c.timer = setTimeout(() => hideCrystal(c, false), stayTime);
 }
 
-function hideMole(m, wasHit){
-  if(m.timer){ clearTimeout(m.timer); m.timer = null; }
-  if(!m.isUp) return;
-  m.isUp = false;
-  m.el.classList.remove('mole-golden', 'up');
-  m.el.classList.add('hidden');
+function hideCrystal(c, wasHit){
+  if(c.timer){ clearTimeout(c.timer); c.timer = null; }
+  if(!c.isUp) return;
+  c.isUp = false;
+  c.el.classList.remove('crystal-golden','up');
+  c.el.classList.add('hidden');
   if(!wasHit) misses++;
 }
 
 // ======================== CLICK ========================
-let lastHitTime = 0;
-
 boardEl.addEventListener('click', e => {
   if(!gameActive) return;
+  const cryEl = e.target.closest('.crystal');
+  if(!cryEl) return;
+  const idx = parseInt(cryEl.dataset.index);
+  const c = crystals[idx];
+  if(!c || !c.isUp || c.isWhacked) return;
 
-  const moleEl = e.target.closest('.mole');
-  if(!moleEl) return;
-
-  const idx = parseInt(moleEl.dataset.index);
-  const m = moles[idx];
-  if(!m || !m.isUp || m.isWhacked) return;
-
-  // Hit!
-  m.isWhacked = true;
-  const wasGolden = m.isGolden;
+  c.isWhacked = true;
+  const wasGolden = c.isGolden;
   const now = Date.now();
   hits++;
-  totalMoles++;
+  totalCrystals++;
 
-  // Combo
-  if(now - lastHitTime < COMBO_TIMEOUT){
-    combo++;
-    if(combo > maxCombo) maxCombo = combo;
-  } else {
-    combo = 0;
-  }
+  if(now - lastHitTime < COMBO_TIMEOUT){ combo++; if(combo > maxCombo) maxCombo = combo; }
+  else { combo = 0; }
   lastHitTime = now;
 
-  // Score
   let pts = wasGolden ? SCORE_GOLDEN : SCORE_NORMAL;
   if(combo >= 3) pts = Math.round(pts * (1 + combo * 0.15));
   score += pts;
 
-  // Effects
   if(wasGolden) sfxGolden(); else sfxHit();
-  showHitEffect(m, wasGolden);
-  showScorePopup(m, pts, wasGolden);
-  if(combo >= 3) showComboPopup(m, combo);
+  showHitFX(c, wasGolden);
+  showScorePop(c, pts, wasGolden);
+  if(combo >= 3) showComboPop(c, combo);
 
-  hideMole(m, true);
-  m.el.classList.add('mole-whacked');
-
+  hideCrystal(c, true);
+  c.el.classList.add('crystal-whacked');
   updateHUD();
 });
 
-// ======================== EFFECTS ========================
-function showHitEffect(m, golden){
-  const cx = m.el.getBoundingClientRect();
-  const bx = boardEl.getBoundingClientRect();
-  const x = cx.left + cx.width/2 - bx.left;
-  const y = cx.top + cx.height/3 - bx.top;
-
-  const container = document.createElement('div');
-  container.className = 'hit-effect';
-  container.style.left = x + 'px';
-  container.style.top = y + 'px';
-  container.style.width = '0';
-  container.style.height = '0';
-  boardEl.appendChild(container);
-
-  const count = golden ? 10 : 6;
-  for(let i=0;i<count;i++){
-    const star = document.createElement('div');
-    star.className = 'hit-star' + (golden ? ' golden' : '');
-    const angle = (Math.PI*2/count)*i + Math.random()*0.5;
-    const dist = 25 + Math.random()*30;
-    star.style.setProperty('--tx', Math.cos(angle)*dist + 'px');
-    star.style.setProperty('--ty', Math.sin(angle)*dist + 'px');
-    container.appendChild(star);
-  }
-
-  setTimeout(() => container.remove(), 500);
+// ======================== FX ========================
+function getBoardPos(el){
+  const cr = el.getBoundingClientRect();
+  const br = board.getBoundingClientRect();
+  return { x: cr.left + cr.width/2 - br.left, y: cr.top + cr.height*0.35 - br.top };
 }
 
-function showScorePopup(m, pts, golden){
-  const cx = m.el.getBoundingClientRect();
-  const bx = boardEl.getBoundingClientRect();
-  const x = cx.left + cx.width/2 - bx.left;
-  const y = cx.top + cx.height/3 - bx.top;
+function showHitFX(c, golden){
+  const {x,y} = getBoardPos(c.el);
 
+  // 冲击环
+  const ring = document.createElement('div');
+  ring.className = 'hit-ring' + (golden ? ' golden' : '');
+  ring.style.left = x + 'px'; ring.style.top = y + 'px';
+  board.appendChild(ring);
+  setTimeout(() => ring.remove(), 500);
+
+  // 粒子
+  const container = document.createElement('div');
+  container.className = 'hit-fx';
+  container.style.left = x + 'px';
+  container.style.top = y + 'px';
+  board.appendChild(container);
+
+  const count = golden ? 14 : 8;
+  for(let i=0;i<count;i++){
+    const p = document.createElement('div');
+    p.className = 'hit-particle' + (golden ? ' golden' : '');
+    const angle = (Math.PI*2/count)*i + Math.random()*0.6;
+    const dist = 28 + Math.random()*40;
+    p.style.setProperty('--tx', Math.cos(angle)*dist + 'px');
+    p.style.setProperty('--ty', Math.sin(angle)*dist + 'px');
+    p.style.setProperty('--rot', (Math.random()-0.5)*360 + 'deg');
+    container.appendChild(p);
+  }
+  setTimeout(() => container.remove(), 600);
+}
+
+function showScorePop(c, pts, golden){
+  const {x,y} = getBoardPos(c.el);
   const el = document.createElement('div');
-  el.id = 'score-popup';
+  el.className = 'score-pop' + (golden ? ' golden' : '');
   el.style.left = x + 'px';
   el.style.top = y + 'px';
-  el.textContent = (golden ? '+' : '') + pts;
-  if(golden){ el.style.fontSize = '1.4rem'; el.style.color = '#ffd700'; }
-  boardEl.appendChild(el);
+  el.textContent = (golden ? '★' : '+') + pts;
+  board.appendChild(el);
   setTimeout(() => el.remove(), 700);
 }
 
-function showComboPopup(m, comboCount){
-  const cx = m.el.getBoundingClientRect();
-  const bx = boardEl.getBoundingClientRect();
-  const x = cx.left + cx.width/2 - bx.left;
-  const y = cx.top - 12 - bx.top;
-
+function showComboPop(c, comboCount){
+  const {x,y} = getBoardPos(c.el);
   const el = document.createElement('div');
-  el.className = 'combo-popup';
+  el.className = 'combo-pop';
   el.style.left = x + 'px';
-  el.style.top = y + 'px';
-  el.textContent = comboCount + '连击!';
-  boardEl.appendChild(el);
-  setTimeout(() => el.remove(), 800);
+  el.style.top = (y - 20) + 'px';
+  el.textContent = comboCount + 'x 连击!';
+  board.appendChild(el);
+  setTimeout(() => el.remove(), 900);
 }
 
 // ======================== TIMER ========================
 function startTimer(){
   timeLeft = GAME_DURATION;
-  updateTimerDisplay();
-
+  updateTimerHUD();
   timerInterval = setInterval(() => {
     timeLeft--;
-    updateTimerDisplay();
-
+    updateTimerHUD();
     if(timeLeft <= 5 && timeLeft > 0){
       sfxTick();
       const flash = document.createElement('div');
       flash.className = 'tick-flash';
       tickLayer.appendChild(flash);
-      setTimeout(() => flash.remove(), 500);
+      setTimeout(() => flash.remove(), 600);
     }
-
-    if(timeLeft <= 0){
-      endGame();
-    }
+    if(timeLeft <= 0) endGame();
   }, 1000);
 }
 
-function updateTimerDisplay(){
-  const el = document.getElementById('timerDisplay') || createTimerDisplay();
+function updateTimerHUD(){
+  const el = document.getElementById('timerHUD');
   el.textContent = timeLeft;
+  el.classList.toggle('urgent', timeLeft <= 5);
 }
 
-function createTimerDisplay(){
-  const el = document.createElement('div');
-  el.id = 'timerDisplay';
-  el.style.cssText = 'position:absolute;top:4%;right:6%;z-index:8;font-size:1.5rem;font-weight:800;color:#f8f4e8;text-shadow:0 2px 8px rgba(0,0,0,0.3);background:rgba(0,0,0,0.15);padding:2px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06)';
-  boardEl.appendChild(el);
-  return el;
-}
-
-// ======================== HUD ========================
 function updateHUD(){
-  const scoreEl = document.getElementById('scoreDisplay') || createScoreDisplay();
-  scoreEl.textContent = score;
-}
-
-function createScoreDisplay(){
-  const el = document.createElement('div');
-  el.id = 'scoreDisplay';
-  el.style.cssText = 'position:absolute;top:4%;left:6%;z-index:8;font-size:1.1rem;font-weight:700;color:#f8f4e8;text-shadow:0 2px 8px rgba(0,0,0,0.3);background:rgba(0,0,0,0.15);padding:2px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06)';
-  el.textContent = '0';
-  boardEl.appendChild(el);
-  return el;
+  document.getElementById('scoreHUD').textContent = score;
 }
 
 // ======================== GAME FLOW ========================
 function startGame(diff){
   difficulty = diff;
-  score = 0; combo = 0; maxCombo = 0; hits = 0; misses = 0; totalMoles = 0;
+  score = 0; combo = 0; maxCombo = 0; hits = 0; misses = 0; totalCrystals = 0;
   gameActive = true; lastHitTime = 0;
 
   document.getElementById('startOverlay').classList.remove('show');
@@ -505,67 +660,50 @@ function startGame(diff){
   document.getElementById('diffLabel').textContent = labels[diff] || '简单';
   document.getElementById('bestLabel').textContent = bestScore;
 
-  // Clean up old timers
-  popIntervals.forEach(t => clearInterval(t));
-  popIntervals = [];
-  moles.forEach(m => { if(m.timer) clearTimeout(m.timer); m.isUp = false; m.el.classList.remove('up'); m.el.classList.add('hidden'); });
-
-  // Remove old HUD
-  const oldScore = document.getElementById('scoreDisplay');
-  if(oldScore) oldScore.remove();
-  const oldTimer = document.getElementById('timerDisplay');
-  if(oldTimer) oldTimer.remove();
+  popTimers.forEach(t => clearTimeout(t));
+  popTimers = [];
+  crystals.forEach(c => { if(c.timer) clearTimeout(c.timer); c.isUp = false; c.el.classList.remove('up','crystal-golden'); c.el.classList.add('hidden'); });
 
   buildBoard();
-
+  updateHUD();
   sfxStart();
   startTimer();
-
-  // Start mole popping
   schedulePop();
 }
 
 function schedulePop(){
   if(!gameActive) return;
-
   const diff = DIFFICULTY[difficulty];
-  // Pick a random down mole
-  const down = moles.filter(m => !m.isUp);
+  const down = crystals.filter(c => !c.isUp);
   if(down.length > 0){
-    const m = down[Math.floor(Math.random() * down.length)];
-    popMole(m);
+    const c = down[Math.floor(Math.random() * down.length)];
+    popCrystal(c);
   }
-
   const delay = diff.popMin + Math.random() * (diff.popMax - diff.popMin);
   const id = setTimeout(() => schedulePop(), delay);
-  popIntervals.push(id);
+  popTimers.push(id);
 }
 
 function endGame(){
   gameActive = false;
   if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
-  popIntervals.forEach(t => clearTimeout(t));
-  popIntervals = [];
-  moles.forEach(m => {
-    if(m.timer){ clearTimeout(m.timer); m.timer = null; }
-    m.isUp = false;
-    m.el.classList.add('hidden');
-  });
+  popTimers.forEach(t => clearTimeout(t));
+  popTimers = [];
+  crystals.forEach(c => { if(c.timer){ clearTimeout(c.timer); c.timer = null; } c.isUp = false; c.el.classList.add('hidden'); });
 
   sfxEnd();
 
-  // Save best
   const totalShots = hits + misses;
   const accuracy = totalShots > 0 ? Math.round(hits/totalShots*100) : 0;
 
   if(score > bestScore){
     bestScore = score;
-    if (typeof window._syncScore === 'function') _syncScore('mole', score);
+    localStorage.setItem('moleBest', bestScore);
+    if(typeof window._syncScore === 'function') _syncScore('mole', score);
     document.getElementById('bestLabel').textContent = bestScore;
   }
 
-  // Show result
-  const emoji = score >= 200 ? '🏆' : score >= 100 ? '🎯' : score >= 50 ? '👍' : '💪';
+  const emoji = score >= 200 ? '👑' : score >= 100 ? '💎' : score >= 50 ? '⚡' : '🔮';
   document.getElementById('resultEmoji').textContent = emoji;
   document.getElementById('resultScore').textContent = score;
   document.getElementById('resultCombo').textContent = maxCombo;
@@ -583,37 +721,34 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   if(gameActive){
     gameActive = false;
     if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
-    popIntervals.forEach(t => clearTimeout(t));
-    popIntervals = [];
-    moles.forEach(m => { if(m.timer){ clearTimeout(m.timer); m.timer = null; } });
+    popTimers.forEach(t => clearTimeout(t));
+    popTimers = [];
+    crystals.forEach(c => { if(c.timer){ clearTimeout(c.timer); c.timer = null; } });
   }
   showDifficulty();
 });
 
-document.getElementById('replayBtn').addEventListener('click', () => {
-  startGame(difficulty);
-});
+document.getElementById('replayBtn').addEventListener('click', () => startGame(difficulty));
 
 // ======================== BOOT ========================
 document.getElementById('bestLabel').textContent = bestScore;
 buildBoard();
 </script>
 <script>
-// 同步分数到用户档案
 try {
-    const _user = localStorage.getItem('arcadeUser');
-    if (_user) {
-        window._syncScore = function(game, score) {
-            try {
-                const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
-                if (!all[_user]) all[_user] = {};
-                if (!all[_user][game] || score > all[_user][game]) {
-                    all[_user][game] = score;
-                    localStorage.setItem('arcadeProfiles', JSON.stringify(all));
-                }
-            } catch(e){}
-        };
-    }
+  const _user = localStorage.getItem('arcadeUser');
+  if(_user){
+    window._syncScore = function(game, score){
+      try {
+        const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
+        if(!all[_user]) all[_user] = {};
+        if(!all[_user][game] || score > all[_user][game]){
+          all[_user][game] = score;
+          localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+        }
+      } catch(e){}
+    };
+  }
 } catch(e){}
 </script>
 </body>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="neon">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>个人中心 · Web Arcade OS</title>
+<style>
+:root{
+  --accent-r:0;--accent-g:255;--accent-b:255;
+  --accent2-r:255;--accent2-g:0;--accent2-b:255;
+  --bg1:#0a0f2e;--bg2:#03050b;
+  --lo1:#fff;--lo2:#0ff;--lo3:#a0f;
+  --sr:10;--sg:15;--sb:46;--sr2:5;--sg2:8;--sb2:30;
+  --tr:238;--tg:245;--tb:255;--mr:148;--mg:163;--mb:184;
+  --ca:0.3;
+}
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+body{
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  font-family:'Segoe UI','Inter',system-ui,sans-serif;
+  min-height:100vh;color:rgb(var(--tr),var(--tg),var(--tb));
+  display:flex;flex-direction:column;align-items:center;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse at 40% 0%,rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.06),transparent 50%),
+             radial-gradient(ellipse at 80% 80%,rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.04),transparent 50%);
+  pointer-events:none;z-index:0;
+}
+
+/* Nav */
+.nav{
+  position:relative;z-index:1;
+  display:flex;justify-content:space-between;align-items:center;
+  width:min(900px,94vw);padding:12px 20px;margin-top:14px;
+  background:rgba(var(--sr),var(--sg),var(--sb),0.5);backdrop-filter:blur(14px);
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--ca));
+  border-radius:14px;box-shadow:0 4px 30px rgba(0,0,0,0.5);
+}
+.nav h1{
+  font-size:1.1rem;font-weight:800;letter-spacing:2px;
+  background:linear-gradient(135deg,rgb(var(--accent-r),var(--accent-g),var(--accent-b)),rgb(var(--accent2-r),var(--accent2-g),var(--accent2-b)));
+  -webkit-background-clip:text;color:transparent;
+}
+.nav-actions{display:flex;gap:10px;align-items:center}
+.btn-nav{
+  padding:6px 14px;font-size:0.76rem;font-weight:600;font-family:inherit;
+  background:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.05);color:rgb(var(--mr),var(--mg),var(--mb));
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.1);border-radius:8px;
+  cursor:pointer;text-decoration:none;transition:0.25s;
+}
+.btn-nav:hover{color:rgb(var(--accent-r),var(--accent-g),var(--accent-b));border-color:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.35);box-shadow:0 0 20px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08)}
+
+.main{position:relative;z-index:1;width:min(900px,94vw);margin-top:18px}
+
+/* User card */
+.user-card{
+  display:flex;align-items:center;gap:20px;padding:24px 28px;
+  background:rgba(var(--sr),var(--sg),var(--sb),0.5);backdrop-filter:blur(12px);
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--ca));
+  border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);margin-bottom:18px;
+  flex-wrap:wrap;
+}
+.user-avatar{
+  font-size:3.5rem;line-height:1;
+  filter:drop-shadow(0 0 16px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4));
+}
+.user-info{flex:1;min-width:180px}
+.user-name-display{font-size:1.5rem;font-weight:900;letter-spacing:0.5px}
+.user-name-display small{font-size:0.7rem;font-weight:400;color:rgb(var(--mr),var(--mg),var(--mb));margin-left:8px;cursor:pointer;transition:0.2s}
+.user-name-display small:hover{color:rgb(var(--accent-r),var(--accent-g),var(--accent-b))}
+.user-stats{display:flex;gap:24px;flex-wrap:wrap}
+.user-stat{text-align:center}
+.user-stat .val{font-size:1.3rem;font-weight:800;color:rgb(var(--accent-r),var(--accent-g),var(--accent-b))}
+.user-stat .lbl{font-size:0.7rem;color:rgb(var(--mr),var(--mg),var(--mb))}
+
+/* Edit name */
+.edit-row{display:none;align-items:center;gap:8px;margin-top:6px}
+.edit-row.show{display:flex}
+.edit-row input{
+  padding:6px 12px;font-size:0.85rem;font-family:inherit;
+  background:rgba(var(--sr2),var(--sg2),var(--sb2),0.8);color:#fff;
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.25);border-radius:8px;
+  outline:none;max-width:140px;
+}
+.edit-row button{
+  padding:6px 12px;font-size:0.75rem;font-weight:600;font-family:inherit;
+  background:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);color:rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.25);border-radius:6px;cursor:pointer;transition:0.2s;
+}
+
+/* Stats overview */
+.stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat-card{
+  padding:18px 16px;text-align:center;
+  background:rgba(var(--sr),var(--sg),var(--sb),0.4);backdrop-filter:blur(8px);
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08);border-radius:14px;
+}
+.stat-card .ico{font-size:1.6rem;margin-bottom:4px}
+.stat-card .val{font-size:1.4rem;font-weight:800;color:rgb(var(--accent-r),var(--accent-g),var(--accent-b))}
+.stat-card .lbl{font-size:0.7rem;color:rgb(var(--mr),var(--mg),var(--mb));margin-top:2px}
+
+/* Game grid */
+.section-title{
+  font-size:1rem;font-weight:700;letter-spacing:0.5px;margin-bottom:12px;
+  color:rgb(var(--mr),var(--mg),var(--mb));
+}
+.game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.game-card{
+  padding:18px 16px;border-radius:14px;
+  background:rgba(var(--sr),var(--sg),var(--sb),0.4);backdrop-filter:blur(8px);
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08);
+  transition:0.25s;text-decoration:none;color:inherit;display:block;
+  position:relative;overflow:hidden;
+}
+.game-card:hover{transform:translateY(-2px);border-color:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.25);box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+.game-card .g-icon{font-size:2rem;margin-bottom:6px}
+.game-card .g-name{font-size:0.9rem;font-weight:700;margin-bottom:4px}
+.game-card .g-score{font-size:0.8rem;color:rgb(var(--accent-r),var(--accent-g),var(--accent-b));font-weight:700}
+.game-card .g-plays{font-size:0.7rem;color:rgb(var(--mr),var(--mg),var(--mb));margin-top:2px}
+.game-card .g-rank{position:absolute;top:10px;right:12px;font-size:0.65rem;font-weight:700;color:rgb(var(--mr),var(--mg),var(--mb));opacity:0.6}
+.no-score{color:rgb(var(--mr),var(--mg),var(--mb));font-size:0.78rem;font-style:italic}
+
+/* Theme panel */
+.theme-panel{
+  display:none;position:absolute;top:100%;right:0;margin-top:8px;
+  background:rgba(var(--sr),var(--sg),var(--sb),0.95);backdrop-filter:blur(20px);
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);border-radius:14px;
+  padding:12px;grid-template-columns:repeat(3,1fr);gap:6px;
+  z-index:100;box-shadow:0 12px 40px rgba(0,0,0,0.6);width:300px;
+}
+.theme-panel.open{display:grid}
+.theme-opt{
+  display:flex;align-items:center;gap:6px;padding:6px 8px;
+  font-size:0.68rem;font-weight:600;font-family:inherit;
+  background:transparent;color:rgb(var(--mr),var(--mg),var(--mb));
+  border:1px solid transparent;border-radius:8px;cursor:pointer;transition:0.2s;
+}
+.theme-opt:hover{background:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.06);border-color:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15)}
+.theme-opt.active{color:rgb(var(--accent-r),var(--accent-g),var(--accent-b));border-color:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3)}
+.theme-swatch{width:12px;height:12px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);flex-shrink:0}
+
+/* Footer */
+.footer{text-align:center;padding:20px;color:rgb(var(--mr),var(--mg),var(--mb));font-size:0.72rem;z-index:1}
+
+/* Not logged in */
+.no-user{
+  text-align:center;padding:60px 20px;
+  background:rgba(var(--sr),var(--sg),var(--sb),0.4);border-radius:18px;
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08);
+}
+.no-user h2{font-size:1.4rem;margin-bottom:8px;color:rgb(var(--accent-r),var(--accent-g),var(--accent-b))}
+.no-user p{color:rgb(var(--mr),var(--mg),var(--mb));margin-bottom:16px;font-size:0.9rem}
+
+@media(max-width:780px){
+  .stat-cards{grid-template-columns:repeat(2,1fr)}
+  .game-grid{grid-template-columns:repeat(2,1fr)}
+  .user-card{flex-direction:column;text-align:center}
+  .user-stats{justify-content:center}
+}
+@media(max-width:480px){
+  .game-grid{grid-template-columns:1fr}
+  .stat-cards{grid-template-columns:1fr 1fr;gap:8px}
+  .stat-card{padding:12px 8px}
+  .stat-card .val{font-size:1.1rem}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="btn-nav" href="index.html">← 大厅</a>
+  <h1>👤 个人中心</h1>
+  <div class="nav-actions" style="position:relative">
+    <button class="btn-nav" id="themeBtn">🎨 主题</button>
+    <div class="theme-panel" id="themePanel"></div>
+    <button class="btn-nav" id="logoutBtn">退出</button>
+  </div>
+</nav>
+
+<div class="main" id="mainContent"></div>
+
+<div class="footer">Web Arcade OS · 数据存储于本地浏览器</div>
+
+<script>
+const THEMES = {
+  neon:{r:0,g:255,b:255,r2:255,g2:0,b2:255,bg1:'#0a0f2e',bg2:'#03050b',l1:'#ffffff',l2:'#0ff',l3:'#a0f',sr:10,sg:15,sb:46,sr2:5,sg2:8,sb2:30,tr:238,tg:245,tb:255,mr:148,mg:163,mb:184,ca:0.3},
+  flame:{r:255,g:120,b:0,r2:255,g2:50,b2:0,bg1:'#2e1208',bg2:'#140603',l1:'#ffffff',l2:'#ff7800',l3:'#ff3300',sr:46,sg:18,sb:10,sr2:30,sg2:10,sb2:5,tr:238,tg:245,tb:255,mr:200,mg:170,mb:150,ca:0.3},
+  frost:{r:120,g:220,b:255,r2:180,g2:200,b2:255,bg1:'#082438',bg2:'#030d18',l1:'#ffffff',l2:'#78dcff',l3:'#b4c8ff',sr:10,sg:24,sb:42,sr2:6,sg2:12,sb2:26,tr:238,tg:245,tb:255,mr:148,mg:200,mb:220,ca:0.3},
+  purple:{r:180,g:100,b:255,r2:255,g2:80,b2:200,bg1:'#1e0838',bg2:'#0c0318',l1:'#ffffff',l2:'#b464ff',l3:'#ff50c8',sr:20,sg:10,sb:44,sr2:12,sg2:5,sb2:26,tr:238,tg:245,tb:255,mr:190,mg:170,mb:210,ca:0.3},
+  green:{r:50,g:255,b:80,r2:0,g2:200,b2:200,bg1:'#0a1e0a',bg2:'#030b03',l1:'#ffffff',l2:'#50ff80',l3:'#00c8c8',sr:12,sg:30,sb:15,sr2:6,sg2:16,sb2:8,tr:238,tg:245,tb:255,mr:150,mg:200,mb:160,ca:0.3},
+  light:{r:50,g:120,b:255,r2:255,g2:80,b2:180,bg1:'#f0f4f8',bg2:'#e2e8f0',l1:'#1a202c',l2:'#3278ff',l3:'#e050a0',sr:255,sg:255,sb:255,sr2:240,sg2:244,sb2:248,tr:26,tg:32,tb:44,mr:100,mg:116,mb:139,ca:0.15},
+  cybergold:{r:255,g:191,b:0,r2:255,g2:80,b2:0,bg1:'#1a1200',bg2:'#0a0800',l1:'#ffffff',l2:'#ffbf00',l3:'#ff5000',sr:26,sg:18,sb:0,sr2:16,sg2:10,sb2:0,tr:255,tg:248,tb:230,mr:180,mg:160,mb:120,ca:0.3},
+  synthwave:{r:255,g:50,b:150,r2:0,g2:255,b2:200,bg1:'#1a0520',bg2:'#0d0210',l1:'#ffffff',l2:'#ff3296',l3:'#00ffc8',sr:30,sg:8,sb:36,sr2:18,sg2:4,sb2:22,tr:250,tg:240,tb:255,mr:200,mg:150,mb:200,ca:0.3},
+  matrix:{r:0,g:255,b:65,r2:0,g2:200,b2:100,bg1:'#001000',bg2:'#000500',l1:'#00ff41',l2:'#00cc32',l3:'#008a20',sr:0,sg:18,sb:0,sr2:0,sg2:10,sb2:0,tr:180,tg:255,tb:180,mr:0,mg:180,mb:60,ca:0.25},
+  crimson:{r:220,g:30,b:30,r2:180,g2:0,b2:80,bg1:'#1a0505',bg2:'#0d0202',l1:'#ffffff',l2:'#ff3030',l3:'#b00050',sr:30,sg:8,sb:8,sr2:18,sg2:4,sb2:4,tr:255,tg:220,tb:220,mr:180,mg:120,mb:120,ca:0.3},
+  aurora:{r:0,g:255,b:180,r2:150,g2:80,b2:255,bg1:'#061a1a',bg2:'#020a0a',l1:'#ffffff',l2:'#00ffb4',l3:'#9650ff',sr:8,sg:26,sb:26,sr2:4,sg2:16,sb2:16,tr:220,tg:255,tb:250,mr:120,mg:200,mb:190,ca:0.3}
+};
+
+const GAMES = [
+  {key:'skyDefense',name:'天空防卫局',icon:'✈️',color:'#1e90ff',cat:'射击'},
+  {key:'match',name:'深海寻宝',icon:'🐙',color:'#20b2aa',cat:'记忆'},
+  {key:'tower',name:'云端筑梦师',icon:'🏗️',color:'#ffa500',cat:'物理'},
+  {key:'typist',name:'极客骇客',icon:'💻',color:'#8a2be2',cat:'打字'},
+  {key:'beats',name:'光音记忆',icon:'🎵',color:'#d946ef',cat:'音乐'},
+  {key:'particle',name:'星海流沙',icon:'🌌',color:'#2c5364',cat:'沙盒'},
+  {key:'coop',name:'双子星探险',icon:'👯',color:'#3b82f6',cat:'双人'},
+  {key:'breakout',name:'宝石消消乐',icon:'💎',color:'#a855f7',cat:'消除'},
+  {key:'mole',name:'霓虹晶核',icon:'⚡',color:'#22c55e',cat:'反应'}
+];
+
+const currentUser = localStorage.getItem('arcadeUser');
+
+// === Theme ===
+function setTheme(name){
+  const t = THEMES[name];
+  if(!t) return;
+  const r = document.documentElement;
+  r.setAttribute('data-theme',name);
+  r.style.setProperty('--accent-r',t.r);r.style.setProperty('--accent-g',t.g);r.style.setProperty('--accent-b',t.b);
+  r.style.setProperty('--accent2-r',t.r2);r.style.setProperty('--accent2-g',t.g2);r.style.setProperty('--accent2-b',t.b2);
+  r.style.setProperty('--bg1',t.bg1);r.style.setProperty('--bg2',t.bg2);
+  r.style.setProperty('--lo1',t.l1);r.style.setProperty('--lo2',t.l2);r.style.setProperty('--lo3',t.l3);
+  r.style.setProperty('--sr',t.sr);r.style.setProperty('--sg',t.sg);r.style.setProperty('--sb',t.sb);
+  r.style.setProperty('--sr2',t.sr2);r.style.setProperty('--sg2',t.sg2);r.style.setProperty('--sb2',t.sb2);
+  r.style.setProperty('--tr',t.tr);r.style.setProperty('--tg',t.tg);r.style.setProperty('--tb',t.tb);
+  r.style.setProperty('--mr',t.mr);r.style.setProperty('--mg',t.mg);r.style.setProperty('--mb',t.mb);
+  r.style.setProperty('--ca',t.ca);
+  localStorage.setItem('arcadeTheme',name);
+  document.querySelectorAll('.theme-opt').forEach(o=>o.classList.toggle('active',o.dataset.tv===name));
+}
+const saved = localStorage.getItem('arcadeTheme');
+if(saved && THEMES[saved]) setTheme(saved);
+
+// Build theme panel
+const tp = document.getElementById('themePanel');
+for(const [k,t] of Object.entries(THEMES)){
+  const btn = document.createElement('button');
+  btn.className = 'theme-opt'+(k===saved?' active':'');
+  btn.dataset.tv = k;
+  btn.innerHTML = `<span class="theme-swatch" style="background:linear-gradient(135deg,rgb(${t.r},${t.g},${t.b}),rgb(${t.r2},${t.g2},${t.b2}))"></span>${k}`;
+  btn.onclick = ()=>setTheme(k);
+  tp.appendChild(btn);
+}
+document.getElementById('themeBtn').addEventListener('click',()=>{tp.classList.toggle('open')});
+document.addEventListener('click',e=>{if(!e.target.closest('#themeBtn')&&!e.target.closest('#themePanel'))tp.classList.remove('open')});
+
+// === Data helpers ===
+function getProfiles(){try{return JSON.parse(localStorage.getItem('arcadeProfiles')||'{}')}catch(e){return{}}}
+function getPlayCounts(){try{return JSON.parse(localStorage.getItem('arcadePlayCounts')||'{}')}catch(e){return{}}}
+function getFavorites(){try{return JSON.parse(localStorage.getItem('arcadeFavorites')||'[]')}catch(e){return[]}}
+
+// === Render ===
+function render(){
+  const main = document.getElementById('mainContent');
+  if(!currentUser){
+    main.innerHTML = `<div class="no-user"><h2>未登录</h2><p>请先在游戏大厅登录后再进入个人中心</p><a class="btn-nav" href="index.html">← 去登录</a></div>`;
+    document.getElementById('logoutBtn').style.display='none';
+    return;
+  }
+  document.getElementById('logoutBtn').style.display='';
+
+  const profiles = getProfiles();
+  const myScores = profiles[currentUser]||{};
+  const playCounts = getPlayCounts();
+
+  // Calc stats
+  let totalScore = 0, gamesPlayed = 0, topGame = null, topScore = 0;
+  let totalPlays = 0;
+  GAMES.forEach(g=>{
+    const s = myScores[g.key]||0;
+    totalScore += s;
+    if(s>0) gamesPlayed++;
+    if(s>topScore){topScore=s;topGame=g;}
+    totalPlays += playCounts[g.name]||0;
+  });
+
+  let html = '';
+
+  // User card
+  html += `<div class="user-card">
+    <div class="user-avatar">👾</div>
+    <div class="user-info">
+      <div class="user-name-display">${currentUser}<small id="editNameBtn">✏️ 修改</small></div>
+      <div class="edit-row" id="editRow">
+        <input id="editInput" maxlength="12" value="${currentUser}">
+        <button id="saveNameBtn">保存</button>
+        <button id="cancelNameBtn" style="background:transparent;border-color:transparent;color:rgb(var(--mr),var(--mg),var(--mb))">取消</button>
+      </div>
+    </div>
+    <div class="user-stats">
+      <div class="user-stat"><div class="val">${totalScore.toLocaleString()}</div><div class="lbl">总分</div></div>
+      <div class="user-stat"><div class="val">${totalPlays}</div><div class="lbl">游玩次数</div></div>
+      <div class="user-stat"><div class="val">${gamesPlayed}/9</div><div class="lbl">游戏数</div></div>
+    </div>
+  </div>`;
+
+  // Stat cards
+  html += `<div class="stat-cards">
+    <div class="stat-card"><div class="ico">🏆</div><div class="val">${totalScore.toLocaleString()}</div><div class="lbl">累计总分</div></div>
+    <div class="stat-card"><div class="ico">🎮</div><div class="val">${totalPlays}</div><div class="lbl">总游玩次数</div></div>
+    <div class="stat-card"><div class="ico">❤️</div><div class="val">${topGame?topGame.icon:'—'}</div><div class="lbl">最爱游戏${topGame?' ('+topGame.name+')':''}</div></div>
+    <div class="stat-card"><div class="ico">⭐</div><div class="val">${topGame?topScore.toLocaleString():'0'}</div><div class="lbl">最高单项分</div></div>
+  </div>`;
+
+  // Game scores
+  html += `<div class="section-title">🎯 游戏成绩</div><div class="game-grid">`;
+  GAMES.forEach((g,i)=>{
+    const score = myScores[g.key]||0;
+    const plays = playCounts[g.name]||0;
+    html += `<a class="game-card" href="games/${g.key==='skyDefense'?'sky-defense':g.key==='mole'?'mole':g.key==='match'?'match':g.key==='tower'?'tower':g.key==='typist'?'typist':g.key==='beats'?'beats':g.key==='coop'?'coop':g.key==='particle'?'particle':'breakout'}/index.html">
+      <div class="g-rank">#${i+1}</div>
+      <div class="g-icon">${g.icon}</div>
+      <div class="g-name">${g.name}</div>
+      <div class="g-score">${score>0?'最高 '+score.toLocaleString():'<span class="no-score">暂无记录</span>'}</div>
+      <div class="g-plays">${plays>0?'玩了 '+plays+' 次':'尚未游玩'}</div>
+    </a>`;
+  });
+  html += `</div>`;
+
+  // Export button
+  html += `<div style="text-align:center;margin-bottom:24px">
+    <button class="btn-nav" id="exportBtn" style="font-size:0.8rem;padding:8px 18px">📥 导出我的数据</button>
+  </div>`;
+
+  main.innerHTML = html;
+
+  // Edit name handlers
+  document.getElementById('editNameBtn').addEventListener('click',()=>{
+    document.getElementById('editRow').classList.add('show');
+    document.getElementById('editInput').focus();
+  });
+  document.getElementById('saveNameBtn').addEventListener('click',()=>{
+    const newName = document.getElementById('editInput').value.trim();
+    if(!newName||newName.length<1||newName===currentUser) return;
+    const profiles = getProfiles();
+    if(profiles[currentUser]){
+      profiles[newName] = profiles[currentUser];
+      delete profiles[currentUser];
+      localStorage.setItem('arcadeProfiles',JSON.stringify(profiles));
+    }
+    // Update favorites (they're global, not per-user in this implementation)
+    localStorage.setItem('arcadeUser',newName);
+    location.reload();
+  });
+  document.getElementById('cancelNameBtn').addEventListener('click',()=>{
+    document.getElementById('editRow').classList.remove('show');
+  });
+
+  // Export
+  document.getElementById('exportBtn').addEventListener('click',()=>{
+    const data = {
+      user: currentUser,
+      scores: myScores,
+      playCounts: playCounts,
+      exportedAt: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;a.download = `arcade-profile-${currentUser}.json`;
+    a.click();URL.revokeObjectURL(url);
+  });
+
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click',()=>{
+    localStorage.removeItem('arcadeUser');
+    location.href = 'index.html';
+  });
+}
+
+render();
+</script>
+</body>
+</html>

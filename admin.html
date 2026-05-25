@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="neon">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台管理 · Web Arcade OS</title>
+<style>
+:root{
+  --accent-r:0;--accent-g:255;--accent-b:255;
+  --accent2-r:255;--accent2-g:0;--accent2-b:255;
+  --bg1:#0a0f2e;--bg2:#03050b;
+  --lo1:#fff;--lo2:#0ff;--lo3:#a0f;
+  --sr:10;--sg:15;--sb:46;--sr2:5;--sg2:8;--sb2:30;
+  --tr:238;--tg:245;--tb:255;--mr:148;--mg:163;--mb:184;
+  --ca:0.3;
+}
+[data-theme="flame"]{--accent-r:255;--accent-g:120;--accent-b:0;--accent2-r:255;--accent2-g:50;--accent2-b:0;--bg1:#2e1208;--bg2:#140603;--lo1:#fff;--lo2:#ff7800;--lo3:#f30;--sr:46;--sg:18;--sb:10;--sr2:30;--sg2:10;--sb2:5;--tr:238;--tg:245;--tb:255;--mr:200;--mg:170;--mb:150;--ca:0.3}
+[data-theme="frost"]{--accent-r:120;--accent-g:220;--accent-b:255;--accent2-r:180;--accent2-g:200;--accent2-b:255;--bg1:#082438;--bg2:#030d18;--lo1:#fff;--lo2:#78dcff;--lo3:#b4c8ff;--sr:10;--sg:24;--sb:42;--sr2:6;--sg2:12;--sb2:26;--tr:238;--tg:245;--tb:255;--mr:148;--mg:200;--mb:220;--ca:0.3}
+[data-theme="purple"]{--accent-r:180;--accent-g:100;--accent-b:255;--accent2-r:255;--accent2-g:80;--accent2-b:200;--bg1:#1e0838;--bg2:#0c0318;--lo1:#fff;--lo2:#b464ff;--lo3:#ff50c8;--sr:20;--sg:10;--sb:44;--sr2:12;--sg2:5;--sb2:26;--tr:238;--tg:245;--tb:255;--mr:190;--mg:170;--mb:210;--ca:0.3}
+[data-theme="green"]{--accent-r:50;--accent-g:255;--accent-b:80;--accent2-r:0;--accent2-g:200;--accent2-b:200;--bg1:#0a1e0a;--bg2:#030b03;--lo1:#fff;--lo2:#50ff80;--lo3:#00c8c8;--sr:12;--sg:30;--sb:15;--sr2:6;--sg2:16;--sb2:8;--tr:238;--tg:245;--tb:255;--mr:150;--mg:200;--mb:160;--ca:0.3}
+[data-theme="light"]{--accent-r:50;--accent-g:120;--accent-b:255;--accent2-r:255;--accent2-g:80;--accent2-b:180;--bg1:#f0f4f8;--bg2:#e2e8f0;--lo1:#1a202c;--lo2:#3278ff;--lo3:#e050a0;--sr:255;--sg:255;--sb:255;--sr2:240;--sg2:244;--sb2:248;--tr:26;--tg:32;--tb:44;--mr:100;--mg:116;--mb:139;--ca:0.15}
+[data-theme="cybergold"]{--accent-r:255;--accent-g:191;--accent-b:0;--accent2-r:255;--accent2-g:80;--accent2-b:0;--bg1:#1a1200;--bg2:#0a0800;--lo1:#fff;--lo2:#ffbf00;--lo3:#ff5000;--sr:26;--sg:18;--sb:0;--sr2:16;--sg2:10;--sb2:0;--tr:255;--tg:248;--tb:230;--mr:180;--mg:160;--mb:120;--ca:0.3}
+[data-theme="synthwave"]{--accent-r:255;--accent-g:50;--accent-b:150;--accent2-r:0;--accent2-g:255;--accent2-b:200;--bg1:#1a0520;--bg2:#0d0210;--lo1:#fff;--lo2:#ff3296;--lo3:#00ffc8;--sr:30;--sg:8;--sb:36;--sr2:18;--sg2:4;--sb2:22;--tr:250;--tg:240;--tb:255;--mr:200;--mg:150;--mb:200;--ca:0.3}
+[data-theme="matrix"]{--accent-r:0;--accent-g:255;--accent-b:65;--accent2-r:0;--accent2-g:200;--accent2-b:100;--bg1:#001000;--bg2:#000500;--lo1:#00ff41;--lo2:#00cc32;--lo3:#008a20;--sr:0;--sg:18;--sb:0;--sr2:0;--sg2:10;--sb2:0;--tr:180;--tg:255;--tb:180;--mr:0;--mg:180;--mb:60;--ca:0.25}
+[data-theme="crimson"]{--accent-r:220;--accent-g:30;--accent-b:30;--accent2-r:180;--accent2-g:0;--accent2-b:80;--bg1:#1a0505;--bg2:#0d0202;--lo1:#fff;--lo2:#ff3030;--lo3:#b00050;--sr:30;--sg:8;--sb:8;--sr2:18;--sg2:4;--sb2:4;--tr:255;--tg:220;--tb:220;--mr:180;--mg:120;--mb:120;--ca:0.3}
+[data-theme="aurora"]{--accent-r:0;--accent-g:255;--accent-b:180;--accent2-r:150;--accent2-g:80;--accent2-b:255;--bg1:#061a1a;--bg2:#020a0a;--lo1:#fff;--lo2:#00ffb4;--lo3:#9650ff;--sr:8;--sg:26;--sb:26;--sr2:4;--sg2:16;--sb2:16;--tr:220;--tg:255;--tb:250;--mr:120;--mg:200;--mb:190;--ca:0.3}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  font-family:'Segoe UI','Inter',system-ui,sans-serif;
+  min-height:100vh;color:rgb(var(--tr),var(--tg),var(--tb));
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse at 30% 0%,rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.06),transparent 50%),
+             radial-gradient(ellipse at 70% 90%,rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.04),transparent 50%);
+  pointer-events:none;z-index:0;
+}
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.06) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.06) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none;z-index:0;
+}
+
+.nav{
+  position:relative;z-index:10;
+  width:min(1100px,96vw);margin:14px auto 0;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 20px;
+  background:rgba(var(--sr),var(--sg),var(--sb),0.5);backdrop-filter:blur(14px);
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--ca));
+  border-radius:14px;box-shadow:0 4px 30px rgba(0,0,0,0.5);
+}
+.nav h1{
+  font-size:1.1rem;font-weight:800;letter-spacing:2px;
+  background:linear-gradient(135deg,rgb(var(--accent-r),var(--accent-g),var(--accent-b)),rgb(var(--accent2-r),var(--accent2-g),var(--accent2-b)));
+  -webkit-background-clip:text;color:transparent;
+}
+.nav-actions{display:flex;gap:8px;align-items:center}
+.btn-nav{
+  padding:6px 14px;font-size:0.76rem;font-weight:600;font-family:inherit;
+  background:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.05);color:rgb(var(--mr),var(--mg),var(--mb));
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.1);border-radius:8px;
+  cursor:pointer;text-decoration:none;transition:0.25s;
+}
+.btn-nav:hover{color:rgb(var(--accent-r),var(--accent-g),var(--accent-b));border-color:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.35);box-shadow:0 0 20px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08)}
+.btn-nav.danger{color:#ef4444;border-color:rgba(239,68,68,0.2)}
+.btn-nav.danger:hover{background:rgba(239,68,68,0.1);border-color:#ef4444;box-shadow:0 0 20px rgba(239,68,68,0.15)}
+
+.main{position:relative;z-index:10;width:min(1100px,96vw);margin:18px auto 40px}
+
+/* Dashboard cards */
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.dash-card{
+  padding:20px 18px;text-align:center;
+  background:rgba(var(--sr),var(--sg),var(--sb),0.5);backdrop-filter:blur(12px);
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08);border-radius:16px;
+  transition:0.25s;
+}
+.dash-card:hover{border-color:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.25);transform:translateY(-3px)}
+.dash-card .ico{font-size:1.8rem;margin-bottom:6px}
+.dash-card .val{font-size:1.6rem;font-weight:900;color:rgb(var(--accent-r),var(--accent-g),var(--accent-b))}
+.dash-card .lbl{font-size:0.7rem;color:rgb(var(--mr),var(--mg),var(--mb));margin-top:2px}
+
+/* Section */
+.section{margin-bottom:22px}
+.section-title{
+  font-size:1.1rem;font-weight:700;margin-bottom:12px;padding-left:14px;
+  border-left:4px solid rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+  display:flex;align-items:center;gap:8px;
+}
+
+/* Table */
+.table-wrap{
+  background:rgba(var(--sr),var(--sg),var(--sb),0.4);backdrop-filter:blur(10px);
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08);border-radius:14px;
+  overflow-x:auto;
+}
+table{width:100%;border-collapse:collapse;font-size:0.82rem}
+th,td{padding:10px 12px;text-align:center;white-space:nowrap}
+th{
+  font-weight:700;font-size:0.7rem;color:rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+  background:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.04);
+  border-bottom:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.12);
+  letter-spacing:0.5px;
+}
+td{border-bottom:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.04);color:rgb(var(--tr),var(--tg),var(--tb))}
+tr:hover td{background:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.03)}
+.rank-gold{color:#fbbf24;font-weight:800}
+.rank-silver{color:#94a3b8;font-weight:800}
+.rank-bronze{color:#d97706;font-weight:800}
+.score-cell{font-weight:600;color:rgb(var(--accent-r),var(--accent-g),var(--accent-b))}
+.total-cell{font-weight:900;color:rgb(var(--accent2-r),var(--accent2-g),var(--accent2-b))}
+
+/* Game stats */
+.game-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.game-stat-card{
+  padding:16px;
+  background:rgba(var(--sr),var(--sg),var(--sb),0.4);backdrop-filter:blur(8px);
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.06);border-radius:12px;
+  transition:0.2s;
+}
+.game-stat-card:hover{border-color:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2)}
+.game-stat-card .gname{font-weight:700;font-size:0.9rem;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.game-stat-card .gstat{font-size:0.76rem;color:rgb(var(--mr),var(--mg),var(--mb));line-height:1.8}
+.game-stat-card .gstat b{color:rgb(var(--accent-r),var(--accent-g),var(--accent-b))}
+
+/* Data management */
+.mgmt-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn-mgmt{
+  padding:10px 22px;font-size:0.82rem;font-weight:700;font-family:inherit;
+  background:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08);
+  color:rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2);border-radius:10px;
+  cursor:pointer;transition:0.25s;
+}
+.btn-mgmt:hover{background:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);box-shadow:0 0 24px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.12)}
+
+.confirm-overlay{
+  position:fixed;inset:0;z-index:9999;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
+}
+.confirm-overlay.show{display:flex}
+.confirm-box{
+  background:rgba(var(--sr),var(--sg),var(--sb),0.95);backdrop-filter:blur(16px);
+  border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2);border-radius:16px;
+  padding:28px 32px;text-align:center;max-width:400px;width:90%;
+}
+.confirm-box h2{font-size:1.2rem;margin-bottom:8px;color:#ef4444}
+.confirm-box p{font-size:0.85rem;color:rgb(var(--mr),var(--mg),var(--mb));margin-bottom:20px}
+.confirm-btns{display:flex;gap:10px;justify-content:center}
+.confirm-btns button{
+  padding:8px 20px;border-radius:8px;font-weight:700;font-size:0.82rem;font-family:inherit;
+  cursor:pointer;border:1px solid rgba(255,255,255,0.1);transition:0.2s;
+}
+.btn-confirm-danger{background:#ef4444;color:#fff;border-color:#ef4444}
+.btn-confirm-danger:hover{background:#dc2626}
+.btn-confirm-cancel{background:rgba(255,255,255,0.06);color:rgb(var(--mr),var(--mg),var(--mb))}
+.btn-confirm-cancel:hover{background:rgba(255,255,255,0.1)}
+
+.empty-state{text-align:center;padding:40px;color:rgb(var(--mr),var(--mg),var(--mb));font-size:0.9rem}
+
+@media(max-width:780px){
+  .dash-grid{grid-template-columns:repeat(2,1fr)}
+  .game-stats-grid{grid-template-columns:1fr}
+  .nav h1{font-size:0.9rem}
+}
+@media(max-width:480px){
+  .dash-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <h1>⚙️ 后台管理面板</h1>
+  <div class="nav-actions">
+    <a href="index.html" class="btn-nav">← 返回大厅</a>
+    <a href="profile.html" class="btn-nav">👤 个人中心</a>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- 仪表盘 -->
+  <div class="dash-grid">
+    <div class="dash-card"><div class="ico">👥</div><div class="val" id="dashUserCount">0</div><div class="lbl">注册用户总数</div></div>
+    <div class="dash-card"><div class="ico">🎮</div><div class="val" id="dashPlayCount">0</div><div class="lbl">总游玩次数</div></div>
+    <div class="dash-card"><div class="ico">🔥</div><div class="val" id="dashHotGame">—</div><div class="lbl">最热游戏</div></div>
+    <div class="dash-card"><div class="ico">👑</div><div class="val" id="dashTopPlayer">—</div><div class="lbl">最高分玩家</div></div>
+  </div>
+
+  <!-- 用户排行榜 -->
+  <div class="section">
+    <h2 class="section-title">🏆 用户排行榜</h2>
+    <div class="table-wrap" id="userTableWrap">
+      <div class="empty-state">加载中...</div>
+    </div>
+  </div>
+
+  <!-- 游戏统计 -->
+  <div class="section">
+    <h2 class="section-title">📊 游戏统计</h2>
+    <div class="game-stats-grid" id="gameStatsGrid">
+      <div class="empty-state">加载中...</div>
+    </div>
+  </div>
+
+  <!-- 数据管理 -->
+  <div class="section">
+    <h2 class="section-title">🗄️ 数据管理</h2>
+    <div class="mgmt-row">
+      <button class="btn-mgmt" onclick="exportAllData()">📥 导出全部数据 (JSON)</button>
+      <button class="btn-mgmt" onclick="showClearUser()">🗑️ 清除指定用户</button>
+      <button class="btn-nav danger" onclick="showResetAll()">⚠️ 重置所有数据</button>
+    </div>
+  </div>
+</div>
+
+<!-- 清除用户确认 -->
+<div class="confirm-overlay" id="clearUserOverlay">
+  <div class="confirm-box">
+    <h2>清除用户数据</h2>
+    <p>选择要清除的用户，此操作不可撤销。</p>
+    <select id="clearUserSelect" style="width:100%;padding:8px 12px;margin-bottom:14px;background:rgba(var(--sr2),var(--sg2),var(--sb2),0.8);color:#fff;border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.25);border-radius:8px;font-family:inherit;font-size:0.85rem"></select>
+    <div class="confirm-btns">
+      <button class="btn-confirm-cancel" onclick="hideClearUser()">取消</button>
+      <button class="btn-confirm-danger" onclick="doClearUser()">确认清除</button>
+    </div>
+  </div>
+</div>
+
+<!-- 重置所有数据确认 -->
+<div class="confirm-overlay" id="resetAllOverlay">
+  <div class="confirm-box">
+    <h2>⚠️ 重置所有数据</h2>
+    <p>这将清除所有用户档案、分数、游玩记录和收藏数据。此操作不可撤销！</p>
+    <div class="confirm-btns">
+      <button class="btn-confirm-cancel" onclick="hideResetAll()">取消</button>
+      <button class="btn-confirm-danger" onclick="doResetAll()">确认重置全部</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const THEMES = {
+  neon:{r:0,g:255,b:255,r2:255,g2:0,b2:255,bg1:'#0a0f2e',bg2:'#03050b',l1:'#fff',l2:'#0ff',l3:'#a0f',sr:10,sg:15,sb:46,sr2:5,sg2:8,sb2:30,tr:238,tg:245,tb:255,mr:148,mg:163,mb:184,ca:0.3},
+  flame:{r:255,g:120,b:0,r2:255,g2:50,b2:0,bg1:'#2e1208',bg2:'#140603',l1:'#fff',l2:'#ff7800',l3:'#f30',sr:46,sg:18,sb:10,sr2:30,sg2:10,sb2:5,tr:238,tg:245,tb:255,mr:200,mg:170,mb:150,ca:0.3},
+  frost:{r:120,g:220,b:255,r2:180,g2:200,b2:255,bg1:'#082438',bg2:'#030d18',l1:'#fff',l2:'#78dcff',l3:'#b4c8ff',sr:10,sg:24,sb:42,sr2:6,sg2:12,sb2:26,tr:238,tg:245,tb:255,mr:148,mg:200,mb:220,ca:0.3},
+  purple:{r:180,g:100,b:255,r2:255,g2:80,b2:200,bg1:'#1e0838',bg2:'#0c0318',l1:'#fff',l2:'#b464ff',l3:'#ff50c8',sr:20,sg:10,sb:44,sr2:12,sg2:5,sb2:26,tr:238,tg:245,tb:255,mr:190,mg:170,mb:210,ca:0.3},
+  green:{r:50,g:255,b:80,r2:0,g2:200,b2:200,bg1:'#0a1e0a',bg2:'#030b03',l1:'#fff',l2:'#50ff80',l3:'#00c8c8',sr:12,sg:30,sb:15,sr2:6,sg2:16,sb2:8,tr:238,tg:245,tb:255,mr:150,mg:200,mb:160,ca:0.3},
+  light:{r:50,g:120,b:255,r2:255,g2:80,b2:180,bg1:'#f0f4f8',bg2:'#e2e8f0',l1:'#1a202c',l2:'#3278ff',l3:'#e050a0',sr:255,sg:255,sb:255,sr2:240,sg2:244,sb2:248,tr:26,tg:32,tb:44,mr:100,mg:116,mb:139,ca:0.15},
+  cybergold:{r:255,g:191,b:0,r2:255,g2:80,b2:0,bg1:'#1a1200',bg2:'#0a0800',l1:'#fff',l2:'#ffbf00',l3:'#ff5000',sr:26,sg:18,sb:0,sr2:16,sg2:10,sb2:0,tr:255,tg:248,tb:230,mr:180,mg:160,mb:120,ca:0.3},
+  synthwave:{r:255,g:50,b:150,r2:0,g2:255,b2:200,bg1:'#1a0520',bg2:'#0d0210',l1:'#fff',l2:'#ff3296',l3:'#00ffc8',sr:30,sg:8,sb:36,sr2:18,sg2:4,sb2:22,tr:250,tg:240,tb:255,mr:200,mg:150,mb:200,ca:0.3},
+  matrix:{r:0,g:255,b:65,r2:0,g2:200,b2:100,bg1:'#001000',bg2:'#000500',l1:'#00ff41',l2:'#00cc32',l3:'#008a20',sr:0,sg:18,sb:0,sr2:0,sg2:10,sb2:0,tr:180,tg:255,tb:180,mr:0,mg:180,mb:60,ca:0.25},
+  crimson:{r:220,g:30,b:30,r2:180,g2:0,b2:80,bg1:'#1a0505',bg2:'#0d0202',l1:'#fff',l2:'#ff3030',l3:'#b00050',sr:30,sg:8,sb:8,sr2:18,sg2:4,sb2:4,tr:255,tg:220,tb:220,mr:180,mg:120,mb:120,ca:0.3},
+  aurora:{r:0,g:255,b:180,r2:150,g2:80,b2:255,bg1:'#061a1a',bg2:'#020a0a',l1:'#fff',l2:'#00ffb4',l3:'#9650ff',sr:8,sg:26,sb:26,sr2:4,sg2:16,sb2:16,tr:220,tg:255,tb:250,mr:120,mg:200,mb:190,ca:0.3}
+};
+
+const GAMES = [
+  {key:'skyDefense',name:'天空防卫局',icon:'✈️',color:'#1e90ff'},
+  {key:'match',name:'深海寻宝',icon:'🐙',color:'#20b2aa'},
+  {key:'tower',name:'云端筑梦师',icon:'🏗️',color:'#ffa500'},
+  {key:'typist',name:'极客骇客',icon:'💻',color:'#8a2be2'},
+  {key:'beats',name:'光音记忆',icon:'🎵',color:'#d946ef'},
+  {key:'particle',name:'星海流沙',icon:'🌌',color:'#2c5364'},
+  {key:'coop',name:'双子星探险',icon:'👯',color:'#3b82f6'},
+  {key:'breakout',name:'宝石消消乐',icon:'💎',color:'#ec4899'},
+  {key:'mole',name:'霓虹晶核',icon:'💠',color:'#22c55e'}
+];
+
+(function loadTheme(){
+  const saved = localStorage.getItem('arcadeTheme');
+  if (saved && THEMES[saved]) {
+    const t = THEMES[saved];
+    const root = document.documentElement;
+    Object.entries({
+      '--accent-r':t.r,'--accent-g':t.g,'--accent-b':t.b,
+      '--accent2-r':t.r2,'--accent2-g':t.g2,'--accent2-b':t.b2,
+      '--bg1':t.bg1,'--bg2':t.bg2,'--lo1':t.l1,'--lo2':t.l2,'--lo3':t.l3,
+      '--sr':t.sr,'--sg':t.sg,'--sb':t.sb,'--sr2':t.sr2,'--sg2':t.sg2,'--sb2':t.sb2,
+      '--tr':t.tr,'--tg':t.tg,'--tb':t.tb,'--mr':t.mr,'--mg':t.mg,'--mb':t.mb,'--ca':t.ca
+    }).forEach(([k,v]) => root.style.setProperty(k,v));
+    root.setAttribute('data-theme',saved);
+  }
+})();
+
+function getAllProfiles(){
+  try{return JSON.parse(localStorage.getItem('arcadeProfiles')||'{}')}catch(e){return{}}
+}
+function getPlayCounts(){
+  try{return JSON.parse(localStorage.getItem('arcadePlayCounts')||'{}')}catch(e){return{}}
+}
+
+function calcUserTotal(scores){
+  return GAMES.reduce((s,g)=>s+(scores[g.key]||0),0);
+}
+
+function renderDashboard(){
+  const profiles = getAllProfiles();
+  const playCounts = getPlayCounts();
+  const users = Object.keys(profiles);
+
+  // User count
+  document.getElementById('dashUserCount').textContent = users.length;
+
+  // Total play count
+  let totalPlays = 0;
+  Object.values(playCounts).forEach(v=>totalPlays+=v);
+  document.getElementById('dashPlayCount').textContent = totalPlays;
+
+  // Hottest game
+  let hotGame='—',hotCount=0;
+  GAMES.forEach(g=>{
+    const c = playCounts[g.name]||0;
+    if(c>hotCount){hotCount=c;hotGame=g.name;}
+  });
+  document.getElementById('dashHotGame').textContent = hotGame;
+
+  // Top player
+  let topPlayer='—',topScore=0;
+  users.forEach(u=>{
+    const t=calcUserTotal(profiles[u]);
+    if(t>topScore){topScore=t;topPlayer=u;}
+  });
+  document.getElementById('dashTopPlayer').textContent = topPlayer;
+}
+
+function renderUserTable(){
+  const profiles = getAllProfiles();
+  const users = Object.entries(profiles).map(([name,scores])=>({name,total:calcUserTotal(scores),scores}));
+  users.sort((a,b)=>b.total-a.total);
+
+  if(users.length===0){
+    document.getElementById('userTableWrap').innerHTML='<div class="empty-state">暂无用户数据</div>';
+    return;
+  }
+
+  let html='<table><thead><tr><th>排名</th><th>用户名</th>';
+  GAMES.forEach(g=>html+=`<th>${g.icon}</th>`);
+  html+='<th>总分</th></tr></thead><tbody>';
+
+  const medals=['🥇','🥈','🥉'];
+  users.forEach((u,i)=>{
+    const rc=i===0?'rank-gold':i===1?'rank-silver':i===2?'rank-bronze':'';
+    html+=`<tr><td class="${rc}">${i<3?medals[i]:i+1}</td><td style="font-weight:600">${u.name}</td>`;
+    GAMES.forEach(g=>{
+      const s=u.scores[g.key]||0;
+      html+=`<td class="score-cell">${s||'-'}</td>`;
+    });
+    html+=`<td class="total-cell">${u.total}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('userTableWrap').innerHTML=html;
+}
+
+function renderGameStats(){
+  const profiles = getAllProfiles();
+  const playCounts = getPlayCounts();
+  const users = Object.keys(profiles);
+  let html='';
+
+  GAMES.forEach(g=>{
+    let totalScore=0,best=0,players=0;
+    users.forEach(u=>{
+      const s=profiles[u][g.key]||0;
+      if(s>0){players++;totalScore+=s;if(s>best)best=s;}
+    });
+    const plays = playCounts[g.name]||0;
+    const avg = players>0?Math.round(totalScore/players):0;
+    html+=`<div class="game-stat-card">
+      <div class="gname"><span style="font-size:1.3rem">${g.icon}</span> ${g.name}</div>
+      <div class="gstat">
+        游玩次数: <b>${plays}</b><br>
+        玩家数: <b>${players}</b><br>
+        平均分: <b>${avg}</b><br>
+        最高分: <b>${best}</b>
+      </div>
+    </div>`;
+  });
+  document.getElementById('gameStatsGrid').innerHTML=html;
+}
+
+function renderAll(){
+  renderDashboard();
+  renderUserTable();
+  renderGameStats();
+}
+
+function exportAllData(){
+  const data={
+    exportTime:new Date().toISOString(),
+    profiles:getAllProfiles(),
+    playCounts:getPlayCounts(),
+    favorites:JSON.parse(localStorage.getItem('arcadeFavorites')||'[]'),
+    theme:localStorage.getItem('arcadeTheme')||'neon'
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`arcade-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function showClearUser(){
+  const profiles=getAllProfiles();
+  const sel=document.getElementById('clearUserSelect');
+  sel.innerHTML=Object.keys(profiles).map(u=>`<option value="${u}">${u}</option>`).join('');
+  if(!Object.keys(profiles).length){
+    sel.innerHTML='<option>暂无用户</option>';
+  }
+  document.getElementById('clearUserOverlay').classList.add('show');
+}
+function hideClearUser(){
+  document.getElementById('clearUserOverlay').classList.remove('show');
+}
+function doClearUser(){
+  const sel=document.getElementById('clearUserSelect');
+  const name=sel.value;
+  if(!name)return;
+  const profiles=getAllProfiles();
+  delete profiles[name];
+  localStorage.setItem('arcadeProfiles',JSON.stringify(profiles));
+  hideClearUser();
+  renderAll();
+}
+
+function showResetAll(){
+  document.getElementById('resetAllOverlay').classList.add('show');
+}
+function hideResetAll(){
+  document.getElementById('resetAllOverlay').classList.remove('show');
+}
+function doResetAll(){
+  ['arcadeProfiles','arcadePlayCounts','arcadeFavorites','arcadeTheme','arcadeUser'].forEach(k=>localStorage.removeItem(k));
+  hideResetAll();
+  renderAll();
+}
+
+document.getElementById('clearUserOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)hideClearUser();});
+document.getElementById('resetAllOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)hideResetAll();});
+
+renderAll();
+</script>
+</body>
+</html>
