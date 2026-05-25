@@ -1595,7 +1595,7 @@ async function initLobby() {
     const list = document.getElementById('roomList');
     if (roomsPollTimer) { clearInterval(roomsPollTimer); roomsPollTimer = null; }
     await refreshRoomList();
-    roomsPollTimer = setInterval(refreshRoomList, 3000);
+    roomsPollTimer = setInterval(refreshRoomList, 8000);
 }
 
 async function refreshRoomList() {
@@ -1624,6 +1624,7 @@ async function refreshRoomList() {
 // ===== 创建房间（云函数 + DB watch 等待客机） =====
 async function createRoom(diff) {
     const userName = localStorage.getItem('arcadeUser') || ('玩家' + Math.floor(Math.random() * 1000));
+    if (roomsPollTimer) { clearInterval(roomsPollTimer); roomsPollTimer = null; }
     isMultiplayer = true;
     isHost = true;
     difficulty = diff;
@@ -1670,6 +1671,7 @@ async function joinRoom() {
 }
 
 async function joinRoomById(code) {
+    if (roomsPollTimer) { clearInterval(roomsPollTimer); roomsPollTimer = null; }
     currentRoomId = code;
     isMultiplayer = true;
     isHost = false;
