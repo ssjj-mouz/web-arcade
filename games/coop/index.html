@@ -922,19 +922,22 @@
                 const targets = enemy2.active ? [enemy, enemy2] : [enemy];
                 targets.forEach(e => {
                     if (!e.el) return;
-                    // 先暂停巡逻者
-                    if (e.timer) {
-                        clearInterval(e.timer);
-                        e.timer = null;
-                    }
-                    // 显示转向文字
+                    if (e.timer) { clearInterval(e.timer); e.timer = null; }
+                    // 1秒暂停效果
+                    e.el.classList.add('frozen');
+                    // 大号提示
                     const popup = document.createElement('div');
                     popup.className = 'dir-popup';
-                    popup.textContent = '转向';
+                    popup.textContent = '🔄 转向';
+                    popup.style.color = '#fbbf24';
+                    popup.style.borderColor = 'rgba(251,191,36,0.5)';
+                    popup.style.fontSize = '0.85rem';
+                    popup.style.padding = '3px 10px';
                     e.el.appendChild(popup);
-                    setTimeout(() => popup.remove(), 600);
-                    // 0.5秒后随机转向移动
+                    setTimeout(() => popup.remove(), 900);
+                    // 1秒后转向
                     setTimeout(() => {
+                        e.el.classList.remove('frozen');
                         const opts = shuffle(getWalkableDirs(e.x, e.y));
                         if (opts.length > 0) {
                             [e.dx, e.dy] = opts[0];
@@ -945,13 +948,22 @@
                             if (e.pupilEls && e.pupilEls.length > 0) {
                                 e.pupilEls[0].style.left = e.dx > 0 ? '32%' : (e.dx < 0 ? '24%' : '28%');
                             }
+                            // 方向改变提示
+                            const dirPopup = document.createElement('div');
+                            dirPopup.className = 'dir-popup';
+                            const arrows = { '1,0': '→', '-1,0': '←', '0,1': '↓', '0,-1': '↑' };
+                            dirPopup.textContent = (arrows[[e.dx,e.dy].join(',')] || '↗');
+                            dirPopup.style.color = '#fbbf24';
+                            dirPopup.style.fontSize = '1rem';
+                            dirPopup.style.fontWeight = '900';
+                            e.el.appendChild(dirPopup);
+                            setTimeout(() => dirPopup.remove(), 500);
                         }
-                        // 恢复巡逻
                         if (!isLocked && e.active !== false) {
                             e.timer = setInterval(e === enemy ? moveEnemy : moveEnemy2, 550);
                         }
                         checkEnemyCollision();
-                    }, 500);
+                    }, 1000);
                 });
             } else if (type === 'pause') {
                 freezeSafe = true;
@@ -1931,17 +1943,19 @@ function applyGuestState(msg, fullDoc) {
     // 道具效果弹出（仅当时间戳更新时）
     if (msg.effect && msg.effectTime && msg.effectTime !== lastSeenEffectTime) {
         lastSeenEffectTime = msg.effectTime;
-        const text = msg.effect === 'turn' ? '转向' : '定身';
+        const isTurn = msg.effect === 'turn';
+        const text = isTurn ? '🔄 转向' : '定身';
+        const color = isTurn ? '#fbbf24' : '#93c5fd';
+        const borderColor = isTurn ? 'rgba(251,191,36,0.5)' : 'rgba(147,197,253,0.4)';
         [enemy.el, enemy2.el].filter(Boolean).forEach(el => {
             const popup = document.createElement('div');
             popup.className = 'dir-popup';
             popup.textContent = text;
-            if (msg.effect === 'pause') {
-                popup.style.color = '#93c5fd';
-                popup.style.borderColor = 'rgba(147,197,253,0.4)';
-            }
+            popup.style.color = color;
+            popup.style.borderColor = borderColor;
+            if (isTurn) { popup.style.fontSize = '0.85rem'; popup.style.padding = '3px 10px'; }
             el.appendChild(popup);
-            setTimeout(() => popup.remove(), 600);
+            setTimeout(() => popup.remove(), 900);
         });
     }
     // 冰冻 CSS
