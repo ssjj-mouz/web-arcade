@@ -2,6 +2,7 @@ const cloudbase = require("@cloudbase/node-sdk");
 
 const app = cloudbase.init({ env: process.env.TCB_ENV_ID });
 const db = app.database();
+const _ = db.command;
 
 function genCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -19,14 +20,10 @@ exports.main = async (event) => {
       case 'room.list': return await listRooms();
       case 'room.get': return await getRoom(params);
       case 'room.delete': return await deleteRoom(params);
-      case 'session.pollP2': return await pollP2Input(params);
-      case 'session.writeState': return await writeState(params);
-      case 'session.writeP2': return await writeP2Input(params);
-      case 'session.p2UseItem': return await p2UseItem(params);
-      case 'session.pollUseItem': return await pollUseItem(params);
-      case 'session.sendChat': return await sendChat(params);
-      case 'session.pollChat': return await pollChat(params);
-      case 'session.get': return await getSession(params);
+      case 'state.write': return await writeState(params);
+      case 'guest.input': return await writeGuestInput(params);
+      case 'guest.useItem': return await writeGuestItem(params);
+      case 'chat.send': return await writeChat(params);
       default: return { error: 'unknown action' };
     }
   } catch (e) {
@@ -41,7 +38,12 @@ async function createRoom({ hostname, difficulty }) {
     createdAt: Date.now()
   });
   await db.collection('game_sessions').doc(id).set({
-    state: {}, p2Input: null
+    state: {},
+    stateVer: 0,
+    p2Input: { time: 0 },
+    p2UseItem: { item: null, time: 0 },
+    chatP1: { sender: '', text: '', time: 0 },
+    chatP2: { sender: '', text: '', time: 0 }
   });
   return { id };
 }
@@ -77,72 +79,31 @@ async function deleteRoom({ roomId }) {
   return { success: true };
 }
 
-async function pollP2Input({ roomId }) {
-  const { data } = await db.collection('game_sessions').doc(roomId).get();
-  const session = data && data[0];
-  if (!session) return { input: null };
-  const raw = session.p2Input;
-  let input = null;
-  if (raw) {
-    try { input = JSON.parse(raw); } catch(e) {}
-    await db.collection('game_sessions').doc(roomId).update({
-      p2Input: null
-    });
-  }
-  return { input };
-}
-
-async function writeState({ roomId, state }) {
+async function writeState({ roomId, state, stateVer }) {
   await db.collection('game_sessions').doc(roomId).update({
-    state
+    state: _.set(state),
+    stateVer: _.set(stateVer)
   });
   return { success: true };
 }
 
-async function writeP2Input({ roomId, input }) {
+async function writeGuestInput({ roomId, input }) {
   await db.collection('game_sessions').doc(roomId).update({
-    p2Input: JSON.stringify(input)
+    p2Input: _.set({ ...input, time: Date.now() })
   });
   return { success: true };
 }
 
-async function getSession({ roomId }) {
-  const { data } = await db.collection('game_sessions').doc(roomId).get();
-  const session = data && data[0];
-  if (!session) return { state: null };
-  return { state: session.state || null };
-}
-
-async function p2UseItem({ roomId, item }) {
+async function writeGuestItem({ roomId, item }) {
   await db.collection('game_sessions').doc(roomId).update({
-    p2UseItem: item
+    p2UseItem: _.set({ item, time: Date.now() })
   });
   return { success: true };
 }
 
-async function pollUseItem({ roomId }) {
-  const { data } = await db.collection('game_sessions').doc(roomId).get();
-  const session = data && data[0];
-  if (!session || !session.p2UseItem) return { item: null };
-  const item = session.p2UseItem;
+async function writeChat({ roomId, field, sender, text, time }) {
   await db.collection('game_sessions').doc(roomId).update({
-    p2UseItem: null
-  });
-  return { item };
-}
-
-async function sendChat({ roomId, sender, text }) {
-  await db.collection('game_sessions').doc(roomId).update({
-    chat: { sender, text, time: Date.now() }
+    [field]: _.set({ sender, text, time })
   });
   return { success: true };
-}
-
-async function pollChat({ roomId }) {
-  const { data } = await db.collection('game_sessions').doc(roomId).get();
-  const session = data && data[0];
-  if (!session || !session.chat) return { chat: null };
-  const chat = session.chat;
-  await db.collection('game_sessions').doc(roomId).update({ chat: null });
-  return { chat };
 }
