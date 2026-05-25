@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>霓虹晶核 · 定位训练</title>
+<title>零点反应 · 定位训练</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none}
 
@@ -50,7 +50,7 @@ canvas{ position:fixed;inset:0; display:block; }
 .hud{ position:fixed;z-index:100;pointer-events:none; }
 #hud-top{
   top:18px;left:50%;transform:translateX(-50%);
-  display:flex;gap:12px;align-items:center;
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;
 }
 .hud-item{
   padding:6px 16px;
@@ -101,66 +101,106 @@ canvas{ position:fixed;inset:0; display:block; }
   position:fixed;inset:0;z-index:500;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:rgba(4,6,12,0.94);backdrop-filter:blur(14px);
+  overflow:auto;padding:20px;
 }
 .overlay.hidden{display:none}
 
 .card{
   text-align:center;
-  padding:32px 36px;
+  padding:28px 30px;
   background:rgba(10,14,26,0.6);
   border:1px solid rgba(0,255,200,0.08);
   border-radius:20px;
   box-shadow:0 20px 60px rgba(0,0,0,0.5), 0 0 80px rgba(0,180,200,0.04);
-  width:min(88vw,380px);
+  width:min(92vw,520px);
+  max-height:90vh;overflow:auto;
 }
 .card h1{
-  font-size:1.4rem;font-weight:800;letter-spacing:3px;margin-bottom:4px;
+  font-size:1.3rem;font-weight:800;letter-spacing:3px;margin-bottom:4px;
   background:linear-gradient(135deg,#00ffc8,#00aaff,#c840ff);
   -webkit-background-clip:text;color:transparent;
 }
-.card .sub{ font-size:0.76rem;color:#4a5a7a;margin-bottom:20px;line-height:1.5; }
+.card .sub{ font-size:0.76rem;color:#4a5a7a;margin-bottom:16px;line-height:1.5; }
 
-/* 模式选择 */
-.mode-row{ display:flex;gap:8px;margin-bottom:16px;justify-content:center; }
-.mode-btn{
+/* 标签切换 */
+.tab-row{ display:flex;gap:6px;margin-bottom:18px;justify-content:center; }
+.tab-btn{
   flex:1;padding:10px 8px;font-size:0.76rem;font-weight:600;font-family:inherit;
   background:rgba(255,255,255,0.02);color:#6a7a9a;
   border:1px solid rgba(255,255,255,0.06);border-radius:10px;
   cursor:pointer;transition:0.25s;text-align:center;
 }
-.mode-btn .icon{ display:block;font-size:1.3rem;margin-bottom:3px; }
-.mode-btn:hover{ border-color:rgba(0,255,200,0.2);color:#a0b8d0; }
-.mode-btn.sel{
+.tab-btn .icon{ display:block;font-size:1.3rem;margin-bottom:3px; }
+.tab-btn:hover{ border-color:rgba(0,255,200,0.2);color:#a0b8d0; }
+.tab-btn.sel{
   border-color:rgba(0,255,200,0.35);color:#00ffc8;
   background:rgba(0,255,200,0.04);
   box-shadow:0 0 20px rgba(0,255,200,0.06);
 }
 
-/* 难度 & 时长 */
-.opt-label{ font-size:0.64rem;color:#4a5a7a;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase; }
-.opt-row{ display:flex;gap:6px;margin-bottom:14px;justify-content:center; }
-.opt-btn{
-  flex:1;padding:8px 6px;font-size:0.72rem;font-weight:600;font-family:inherit;
+/* 参数面板 */
+.param-section{ margin-bottom:12px;display:none; }
+.param-section.active{ display:block; }
+
+.param-label{
+  font-size:0.64rem;color:#4a5a7a;letter-spacing:1px;margin-bottom:4px;text-transform:uppercase;
+  display:flex;justify-content:space-between;
+}
+.param-label .pv{color:#00ffc8;}
+
+.param-row{ display:flex;gap:8px;align-items:center;margin-bottom:10px; }
+.param-slider{
+  flex:1;-webkit-appearance:none;appearance:none;
+  height:4px;border-radius:2px;
+  background:rgba(255,255,255,0.08);
+  outline:none;
+}
+.param-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:#00ffc8;
+  cursor:pointer;box-shadow:0 0 12px rgba(0,255,200,0.3);
+}
+.param-val{
+  width:28px;text-align:center;font-size:0.8rem;font-weight:700;color:#00ffc8;
+}
+
+/* 形状选择 */
+.shape-grid{ display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:10px; }
+.shape-chip{
+  padding:6px 12px;font-size:0.7rem;font-weight:600;font-family:inherit;
+  background:rgba(255,255,255,0.02);color:#6a7a9a;
+  border:1px solid rgba(255,255,255,0.06);border-radius:8px;
+  cursor:pointer;transition:0.25s;
+}
+.shape-chip:hover{ border-color:rgba(0,255,200,0.2);color:#a0b8d0; }
+.shape-chip.sel{
+  border-color:rgba(0,255,200,0.35);color:#00ffc8;
+  background:rgba(0,255,200,0.04);
+}
+
+/* 速度档位 */
+.speed-row{ display:flex;gap:6px;margin-bottom:10px;justify-content:center; }
+.speed-btn{
+  flex:1;padding:7px 6px;font-size:0.7rem;font-weight:600;font-family:inherit;
   background:rgba(255,255,255,0.02);color:#6a7a9a;
   border:1px solid rgba(255,255,255,0.05);border-radius:8px;
   cursor:pointer;transition:0.25s;text-align:center;
 }
-.opt-btn:hover{ color:#b0c8e0;border-color:rgba(255,255,255,0.12); }
-.opt-btn.sel.easy{ border-color:rgba(0,255,200,0.3);color:#00ffc8; }
-.opt-btn.sel.normal{ border-color:rgba(0,170,255,0.3);color:#0af; }
-.opt-btn.sel.hard{ border-color:rgba(255,64,200,0.3);color:#ff40c8; }
+.speed-btn:hover{ color:#b0c8e0;border-color:rgba(255,255,255,0.12); }
+.speed-btn.sel{ border-color:rgba(0,255,200,0.3);color:#00ffc8; }
 
 .start-btn{
   width:100%;padding:12px;font-size:0.88rem;font-weight:700;font-family:inherit;
   border:none;border-radius:12px;cursor:pointer;transition:0.25s;
   background:linear-gradient(135deg,#00ffc8,#00aacc);color:#051015;
   box-shadow:0 0 25px rgba(0,255,200,0.2);
-  letter-spacing:1px;
+  letter-spacing:1px;margin-top:6px;
 }
 .start-btn:hover{ transform:scale(1.04);box-shadow:0 0 40px rgba(0,255,200,0.35); }
+.start-btn.green{ background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 0 25px rgba(34,197,94,0.2); }
 
 /* 结算 */
-.stat-row{ display:flex;justify-content:center;gap:24px;margin-bottom:20px; }
+.stat-row{ display:flex;justify-content:center;gap:24px;margin-bottom:20px;flex-wrap:wrap; }
 .stat .n{ display:block;font-size:1.7rem;font-weight:800;color:#e0e8ff;line-height:1.1; }
 .stat .t{ font-size:0.6rem;color:#4a5a7a;letter-spacing:1px }
 .btn-row{ display:flex;gap:8px;justify-content:center;margin-top:16px; }
@@ -189,6 +229,22 @@ canvas{ position:fixed;inset:0; display:block; }
   text-decoration:none;
 }
 .back-btn:hover{color:#00ffc8;border-color:rgba(0,255,200,0.2);box-shadow:0 0 20px rgba(0,255,200,0.06)}
+
+/* 红绿全屏 */
+#reactionFull{
+  position:fixed;inset:0;z-index:300;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+}
+#reactionFull .big-text{
+  font-size:3rem;font-weight:900;letter-spacing:4px;text-align:center;
+}
+#reactionFull .small-text{
+  font-size:1rem;color:#6a7a9a;letter-spacing:1px;margin-top:8px;
+}
+#reactionFull .round-info{
+  position:absolute;top:24px;left:50%;transform:translateX(-50%);
+  font-size:0.8rem;color:#4a5a7a;letter-spacing:2px;
+}
 </style>
 </head>
 <body>
@@ -204,43 +260,106 @@ canvas{ position:fixed;inset:0; display:block; }
   <div class="hud-item"><span class="val" id="hudTime">30</span><span class="lbl">剩余</span></div>
   <div class="hud-item"><span class="val" id="hudAcc">—</span><span class="lbl">精度</span></div>
   <div class="hud-item"><span class="val" id="hudCombo">0</span><span class="lbl">连击</span></div>
+  <div class="hud-item" id="hudHitItem"><span class="val" id="hudHits">0</span><span class="lbl">命中</span></div>
 </div>
 <div class="hud" id="hud-bottom">点击目标 · Click to hit</div>
+
+<!-- 红绿全屏 -->
+<div id="reactionFull">
+  <div class="round-info" id="reactionRound"></div>
+  <div>
+    <div class="big-text" id="reactionBig"></div>
+    <div class="small-text" id="reactionSmall"></div>
+  </div>
+</div>
 
 <!-- 开始 -->
 <div class="overlay" id="startOverlay">
   <div class="card">
-    <h1>◇ 霓虹晶核</h1>
-    <p class="sub">全屏定位 & 反应训练</p>
+    <h1>◇ 零点反应</h1>
+    <p class="sub">全屏定位训练 & 红绿反应测试</p>
 
-    <div class="opt-label">游戏模式</div>
-    <div class="mode-row">
-      <button class="mode-btn sel" data-mode="static">
-        <span class="icon">⊙</span>精准定位
+    <div class="tab-row">
+      <button class="tab-btn sel" data-tab="position">
+        <span class="icon">⊙</span>定位训练
       </button>
-      <button class="mode-btn" data-mode="tracking">
-        <span class="icon">◈</span>移动追踪
-      </button>
-      <button class="mode-btn" data-mode="mixed">
-        <span class="icon">◉</span>混合训练
+      <button class="tab-btn" data-tab="reaction">
+        <span class="icon">⏱</span>红绿反应
       </button>
     </div>
 
-    <div class="opt-label">难度</div>
-    <div class="opt-row">
-      <button class="opt-btn sel easy" data-diff="easy">入门</button>
-      <button class="opt-btn normal" data-diff="normal">进阶</button>
-      <button class="opt-btn hard" data-diff="hard">极限</button>
+    <!-- 定位训练参数 -->
+    <div class="param-section active" id="paramPosition">
+      <div class="param-label"><span>静态目标数</span><span class="pv" id="pvStatic">3</span></div>
+      <div class="param-row">
+        <input type="range" class="param-slider" id="cfgStatic" min="1" max="20" value="3">
+      </div>
+
+      <div class="param-label"><span>动态目标数</span><span class="pv" id="pvMoving">2</span></div>
+      <div class="param-row">
+        <input type="range" class="param-slider" id="cfgMoving" min="0" max="15" value="2">
+      </div>
+
+      <div class="param-label"><span>目标形状</span></div>
+      <div class="shape-grid" id="shapeGrid">
+        <button class="shape-chip sel" data-shape="diamond">◇ 菱形</button>
+        <button class="shape-chip sel" data-shape="hexagon">⬡ 六边</button>
+        <button class="shape-chip sel" data-shape="circle">○ 圆形</button>
+        <button class="shape-chip sel" data-shape="cross">✚ 十字</button>
+      </div>
+
+      <div class="param-label"><span>目标大小</span><span class="pv" id="pvSize">28</span></div>
+      <div class="param-row">
+        <input type="range" class="param-slider" id="cfgSize" min="12" max="55" value="28">
+      </div>
+
+      <div class="param-label"><span>最大同屏数量</span><span class="pv" id="pvMax">5</span></div>
+      <div class="param-row">
+        <input type="range" class="param-slider" id="cfgMax" min="1" max="15" value="3">
+      </div>
+
+      <div class="param-label"><span>移动速度</span></div>
+      <div class="speed-row">
+        <button class="speed-btn" data-speed="slow">慢速</button>
+        <button class="speed-btn sel" data-speed="normal">标准</button>
+        <button class="speed-btn" data-speed="fast">快速</button>
+      </div>
+
+      <div class="param-label"><span>总时长 (秒)</span><span class="pv" id="pvDur">30</span></div>
+      <div class="param-row">
+        <input type="range" class="param-slider" id="cfgDur" min="10" max="120" value="30">
+      </div>
+
+      <div class="param-label"><span>静态目标停留 (秒)</span><span class="pv" id="pvStay">2.0</span></div>
+      <div class="param-row">
+        <input type="range" class="param-slider" id="cfgStay" min="0.5" max="6" step="0.1" value="2">
+      </div>
+
+      <button class="start-btn" onclick="startPosition()">▶ 开始定位训练</button>
     </div>
 
-    <div class="opt-label">时长</div>
-    <div class="opt-row">
-      <button class="opt-btn sel easy" data-dur="15">15秒</button>
-      <button class="opt-btn normal" data-dur="30">30秒</button>
-      <button class="opt-btn hard" data-dur="60">60秒</button>
-    </div>
+    <!-- 红绿反应参数 -->
+    <div class="param-section" id="paramReaction">
+      <div class="param-label"><span>测试轮数</span><span class="pv" id="pvRounds">10</span></div>
+      <div class="param-row">
+        <input type="range" class="param-slider" id="cfgRounds" min="5" max="50" value="10">
+      </div>
 
-    <button class="start-btn" onclick="startGame()">▶ 开始训练</button>
+      <div class="param-label"><span>随机延迟范围 (秒)</span><span class="pv" id="pvDelay">1.0 - 3.0</span></div>
+      <div class="param-row">
+        <span style="font-size:0.7rem;color:#6a7a9a">短</span>
+        <input type="range" class="param-slider" id="cfgDelayMin" min="0.5" max="5" step="0.1" value="1">
+        <input type="range" class="param-slider" id="cfgDelayMax" min="1" max="8" step="0.1" value="3">
+        <span style="font-size:0.7rem;color:#6a7a9a">长</span>
+      </div>
+
+      <div class="param-label"><span>红绿比例</span><span class="pv" id="pvRatio">绿 80% / 红 20%</span></div>
+      <div class="param-row">
+        <input type="range" class="param-slider" id="cfgGreenPct" min="50" max="100" value="80">
+      </div>
+
+      <button class="start-btn green" onclick="startReaction()">▶ 开始红绿反应测试</button>
+    </div>
   </div>
 </div>
 
@@ -266,40 +385,6 @@ canvas{ position:fixed;inset:0; display:block; }
 </div>
 
 <script>
-// ======================= CONFIG =======================
-const DIFFICULTY = {
-  easy:   { size: 38, stayMin: 2200, stayMax: 3600, interval: 700, speed: 0.8, targets: 1 },
-  normal: { size: 24, stayMin: 1400, stayMax: 2400, interval: 500, speed: 1.5, targets: 2 },
-  hard:   { size: 15, stayMin: 700,  stayMax: 1300, interval: 350, speed: 2.5, targets: 3 }
-};
-
-const SHAPES = ['diamond', 'hexagon', 'circle', 'cross', 'diamond', 'hexagon', 'circle'];
-const COMBO_TIMEOUT = 1800;
-
-// ======================= STATE =======================
-let gameMode = 'static';
-let difficulty = 'easy';
-let gameDuration = 30;
-
-let score = 0, combo = 0, maxCombo = 0;
-let gameActive = false, timeLeft = 0;
-let timerInterval = null;
-let targets = [];
-let totalClicks = 0, totalDist = 0, totalHits = 0;
-let lastHitTime = 0;
-let accRunning = 0;
-let bestScore = parseInt(localStorage.getItem('moleBest') || '0');
-let spawnTimer = null;
-
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const cursorEl = document.getElementById('cursor');
-
-let W, H;
-function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-window.addEventListener('resize', resize);
-resize();
-
 // ======================= AUDIO =======================
 let actx = null;
 function ensureAudio(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); }
@@ -321,51 +406,141 @@ function sfxPerfect(){ playTone(1000,0.06,'sine',0.08);setTimeout(()=>playTone(1
 function sfxMiss(){ playTone(160,0.05,'sawtooth',0.04); }
 function sfxStart(){ playTone(440,0.08,'sine',0.06);setTimeout(()=>playTone(660,0.08,'sine',0.06),70);setTimeout(()=>playTone(880,0.12,'sine',0.05),140); }
 function sfxEnd(){ playTone(880,0.08,'sine',0.06);setTimeout(()=>playTone(1100,0.08,'sine',0.06),90);setTimeout(()=>playTone(1500,0.14,'sine',0.05),180); }
+function sfxReactionFast(){ playTone(1200,0.04,'sine',0.07);setTimeout(()=>playTone(1800,0.06,'sine',0.06),30); }
+function sfxReactionWrong(){ playTone(80,0.3,'sawtooth',0.06); }
 
-// ======================= SETUP UI =======================
-document.querySelectorAll('.mode-btn').forEach(btn => {
+// ======================= CONFIG STATE =======================
+let gameMode = 'position'; // 'position' | 'reaction'
+
+// Position config
+let cfgStatic = 3;
+let cfgMoving = 2;
+let cfgShapes = ['diamond','hexagon','circle','cross'];
+let cfgSize = 28;
+let cfgMaxTargets = 3;
+let cfgSpeed = 'normal';
+let cfgDuration = 30;
+let cfgStayTime = 2.0;
+
+let speedMult = { slow: 0.5, normal: 1.0, fast: 2.0 };
+
+// Reaction config
+let cfgRounds = 10;
+let cfgDelayMin = 1.0;
+let cfgDelayMax = 3.0;
+let cfgGreenPct = 80;
+
+// ======================= GAME STATE =======================
+let score = 0, combo = 0, maxCombo = 0;
+let gameActive = false, timeLeft = 0;
+let timerInterval = null;
+let targets = [];
+let totalClicks = 0, totalDist = 0, totalHits = 0;
+let lastHitTime = 0;
+let accRunning = 0;
+let bestScore = parseInt(localStorage.getItem('moleBest') || '0');
+let bestReaction = parseInt(localStorage.getItem('reactionBest') || '999');
+let spawnTimer = null;
+let staticRemaining = 0, movingRemaining = 0;
+let spawnQueue = [];
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const cursorEl = document.getElementById('cursor');
+
+let W, H;
+function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize);
+resize();
+
+// ======================= UI SETUP =======================
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('sel'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('sel'));
     btn.classList.add('sel');
-    gameMode = btn.dataset.mode;
+    gameMode = btn.dataset.tab;
+    document.querySelectorAll('.param-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(gameMode === 'position' ? 'paramPosition' : 'paramReaction').classList.add('active');
   });
 });
 
-document.querySelectorAll('.opt-btn[data-diff]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.opt-btn[data-diff]').forEach(b => b.classList.remove('sel'));
-    btn.classList.add('sel');
-    difficulty = btn.dataset.diff;
+// Shape chips
+document.querySelectorAll('.shape-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('sel');
+    updateShapeCfg();
   });
 });
 
-document.querySelectorAll('.opt-btn[data-dur]').forEach(btn => {
+function updateShapeCfg(){
+  cfgShapes = [];
+  document.querySelectorAll('.shape-chip.sel').forEach(c => cfgShapes.push(c.dataset.shape));
+  if(cfgShapes.length === 0){ cfgShapes = ['diamond']; document.querySelector('.shape-chip[data-shape="diamond"]').classList.add('sel'); }
+}
+
+// Speed buttons
+document.querySelectorAll('.speed-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.opt-btn[data-dur]').forEach(b => b.classList.remove('sel'));
+    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('sel'));
     btn.classList.add('sel');
-    gameDuration = parseInt(btn.dataset.dur);
+    cfgSpeed = btn.dataset.speed;
   });
 });
 
-// ======================= TARGET =======================
+// Sliders
+function bindSlider(id, setter, fmt){
+  const s = document.getElementById(id);
+  s.addEventListener('input', () => {
+    const v = parseFloat(s.value);
+    setter(v);
+    const pv = document.getElementById(s.id.replace('cfg','pv'));
+    if(pv) pv.textContent = fmt ? fmt(v) : v;
+  });
+}
+
+bindSlider('cfgStatic', v => cfgStatic = v);
+bindSlider('cfgMoving', v => cfgMoving = v);
+bindSlider('cfgSize', v => cfgSize = v);
+bindSlider('cfgMax', v => cfgMaxTargets = v);
+bindSlider('cfgDur', v => cfgDuration = v);
+bindSlider('cfgStay', v => cfgStayTime = v, v => v.toFixed(1));
+bindSlider('cfgRounds', v => cfgRounds = v);
+bindSlider('cfgDelayMin', v => { cfgDelayMin = Math.min(v, cfgDelayMax - 0.1); document.getElementById('cfgDelayMin').value = cfgDelayMin; }, v => v.toFixed(1));
+bindSlider('cfgDelayMax', v => { cfgDelayMax = Math.max(v, cfgDelayMin + 0.1); document.getElementById('cfgDelayMax').value = cfgDelayMax; }, v => v.toFixed(1));
+bindSlider('cfgGreenPct', v => cfgGreenPct = v, v => v + '%');
+
+// update PV display for range sliders
+['cfgDelayMin','cfgDelayMax'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    document.getElementById('pvDelay').textContent =
+      cfgDelayMin.toFixed(1) + ' - ' + cfgDelayMax.toFixed(1);
+  });
+});
+document.getElementById('cfgGreenPct').addEventListener('input', () => {
+  document.getElementById('pvRatio').textContent = '绿 ' + cfgGreenPct + '% / 红 ' + (100 - cfgGreenPct) + '%';
+});
+
+// ======================= POSITION MODE =======================
+let ripples = [];
+
 function spawnTarget(){
   if(!gameActive) return;
-  const cfg = DIFFICULTY[difficulty];
-  if(targets.length >= cfg.targets) return;
+  if(targets.length >= cfgMaxTargets) return;
 
-  const isTracking = gameMode === 'tracking' || (gameMode === 'mixed' && Math.random() < 0.4);
-  const size = cfg.size;
-  const margin = size + 20;
+  const margin = cfgSize + 20;
+  const isTracking = spawnQueue.length > 0 ? spawnQueue.shift() : false;
 
   let x, y, vx = 0, vy = 0;
+  const sm = speedMult[cfgSpeed];
+
   if(isTracking){
-    // Spawn from edge, move across
     const edge = Math.floor(Math.random() * 4);
     switch(edge){
-      case 0: x = -margin; y = Math.random() * H; vx = cfg.speed * (1 + Math.random()); vy = (Math.random() - 0.5) * cfg.speed * 2; break;
-      case 1: x = W + margin; y = Math.random() * H; vx = -cfg.speed * (1 + Math.random()); vy = (Math.random() - 0.5) * cfg.speed * 2; break;
-      case 2: x = Math.random() * W; y = -margin; vx = (Math.random() - 0.5) * cfg.speed * 2; vy = cfg.speed * (1 + Math.random()); break;
-      default: x = Math.random() * W; y = H + margin; vx = (Math.random() - 0.5) * cfg.speed * 2; vy = -cfg.speed * (1 + Math.random()); break;
+      case 0: x = -margin; y = Math.random() * H; vx = (1 + Math.random() * 1.5) * sm; vy = (Math.random() - 0.5) * 2 * sm; break;
+      case 1: x = W + margin; y = Math.random() * H; vx = -(1 + Math.random() * 1.5) * sm; vy = (Math.random() - 0.5) * 2 * sm; break;
+      case 2: x = Math.random() * W; y = -margin; vx = (Math.random() - 0.5) * 2 * sm; vy = (1 + Math.random() * 1.5) * sm; break;
+      default: x = Math.random() * W; y = H + margin; vx = (Math.random() - 0.5) * 2 * sm; vy = -(1 + Math.random() * 1.5) * sm; break;
     }
   } else {
     x = margin + Math.random() * (W - margin * 2);
@@ -374,18 +549,18 @@ function spawnTarget(){
 
   const t = {
     x, y, vx, vy,
-    size,
-    maxSize: size,
-    shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
+    size: cfgSize,
+    maxSize: cfgSize,
+    shape: cfgShapes[Math.floor(Math.random() * cfgShapes.length)],
     isTracking,
     startTime: Date.now(),
     opacity: 1,
     hit: false,
-    hue: Math.random() < 0.15 ? 45 : 170 // 15% gold, rest cyan
+    hue: Math.random() < 0.15 ? 45 : 170
   };
 
   if(!isTracking){
-    const stay = cfg.stayMin + Math.random() * (cfg.stayMax - cfg.stayMin);
+    const stay = cfgStayTime * 1000;
     t.timer = setTimeout(() => {
       if(!t.hit){ onMiss(); removeTarget(t); }
     }, stay);
@@ -409,17 +584,30 @@ function onMiss(){
 function scheduleNext(){
   if(!gameActive) return;
   if(spawnTimer){ clearTimeout(spawnTimer); }
-  const delay = DIFFICULTY[difficulty].interval;
-  spawnTimer = setTimeout(() => { spawnTarget(); scheduleNext(); }, delay);
+
+  // Prioritize spawning from queue
+  if(spawnQueue.length > 0 && targets.length < cfgMaxTargets){
+    spawnTarget();
+  }
+
+  // Determine interval: dynamic based on remaining targets and duration
+  const totalRemaining = staticRemaining + movingRemaining;
+  if(totalRemaining <= 0 && targets.length === 0){
+    // All spawned, game will end when timer runs out or all cleared
+    return;
+  }
+
+  const avgInterval = (cfgDuration * 1000) / Math.max(totalRemaining, 1);
+  const interval = Math.max(200, Math.min(avgInterval, 1500));
+  spawnTimer = setTimeout(() => { spawnTarget(); scheduleNext(); }, interval);
 }
 
 // ======================= CLICK =======================
 canvas.addEventListener('click', e => {
-  if(!gameActive) return;
+  if(!gameActive || gameMode !== 'position') return;
   const mx = e.clientX;
   const my = e.clientY;
 
-  // Find closest target
   let best = null, bestDist = Infinity;
   for(const t of targets){
     if(t.hit) continue;
@@ -439,6 +627,7 @@ canvas.addEventListener('click', e => {
     totalDist += bestDist;
 
     const now = Date.now();
+    const COMBO_TIMEOUT = 1800;
     if(now - lastHitTime < COMBO_TIMEOUT){ combo++; if(combo > maxCombo) maxCombo = combo; }
     else { combo = 0; }
     lastHitTime = now;
@@ -448,11 +637,10 @@ canvas.addEventListener('click', e => {
     if(combo >= 3) pts = Math.round(pts * (1 + combo * 0.1));
     score += pts;
 
-    // Real-time accuracy
     accRunning = Math.round((1 - totalDist / (totalClicks * best.size)) * 100);
     accRunning = Math.max(0, Math.min(100, accRunning));
 
-    if(acc > 0.85){ sfxPerfect(); showPop(mx, my, '#'+pts, '#ffd700'); }
+    if(acc > 0.85){ sfxPerfect(); showPop(mx, my, '+' + pts, '#ffd700'); }
     else { sfxHit(); showPop(mx, my, '+' + pts, '#00ffc8'); }
 
     if(combo >= 4) showComboPop(mx, my, combo);
@@ -460,11 +648,15 @@ canvas.addEventListener('click', e => {
     spawnRipple(best.x, best.y, acc);
     removeTarget(best);
     updateHUD();
+
+    // Spawn next if there are more in queue
+    if(spawnQueue.length > 0 && targets.length < cfgMaxTargets){
+      spawnTarget();
+    }
   }
 });
 
 // ======================= RIPPLE PARTICLES =======================
-let ripples = [];
 function spawnRipple(x, y, acc){
   const count = acc > 0.85 ? 14 : 7;
   const hue = acc > 0.85 ? 'gold' : 'cyan';
@@ -503,10 +695,10 @@ function updateHUD(){
   document.getElementById('hudScore').textContent = score;
   document.getElementById('hudCombo').textContent = combo;
   document.getElementById('hudAcc').textContent = totalClicks > 0 ? accRunning + '%' : '—';
+  document.getElementById('hudHits').textContent = totalHits;
 }
 
 // ======================= RENDER =======================
-// Draw a filled shape with glow
 function drawShape(t){
   const { x, y, size: s, shape, opacity: alpha, hue } = t;
   const r = s * 0.7;
@@ -519,8 +711,6 @@ function drawShape(t){
 
   ctx.save();
   ctx.translate(x, y);
-
-  // Outer glow
   ctx.shadowColor = glowCol;
   ctx.shadowBlur = s * 0.7;
   ctx.fillStyle = col;
@@ -649,11 +839,9 @@ function render(){
   for(const t of targets){
     if(t.hit) continue;
 
-    // Update tracking targets
     if(t.isTracking){
       t.x += t.vx;
       t.y += t.vy;
-      // Remove if off screen
       if(t.x < -60 || t.x > W + 60 || t.y < -60 || t.y > H + 60){
         if(!t.hit){ onMiss(); }
         removeTarget(t);
@@ -661,11 +849,9 @@ function render(){
       }
     }
 
-    // Shrink approaching timeout (static only)
     if(!t.isTracking){
       const elapsed = Date.now() - t.startTime;
-      const cfg = DIFFICULTY[difficulty];
-      const totalStay = cfg.stayMax;
+      const totalStay = cfgStayTime * 1000;
       const progress = Math.min(elapsed / totalStay, 1);
       t.size = t.maxSize * (1 - progress * 0.55);
       t.opacity = 1 - progress * 0.4;
@@ -677,25 +863,36 @@ function render(){
   requestAnimationFrame(render);
 }
 
-// ======================= GAME FLOW =======================
-function startGame(){
+// ======================= POSITION GAME FLOW =======================
+function startPosition(){
   score = 0; combo = 0; maxCombo = 0;
   totalClicks = 0; totalDist = 0; totalHits = 0;
-  gameActive = true; timeLeft = gameDuration; lastHitTime = 0;
+  gameActive = true; timeLeft = cfgDuration; lastHitTime = 0;
   accRunning = 0;
   targets = [];
   ripples = [];
+  staticRemaining = cfgStatic;
+  movingRemaining = cfgMoving;
+
+  // Build spawn queue
+  spawnQueue = [];
+  for(let i=0;i<cfgStatic;i++) spawnQueue.push(false);
+  for(let i=0;i<cfgMoving;i++) spawnQueue.push(true);
+  // Shuffle
+  for(let i=spawnQueue.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [spawnQueue[i], spawnQueue[j]] = [spawnQueue[j], spawnQueue[i]];
+  }
 
   document.getElementById('startOverlay').classList.add('hidden');
   document.getElementById('resultOverlay').classList.add('hidden');
   document.getElementById('hudTime').style.color = '';
   document.getElementById('hudAcc').textContent = '—';
+  document.getElementById('hudHitItem').style.display = '';
   updateHUD();
   document.getElementById('hudTime').textContent = timeLeft;
-
-  // Update bottom text
-  const labels = { static: '精准点击目标 · Click targets', tracking: '追踪移动目标 · Track & click', mixed: '混合训练 · Mixed mode' };
-  document.getElementById('hud-bottom').textContent = labels[gameMode] || labels.static;
+  document.getElementById('hud-bottom').textContent = '点击目标 · Click to hit';
+  document.getElementById('cursor').style.display = '';
 
   sfxStart();
   startTimer();
@@ -710,11 +907,11 @@ function startTimer(){
     if(timeLeft <= 5 && timeLeft > 0){
       document.getElementById('hudTime').style.color = '#ff4050';
     }
-    if(timeLeft <= 0) endGame();
+    if(timeLeft <= 0) endPosition();
   }, 1000);
 }
 
-function endGame(){
+function endPosition(){
   gameActive = false;
   if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
   if(spawnTimer){ clearTimeout(spawnTimer); spawnTimer = null; }
@@ -723,8 +920,8 @@ function endGame(){
 
   sfxEnd();
 
-  const avgAcc = totalClicks > 0 ? accRunning : 0;
-  const avgTime = totalHits > 0 ? Math.round(gameDuration * 1000 / totalHits) : 0;
+  const avgAcc = accRunning;
+  const avgTime = totalHits > 0 ? Math.round(cfgDuration * 1000 / totalHits) : 0;
 
   if(score > bestScore){
     bestScore = score;
@@ -746,12 +943,230 @@ function endGame(){
   document.getElementById('hudTime').style.color = '';
 }
 
+// ======================= RED/GREEN REACTION MODE =======================
+let reactionState = null; // { round, totalRounds, times:[], greenRound, reactionStart, waiting, showResult }
+
+function startReaction(){
+  document.getElementById('startOverlay').classList.add('hidden');
+  document.getElementById('resultOverlay').classList.add('hidden');
+  document.getElementById('cursor').style.display = 'none';
+  document.getElementById('hudHitItem').style.display = 'none';
+  document.getElementById('hudTime').style.color = '';
+  updateHUD();
+
+  reactionState = {
+    round: 0,
+    totalRounds: cfgRounds,
+    times: [],
+    wrongClicks: 0,
+    greenRound: true,
+    reactionStart: 0,
+    waiting: false,
+    phase: 'wait' // wait | ready | result
+  };
+
+  document.getElementById('reactionFull').style.display = 'flex';
+  document.getElementById('reactionFull').style.background = 'rgba(4,6,12,0.95)';
+  document.getElementById('reactionRound').textContent = '第 1 / ' + cfgRounds + ' 轮';
+  document.getElementById('reactionBig').textContent = '准备';
+  document.getElementById('reactionBig').style.color = '#6a7a9a';
+  document.getElementById('reactionSmall').textContent = '看到绿色立即点击 | 看到红色不要点击';
+
+  gameActive = true;
+  document.getElementById('hud-bottom').textContent = '绿=点击 · 红=别动';
+
+  nextRound();
+}
+
+function nextRound(){
+  if(!gameActive) return;
+  reactionState.round++;
+
+  if(reactionState.round > reactionState.totalRounds){
+    endReaction();
+    return;
+  }
+
+  reactionState.phase = 'wait';
+  reactionState.waiting = false;
+
+  document.getElementById('reactionRound').textContent =
+    '第 ' + reactionState.round + ' / ' + reactionState.totalRounds + ' 轮';
+  document.getElementById('reactionFull').style.background = 'rgba(4,6,12,0.95)';
+  document.getElementById('reactionBig').textContent = '准备';
+  document.getElementById('reactionBig').style.color = '#6a7a9a';
+  document.getElementById('reactionSmall').textContent = '等待颜色变化...';
+
+  // Decide green or red
+  reactionState.greenRound = Math.random() * 100 < cfgGreenPct;
+
+  // Random delay
+  const delay = (cfgDelayMin + Math.random() * (cfgDelayMax - cfgDelayMin)) * 1000;
+  reactionState.waitTimer = setTimeout(() => {
+    reactionState.phase = 'ready';
+    reactionState.waiting = true;
+    reactionState.reactionStart = performance.now();
+
+    if(reactionState.greenRound){
+      document.getElementById('reactionFull').style.background = 'rgba(0,200,80,0.92)';
+      document.getElementById('reactionBig').textContent = '⚡ 点击!';
+      document.getElementById('reactionBig').style.color = '#fff';
+      document.getElementById('reactionSmall').textContent = '';
+    } else {
+      document.getElementById('reactionFull').style.background = 'rgba(230,30,40,0.90)';
+      document.getElementById('reactionBig').textContent = '✋ 别动!';
+      document.getElementById('reactionBig').style.color = '#fff';
+      document.getElementById('reactionSmall').textContent = '红色不要点击';
+    }
+  }, delay);
+}
+
+document.getElementById('reactionFull').addEventListener('click', e => {
+  if(!gameActive || gameMode !== 'reaction') return;
+  if(!reactionState) return;
+
+  if(reactionState.phase === 'wait' && !reactionState.waiting){
+    // Clicked too early
+    clearTimeout(reactionState.waitTimer);
+    reactionState.times.push({ time: -1, type: 'early' });
+    sfxReactionWrong();
+    document.getElementById('reactionBig').textContent = '⚠ 太早了!';
+    document.getElementById('reactionBig').style.color = '#ff4050';
+    document.getElementById('reactionSmall').textContent = '等待颜色变化后再点击';
+    reactionState.phase = 'result';
+    setTimeout(() => nextRound(), 800);
+    return;
+  }
+
+  if(reactionState.phase === 'ready' && reactionState.waiting){
+    const reactionTime = Math.round(performance.now() - reactionState.reactionStart);
+    reactionState.waiting = false;
+    reactionState.phase = 'result';
+
+    if(reactionState.greenRound){
+      // Correct - green clicked
+      reactionState.times.push({ time: reactionTime, type: 'hit' });
+      sfxReactionFast();
+      document.getElementById('reactionBig').textContent = reactionTime + 'ms';
+      document.getElementById('reactionBig').style.color = '#00ffc8';
+      document.getElementById('reactionSmall').textContent = '✓ 反应迅速';
+      document.getElementById('reactionFull').style.background = 'rgba(0,200,80,0.5)';
+    } else {
+      // Wrong - red clicked!
+      reactionState.times.push({ time: reactionTime, type: 'wrong' });
+      reactionState.wrongClicks++;
+      sfxReactionWrong();
+      document.getElementById('reactionBig').textContent = '✗ 误触!';
+      document.getElementById('reactionBig').style.color = '#ff4050';
+      document.getElementById('reactionSmall').textContent = '红色不应该点击';
+      document.getElementById('reactionFull').style.background = 'rgba(230,30,40,0.7)';
+    }
+    setTimeout(() => nextRound(), 700);
+  }
+});
+
+// If red appears and user correctly does NOT click, timer fires
+// We need a timeout for red rounds too
+function scheduleRedTimeout(){
+  // For red rounds, if user doesn't click within 1.5s, it's correct restraint
+  if(reactionState && reactionState.phase === 'ready' && reactionState.waiting && !reactionState.greenRound){
+    if(reactionState.redTimer) clearTimeout(reactionState.redTimer);
+    reactionState.redTimer = setTimeout(() => {
+      if(reactionState.phase === 'ready' && reactionState.waiting && !reactionState.greenRound){
+        reactionState.waiting = false;
+        reactionState.phase = 'result';
+        reactionState.times.push({ time: 0, type: 'restrained' });
+        document.getElementById('reactionFull').style.background = 'rgba(4,6,12,0.95)';
+        document.getElementById('reactionBig').textContent = '✓ 克制';
+        document.getElementById('reactionBig').style.color = '#00ffc8';
+        document.getElementById('reactionSmall').textContent = '正确没有点击红色';
+        setTimeout(() => nextRound(), 700);
+      }
+    }, 1500);
+  }
+}
+
+// Patch nextRound to also schedule red timeout
+const _origNextRound = nextRound;
+nextRound = function(){
+  _origNextRound();
+  // After the delay, schedule red check
+  setTimeout(() => scheduleRedTimeout(), (cfgDelayMin + 0.1) * 1000 + 100);
+};
+
+function endReaction(){
+  gameActive = false;
+  if(reactionState.waitTimer) clearTimeout(reactionState.waitTimer);
+  if(reactionState.redTimer) clearTimeout(reactionState.redTimer);
+
+  document.getElementById('reactionFull').style.display = 'none';
+
+  const times = reactionState.times;
+  const hits = times.filter(t => t.type === 'hit');
+  const wrongs = times.filter(t => t.type === 'wrong');
+  const earlies = times.filter(t => t.type === 'early');
+  const restrained = times.filter(t => t.type === 'restrained');
+
+  const validTimes = hits.map(t => t.time);
+  const avgTime = validTimes.length > 0
+    ? Math.round(validTimes.reduce((a,b) => a+b, 0) / validTimes.length)
+    : 999;
+  const minTime = validTimes.length > 0 ? Math.min(...validTimes) : 999;
+
+  // Save best
+  if(minTime < bestReaction && minTime > 0){
+    bestReaction = minTime;
+    localStorage.setItem('reactionBest', bestReaction);
+  }
+
+  const totalEvents = times.length;
+  const accuracy = totalEvents > 0 ? Math.round((hits.length + restrained.length) / totalEvents * 100) : 0;
+
+  sfxEnd();
+
+  const emoji = minTime < 200 ? '👑' : minTime < 280 ? '💎' : minTime < 350 ? '⚡' : '⏱';
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultScore').textContent = minTime === 999 ? '—' : minTime;
+  document.getElementById('resultScore').style.color = '#ff40c8';
+  document.getElementById('resultAcc').textContent = accuracy + '%';
+  document.getElementById('resultAvg').textContent = avgTime === 999 ? '—' : avgTime + 'ms';
+  document.getElementById('resultCombo').textContent = hits.length;
+  document.getElementById('resultHits').textContent = wrongs.length + earlies.length;
+  document.getElementById('resultBest').textContent = bestReaction === 999 ? '—' : bestReaction;
+  document.getElementById('resultBest').parentElement.querySelector('.t').textContent = '最快(ms)';
+  document.getElementById('resultOverlay').classList.remove('hidden');
+
+  // Update result labels
+  document.querySelector('#resultAcc').parentElement.querySelector('.t').textContent = '正确率';
+  document.querySelector('#resultCombo').parentElement.querySelector('.t').textContent = '命中';
+  document.querySelector('#resultHits').parentElement.querySelector('.t').textContent = '失误';
+
+  document.getElementById('hudTime').textContent = '—';
+}
+
+// ======================= SHARED =======================
 function showStart(){
   document.getElementById('resultOverlay').classList.add('hidden');
   document.getElementById('startOverlay').classList.remove('hidden');
+  document.getElementById('cursor').style.display = '';
+  document.getElementById('hudTime').textContent = '—';
+  document.getElementById('hudScore').textContent = '0';
+  document.getElementById('hudAcc').textContent = '—';
+  document.getElementById('hudCombo').textContent = '0';
+  document.getElementById('hudHits').textContent = '0';
+  document.getElementById('hudHitItem').style.display = '';
+  document.getElementById('hudTime').style.color = '';
+  document.getElementById('hud-bottom').textContent = '点击目标 · Click to hit';
+  document.getElementById('reactionFull').style.display = 'none';
+  gameActive = false;
+  if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+  if(spawnTimer){ clearTimeout(spawnTimer); spawnTimer = null; }
 }
 
-document.getElementById('replayBtn').addEventListener('click', () => startGame());
+document.getElementById('replayBtn').addEventListener('click', () => {
+  if(gameMode === 'position') startPosition();
+  else startReaction();
+});
 
 // ======================= CURSOR =======================
 document.addEventListener('mousemove', e => {
