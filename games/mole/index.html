@@ -7,10 +7,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none}
 
-:root{
-  --accent: #00ffc8;
-  --accent2: #ff40c8;
-}
+:root{ --accent: #00ffc8; --accent2: #ff40c8; }
 
 body{
   background:#060810;
@@ -21,17 +18,13 @@ body{
   color:#e0e8ff;
 }
 
-canvas{
-  position:fixed;inset:0;
-  display:block;
-}
+canvas{ position:fixed;inset:0; display:block; }
 
-/* ---- 自定义光标 ---- */
+/* 自定义光标 */
 #cursor{
   position:fixed;pointer-events:none;z-index:9999;
-  width:28px;height:28px;
+  width:26px;height:26px;
   transform:translate(-50%,-50%);
-  transition:width 0.1s, height 0.1s;
 }
 #cursor::before{
   content:'';position:absolute;
@@ -47,55 +40,63 @@ canvas{
 }
 #cursor .dot{
   position:absolute;top:50%;left:50%;
-  width:6px;height:6px;border-radius:50%;
+  width:5px;height:5px;border-radius:50%;
   background:#00ffc8;
   transform:translate(-50%,-50%);
-  box-shadow:0 0 10px #00ffc8, 0 0 24px rgba(0,255,200,0.4);
+  box-shadow:0 0 10px #00ffc8, 0 0 20px rgba(0,255,200,0.4);
 }
 
-/* ---- HUD ---- */
-.hud{
-  position:fixed;z-index:100;pointer-events:none;
-  display:flex;gap:20px;
-}
+/* HUD */
+.hud{ position:fixed;z-index:100;pointer-events:none; }
 #hud-top{
-  top:20px;left:50%;transform:translateX(-50%);
-  display:flex;gap:16px;align-items:center;
+  top:18px;left:50%;transform:translateX(-50%);
+  display:flex;gap:12px;align-items:center;
 }
 .hud-item{
-  padding:8px 18px;
+  padding:6px 16px;
   background:rgba(6,8,16,0.7);backdrop-filter:blur(10px);
   border:1px solid rgba(0,255,200,0.1);
-  border-radius:12px;
-  font-size:0.82rem;font-weight:600;color:#6a7a9a;
-  text-align:center;
-  min-width:80px;
+  border-radius:10px;
+  font-size:0.78rem;font-weight:600;color:#6a7a9a;
+  text-align:center;min-width:70px;
 }
 .hud-item .val{
-  display:block;font-size:1.5rem;font-weight:800;
-  color:#00ffc8;text-shadow:0 0 14px rgba(0,255,200,0.3);
-  line-height:1.2;
+  display:block;font-size:1.35rem;font-weight:800;
+  color:#00ffc8;text-shadow:0 0 12px rgba(0,255,200,0.3);
+  line-height:1.15;
 }
-.hud-item .lbl{font-size:0.65rem;letter-spacing:1px;text-transform:uppercase}
+.hud-item .lbl{font-size:0.6rem;letter-spacing:1px;text-transform:uppercase}
 
 #hud-bottom{
-  bottom:24px;left:50%;transform:translateX(-50%);
-  font-size:0.7rem;color:#3a4a6a;letter-spacing:1px;
+  bottom:22px;left:50%;transform:translateX(-50%);
+  font-size:0.68rem;color:#3a4a6a;letter-spacing:1px;
 }
 
-/* ---- 弹出分数 ---- */
+/* 弹出 */
 .pop{
   position:fixed;pointer-events:none;z-index:200;
-  font-weight:900;font-size:1.2rem;
+  font-weight:900;font-size:1.1rem;
   animation:popUp 0.7s ease-out forwards;
   text-shadow:0 0 12px currentColor;
 }
 @keyframes popUp{
-  0%{opacity:1;transform:translate(-50%,0) scale(0.6)}
-  100%{opacity:0;transform:translate(-50%,-60px) scale(1.3)}
+  0%{opacity:1;transform:translate(-50%,0) scale(0.5)}
+  100%{opacity:0;transform:translate(-50%,-55px) scale(1.2)}
+}
+.combo-pop{
+  position:fixed;pointer-events:none;z-index:200;
+  font-weight:900;font-size:0.9rem;color:#ff40c8;
+  text-shadow:0 0 14px rgba(255,64,200,0.5);
+  animation:comboUp 0.8s ease-out forwards;
+  letter-spacing:1px;
+}
+@keyframes comboUp{
+  0%{opacity:1;transform:translate(-50%,0) scale(0.3)}
+  50%{transform:translate(-50%,-16px) scale(1.15)}
+  100%{opacity:0;transform:translate(-50%,-45px) scale(1)}
 }
 
-/* ---- 覆盖层 ---- */
+/* 覆盖层 */
 .overlay{
   position:fixed;inset:0;z-index:500;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -105,68 +106,73 @@ canvas{
 
 .card{
   text-align:center;
-  padding:36px 40px;
+  padding:32px 36px;
   background:rgba(10,14,26,0.6);
   border:1px solid rgba(0,255,200,0.08);
   border-radius:20px;
   box-shadow:0 20px 60px rgba(0,0,0,0.5), 0 0 80px rgba(0,180,200,0.04);
-  width:min(88vw,340px);
+  width:min(88vw,380px);
 }
 .card h1{
-  font-size:1.5rem;font-weight:800;letter-spacing:3px;margin-bottom:6px;
+  font-size:1.4rem;font-weight:800;letter-spacing:3px;margin-bottom:4px;
   background:linear-gradient(135deg,#00ffc8,#00aaff,#c840ff);
   -webkit-background-clip:text;color:transparent;
 }
-.card .sub{
-  font-size:0.78rem;color:#4a5a7a;margin-bottom:22px;line-height:1.5;
-}
-.card .stat-row{
-  display:flex;justify-content:center;gap:28px;margin-bottom:22px;
-}
-.card .stat{
-  text-align:center;
-}
-.card .stat .n{
-  display:block;font-size:1.8rem;font-weight:800;color:#e0e8ff;line-height:1.1;
-}
-.card .stat .t{font-size:0.62rem;color:#4a5a7a;letter-spacing:1px}
+.card .sub{ font-size:0.76rem;color:#4a5a7a;margin-bottom:20px;line-height:1.5; }
 
-.diff-btns{display:flex;flex-direction:column;gap:7px}
-.diff-btn{
-  display:flex;align-items:center;
-  padding:12px 16px;
-  font-size:0.82rem;font-weight:600;font-family:inherit;
-  background:rgba(255,255,255,0.02);color:#b0c8e0;
-  border:1px solid rgba(255,255,255,0.05);border-radius:10px;
-  cursor:pointer;transition:0.25s;text-align:left;width:100%;
+/* 模式选择 */
+.mode-row{ display:flex;gap:8px;margin-bottom:16px;justify-content:center; }
+.mode-btn{
+  flex:1;padding:10px 8px;font-size:0.76rem;font-weight:600;font-family:inherit;
+  background:rgba(255,255,255,0.02);color:#6a7a9a;
+  border:1px solid rgba(255,255,255,0.06);border-radius:10px;
+  cursor:pointer;transition:0.25s;text-align:center;
 }
-.diff-btn:hover{transform:translateY(-2px)}
-.diff-btn.easy{border-color:rgba(0,255,200,0.15)}
-.diff-btn.easy:hover{border-color:#00ffc8;background:rgba(0,255,200,0.04);box-shadow:0 0 30px rgba(0,255,200,0.08)}
-.diff-btn.normal{border-color:rgba(0,170,255,0.15)}
-.diff-btn.normal:hover{border-color:#0af;background:rgba(0,170,255,0.04);box-shadow:0 0 30px rgba(0,170,255,0.08)}
-.diff-btn.hard{border-color:rgba(255,64,200,0.15)}
-.diff-btn.hard:hover{border-color:#ff40c8;background:rgba(255,64,200,0.04);box-shadow:0 0 30px rgba(255,64,200,0.08)}
-.diff-btn .info{flex:1}
-.diff-btn .label{display:block;font-size:0.84rem;font-weight:600;line-height:1.3}
-.diff-btn .note{display:block;font-size:0.66rem;color:#4a5a7a;font-weight:normal;margin-top:1px}
-.diff-btn .tag{
-  display:inline-block;font-size:0.58rem;font-weight:700;padding:2px 8px;
-  border-radius:999px;letter-spacing:0.5px;margin-left:auto;flex-shrink:0;
-  background:rgba(255,255,255,0.03);color:#4a5a7a;
-  border:1px solid rgba(255,255,255,0.05);
+.mode-btn .icon{ display:block;font-size:1.3rem;margin-bottom:3px; }
+.mode-btn:hover{ border-color:rgba(0,255,200,0.2);color:#a0b8d0; }
+.mode-btn.sel{
+  border-color:rgba(0,255,200,0.35);color:#00ffc8;
+  background:rgba(0,255,200,0.04);
+  box-shadow:0 0 20px rgba(0,255,200,0.06);
 }
 
-.btn-row{display:flex;gap:10px;justify-content:center;margin-top:18px}
+/* 难度 & 时长 */
+.opt-label{ font-size:0.64rem;color:#4a5a7a;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase; }
+.opt-row{ display:flex;gap:6px;margin-bottom:14px;justify-content:center; }
+.opt-btn{
+  flex:1;padding:8px 6px;font-size:0.72rem;font-weight:600;font-family:inherit;
+  background:rgba(255,255,255,0.02);color:#6a7a9a;
+  border:1px solid rgba(255,255,255,0.05);border-radius:8px;
+  cursor:pointer;transition:0.25s;text-align:center;
+}
+.opt-btn:hover{ color:#b0c8e0;border-color:rgba(255,255,255,0.12); }
+.opt-btn.sel.easy{ border-color:rgba(0,255,200,0.3);color:#00ffc8; }
+.opt-btn.sel.normal{ border-color:rgba(0,170,255,0.3);color:#0af; }
+.opt-btn.sel.hard{ border-color:rgba(255,64,200,0.3);color:#ff40c8; }
+
+.start-btn{
+  width:100%;padding:12px;font-size:0.88rem;font-weight:700;font-family:inherit;
+  border:none;border-radius:12px;cursor:pointer;transition:0.25s;
+  background:linear-gradient(135deg,#00ffc8,#00aacc);color:#051015;
+  box-shadow:0 0 25px rgba(0,255,200,0.2);
+  letter-spacing:1px;
+}
+.start-btn:hover{ transform:scale(1.04);box-shadow:0 0 40px rgba(0,255,200,0.35); }
+
+/* 结算 */
+.stat-row{ display:flex;justify-content:center;gap:24px;margin-bottom:20px; }
+.stat .n{ display:block;font-size:1.7rem;font-weight:800;color:#e0e8ff;line-height:1.1; }
+.stat .t{ font-size:0.6rem;color:#4a5a7a;letter-spacing:1px }
+.btn-row{ display:flex;gap:8px;justify-content:center;margin-top:16px; }
 .btn{
-  padding:10px 26px;font-size:0.82rem;font-weight:700;font-family:inherit;
+  padding:10px 22px;font-size:0.8rem;font-weight:700;font-family:inherit;
   border:none;border-radius:10px;cursor:pointer;transition:0.25s;
   background:linear-gradient(135deg,#00ffc8,#00aacc);color:#051015;
   box-shadow:0 0 20px rgba(0,255,200,0.2);
 }
 .btn:hover{transform:scale(1.06);box-shadow:0 0 35px rgba(0,255,200,0.35)}
 .btn-ghost{
-  padding:10px 26px;font-size:0.82rem;font-weight:700;font-family:inherit;
+  padding:10px 22px;font-size:0.8rem;font-weight:700;font-family:inherit;
   background:rgba(255,255,255,0.03);color:#6a7a9a;
   border:1px solid rgba(255,255,255,0.06);border-radius:10px;
   cursor:pointer;transition:0.25s;
@@ -174,28 +180,15 @@ canvas{
 .btn-ghost:hover{color:#a0b8d0;border-color:rgba(255,255,255,0.15)}
 
 .back-btn{
-  position:fixed;top:20px;left:20px;z-index:600;
-  padding:8px 16px;
-  font-size:0.76rem;font-weight:600;font-family:inherit;
+  position:fixed;top:18px;left:18px;z-index:600;
+  padding:7px 14px;
+  font-size:0.74rem;font-weight:600;font-family:inherit;
   background:rgba(6,8,16,0.6);backdrop-filter:blur(10px);
   color:#6a7a9a;border:1px solid rgba(255,255,255,0.06);
-  border-radius:10px;cursor:pointer;transition:0.25s;
+  border-radius:9px;cursor:pointer;transition:0.25s;
   text-decoration:none;
 }
 .back-btn:hover{color:#00ffc8;border-color:rgba(0,255,200,0.2);box-shadow:0 0 20px rgba(0,255,200,0.06)}
-
-.combo-pop{
-  position:fixed;pointer-events:none;z-index:200;
-  font-weight:900;font-size:0.95rem;color:#ff40c8;
-  text-shadow:0 0 14px rgba(255,64,200,0.5);
-  animation:comboUp 0.8s ease-out forwards;
-  letter-spacing:1px;
-}
-@keyframes comboUp{
-  0%{opacity:1;transform:translate(-50%,0) scale(0.3)}
-  50%{transform:translate(-50%,-18px) scale(1.2)}
-  100%{opacity:0;transform:translate(-50%,-50px) scale(1)}
-}
 </style>
 </head>
 <body>
@@ -203,58 +196,71 @@ canvas{
 <canvas id="c"></canvas>
 <div id="cursor"><div class="dot"></div></div>
 
-<!-- 返回 -->
 <a class="back-btn" href="../../index.html">← 大厅</a>
 
-<!-- 顶栏 HUD -->
+<!-- HUD -->
 <div class="hud" id="hud-top">
   <div class="hud-item"><span class="val" id="hudScore">0</span><span class="lbl">分数</span></div>
   <div class="hud-item"><span class="val" id="hudTime">30</span><span class="lbl">剩余</span></div>
   <div class="hud-item"><span class="val" id="hudAcc">—</span><span class="lbl">精度</span></div>
   <div class="hud-item"><span class="val" id="hudCombo">0</span><span class="lbl">连击</span></div>
 </div>
+<div class="hud" id="hud-bottom">点击目标 · Click to hit</div>
 
-<!-- 底栏提示 -->
-<div class="hud" id="hud-bottom">点击出现的靶心 · Click the targets</div>
-
-<!-- 开始覆盖层 -->
+<!-- 开始 -->
 <div class="overlay" id="startOverlay">
   <div class="card">
-    <h1>⊙ 霓虹晶核</h1>
-    <p class="sub">全屏定位训练 · 精准点击靶心<br>限时30秒，越快越准分越高</p>
-    <div class="diff-btns">
-      <button class="diff-btn easy" onclick="startGame('easy')">
-        <span class="info"><span class="label">简单模式</span><span class="note">大靶心 · 间隔长 · 轻松上手</span></span>
-        <span class="tag">入门</span>
+    <h1>◇ 霓虹晶核</h1>
+    <p class="sub">全屏定位 & 反应训练</p>
+
+    <div class="opt-label">游戏模式</div>
+    <div class="mode-row">
+      <button class="mode-btn sel" data-mode="static">
+        <span class="icon">⊙</span>精准定位
       </button>
-      <button class="diff-btn normal" onclick="startGame('normal')">
-        <span class="info"><span class="label">普通模式</span><span class="note">中等大小 · 节奏适中</span></span>
-        <span class="tag">进阶</span>
+      <button class="mode-btn" data-mode="tracking">
+        <span class="icon">◈</span>移动追踪
       </button>
-      <button class="diff-btn hard" onclick="startGame('hard')">
-        <span class="info"><span class="label">困难模式</span><span class="note">小靶心 · 快速消失 · 极限挑战</span></span>
-        <span class="tag">极限</span>
+      <button class="mode-btn" data-mode="mixed">
+        <span class="icon">◉</span>混合训练
       </button>
     </div>
+
+    <div class="opt-label">难度</div>
+    <div class="opt-row">
+      <button class="opt-btn sel easy" data-diff="easy">入门</button>
+      <button class="opt-btn normal" data-diff="normal">进阶</button>
+      <button class="opt-btn hard" data-diff="hard">极限</button>
+    </div>
+
+    <div class="opt-label">时长</div>
+    <div class="opt-row">
+      <button class="opt-btn sel easy" data-dur="15">15秒</button>
+      <button class="opt-btn normal" data-dur="30">30秒</button>
+      <button class="opt-btn hard" data-dur="60">60秒</button>
+    </div>
+
+    <button class="start-btn" onclick="startGame()">▶ 开始训练</button>
   </div>
 </div>
 
-<!-- 结算覆盖层 -->
+<!-- 结算 -->
 <div class="overlay hidden" id="resultOverlay">
   <div class="card">
-    <div style="font-size:2.6rem;margin-bottom:4px" id="resultEmoji">⊙</div>
+    <div style="font-size:2.6rem;margin-bottom:4px" id="resultEmoji">◇</div>
     <div class="stat-row">
       <div class="stat"><span class="n" id="resultScore" style="color:#00ffc8">0</span><span class="t">得分</span></div>
       <div class="stat"><span class="n" id="resultAcc">0%</span><span class="t">精度</span></div>
       <div class="stat"><span class="n" id="resultAvg">0ms</span><span class="t">均时</span></div>
     </div>
-    <div class="stat-row" style="margin-bottom:16px">
-      <div class="stat"><span class="n" id="resultCombo" style="font-size:1.3rem">0</span><span class="t">最大连击</span></div>
-      <div class="stat"><span class="n" id="resultBest" style="font-size:1.3rem">0</span><span class="t">最高记录</span></div>
+    <div class="stat-row" style="margin-bottom:14px">
+      <div class="stat"><span class="n" id="resultCombo" style="font-size:1.2rem">0</span><span class="t">最大连击</span></div>
+      <div class="stat"><span class="n" id="resultHits" style="font-size:1.2rem">0</span><span class="t">命中</span></div>
+      <div class="stat"><span class="n" id="resultBest" style="font-size:1.2rem">0</span><span class="t">记录</span></div>
     </div>
     <div class="btn-row">
       <button class="btn" id="replayBtn">再来一局</button>
-      <button class="btn-ghost" onclick="showStart()">换难度</button>
+      <button class="btn-ghost" onclick="showStart()">换模式</button>
     </div>
   </div>
 </div>
@@ -262,40 +268,41 @@ canvas{
 <script>
 // ======================= CONFIG =======================
 const DIFFICULTY = {
-  easy:   { radius: 40, stayMin: 2500, stayMax: 4000, interval: 800, shrink: false },
-  normal: { radius: 26, stayMin: 1600, stayMax: 2600, interval: 600, shrink: false },
-  hard:   { radius: 16, stayMin: 800,  stayMax: 1500, interval: 400, shrink: true }
+  easy:   { size: 38, stayMin: 2200, stayMax: 3600, interval: 700, speed: 0.8, targets: 1 },
+  normal: { size: 24, stayMin: 1400, stayMax: 2400, interval: 500, speed: 1.5, targets: 2 },
+  hard:   { size: 15, stayMin: 700,  stayMax: 1300, interval: 350, speed: 2.5, targets: 3 }
 };
 
-const GAME_DURATION = 30;
-const COMBO_TIMEOUT = 2000;
+const SHAPES = ['diamond', 'hexagon', 'circle', 'cross', 'diamond', 'hexagon', 'circle'];
+const COMBO_TIMEOUT = 1800;
 
 // ======================= STATE =======================
+let gameMode = 'static';
 let difficulty = 'easy';
+let gameDuration = 30;
+
 let score = 0, combo = 0, maxCombo = 0;
-let gameActive = false, timeLeft = GAME_DURATION;
+let gameActive = false, timeLeft = 0;
 let timerInterval = null;
-let target = null;
-let totalClicks = 0, totalDist = 0;
+let targets = [];
+let totalClicks = 0, totalDist = 0, totalHits = 0;
 let lastHitTime = 0;
+let accRunning = 0;
 let bestScore = parseInt(localStorage.getItem('moleBest') || '0');
+let spawnTimer = null;
 
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 const cursorEl = document.getElementById('cursor');
 
 let W, H;
-function resize(){
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
+function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
 window.addEventListener('resize', resize);
 resize();
 
 // ======================= AUDIO =======================
 let actx = null;
 function ensureAudio(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); }
-
 function playTone(freq, dur, type, vol, delay){
   try{
     ensureAudio();
@@ -309,41 +316,91 @@ function playTone(freq, dur, type, vol, delay){
     o.start(t); o.stop(t+dur);
   }catch(e){}
 }
-
 function sfxHit(){ playTone(700,0.04,'sine',0.06);setTimeout(()=>playTone(1000,0.04,'sine',0.05),25); }
 function sfxPerfect(){ playTone(1000,0.06,'sine',0.08);setTimeout(()=>playTone(1400,0.06,'sine',0.06),40);setTimeout(()=>playTone(1800,0.08,'sine',0.05),80); }
 function sfxMiss(){ playTone(160,0.05,'sawtooth',0.04); }
 function sfxStart(){ playTone(440,0.08,'sine',0.06);setTimeout(()=>playTone(660,0.08,'sine',0.06),70);setTimeout(()=>playTone(880,0.12,'sine',0.05),140); }
 function sfxEnd(){ playTone(880,0.08,'sine',0.06);setTimeout(()=>playTone(1100,0.08,'sine',0.06),90);setTimeout(()=>playTone(1500,0.14,'sine',0.05),180); }
 
+// ======================= SETUP UI =======================
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    gameMode = btn.dataset.mode;
+  });
+});
+
+document.querySelectorAll('.opt-btn[data-diff]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.opt-btn[data-diff]').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    difficulty = btn.dataset.diff;
+  });
+});
+
+document.querySelectorAll('.opt-btn[data-dur]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.opt-btn[data-dur]').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    gameDuration = parseInt(btn.dataset.dur);
+  });
+});
+
 // ======================= TARGET =======================
 function spawnTarget(){
   if(!gameActive) return;
   const cfg = DIFFICULTY[difficulty];
-  const margin = cfg.radius + 30;
-  const x = margin + Math.random() * (W - margin * 2);
-  const y = margin + Math.random() * (H - margin * 2);
+  if(targets.length >= cfg.targets) return;
 
-  target = {
-    x, y,
-    radius: cfg.radius,
-    maxRadius: cfg.radius,
+  const isTracking = gameMode === 'tracking' || (gameMode === 'mixed' && Math.random() < 0.4);
+  const size = cfg.size;
+  const margin = size + 20;
+
+  let x, y, vx = 0, vy = 0;
+  if(isTracking){
+    // Spawn from edge, move across
+    const edge = Math.floor(Math.random() * 4);
+    switch(edge){
+      case 0: x = -margin; y = Math.random() * H; vx = cfg.speed * (1 + Math.random()); vy = (Math.random() - 0.5) * cfg.speed * 2; break;
+      case 1: x = W + margin; y = Math.random() * H; vx = -cfg.speed * (1 + Math.random()); vy = (Math.random() - 0.5) * cfg.speed * 2; break;
+      case 2: x = Math.random() * W; y = -margin; vx = (Math.random() - 0.5) * cfg.speed * 2; vy = cfg.speed * (1 + Math.random()); break;
+      default: x = Math.random() * W; y = H + margin; vx = (Math.random() - 0.5) * cfg.speed * 2; vy = -cfg.speed * (1 + Math.random()); break;
+    }
+  } else {
+    x = margin + Math.random() * (W - margin * 2);
+    y = margin + Math.random() * (H - margin * 2);
+  }
+
+  const t = {
+    x, y, vx, vy,
+    size,
+    maxSize: size,
+    shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
+    isTracking,
     startTime: Date.now(),
-    shrink: cfg.shrink,
-    opacity: 1
+    opacity: 1,
+    hit: false,
+    hue: Math.random() < 0.15 ? 45 : 170 // 15% gold, rest cyan
   };
 
-  const stay = cfg.stayMin + Math.random() * (cfg.stayMax - cfg.stayMin);
-  target.timer = setTimeout(() => {
-    if(target && !target.hit){
-      misses();
-      target = null;
-      scheduleNext();
-    }
-  }, stay);
+  if(!isTracking){
+    const stay = cfg.stayMin + Math.random() * (cfg.stayMax - cfg.stayMin);
+    t.timer = setTimeout(() => {
+      if(!t.hit){ onMiss(); removeTarget(t); }
+    }, stay);
+  }
+
+  targets.push(t);
 }
 
-function misses(){
+function removeTarget(t){
+  const idx = targets.indexOf(t);
+  if(idx >= 0) targets.splice(idx, 1);
+  if(t.timer){ clearTimeout(t.timer); t.timer = null; }
+}
+
+function onMiss(){
   combo = 0;
   updateHUD();
   sfxMiss();
@@ -351,8 +408,9 @@ function misses(){
 
 function scheduleNext(){
   if(!gameActive) return;
+  if(spawnTimer){ clearTimeout(spawnTimer); }
   const delay = DIFFICULTY[difficulty].interval;
-  setTimeout(() => spawnTarget(), delay);
+  spawnTimer = setTimeout(() => { spawnTarget(); scheduleNext(); }, delay);
 }
 
 // ======================= CLICK =======================
@@ -361,59 +419,61 @@ canvas.addEventListener('click', e => {
   const mx = e.clientX;
   const my = e.clientY;
 
-  if(!target) return;
+  // Find closest target
+  let best = null, bestDist = Infinity;
+  for(const t of targets){
+    if(t.hit) continue;
+    const dx = mx - t.x;
+    const dy = my - t.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if(dist <= t.size && dist < bestDist){
+      best = t;
+      bestDist = dist;
+    }
+  }
 
-  const dx = mx - target.x;
-  const dy = my - target.y;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-
-  if(dist <= target.radius){
-    // Hit!
+  if(best){
+    best.hit = true;
+    totalHits++;
     totalClicks++;
-    totalDist += dist;
-    target.hit = true;
-    if(target.timer){ clearTimeout(target.timer); target.timer = null; }
+    totalDist += bestDist;
 
     const now = Date.now();
     if(now - lastHitTime < COMBO_TIMEOUT){ combo++; if(combo > maxCombo) maxCombo = combo; }
     else { combo = 0; }
     lastHitTime = now;
 
-    // Score: accuracy-based
-    const acc = 1 - (dist / target.radius);
-    let pts = Math.round(10 + acc * 40); // 10-50 points
+    const acc = 1 - (bestDist / best.size);
+    let pts = Math.round(10 + acc * 40);
     if(combo >= 3) pts = Math.round(pts * (1 + combo * 0.1));
     score += pts;
+
+    // Real-time accuracy
+    accRunning = Math.round((1 - totalDist / (totalClicks * best.size)) * 100);
+    accRunning = Math.max(0, Math.min(100, accRunning));
 
     if(acc > 0.85){ sfxPerfect(); showPop(mx, my, '#'+pts, '#ffd700'); }
     else { sfxHit(); showPop(mx, my, '+' + pts, '#00ffc8'); }
 
     if(combo >= 4) showComboPop(mx, my, combo);
 
-    // ripple on canvas
-    spawnRipple(target.x, target.y, acc);
-
-    target = null;
+    spawnRipple(best.x, best.y, acc);
+    removeTarget(best);
     updateHUD();
-    scheduleNext();
   }
 });
 
 // ======================= RIPPLE PARTICLES =======================
 let ripples = [];
 function spawnRipple(x, y, acc){
-  const count = acc > 0.85 ? 16 : 8;
+  const count = acc > 0.85 ? 14 : 7;
   const hue = acc > 0.85 ? 'gold' : 'cyan';
   for(let i=0;i<count;i++){
     const angle = (Math.PI*2/count)*i + Math.random()*0.5;
     const speed = 2 + Math.random() * 6;
     ripples.push({
-      x, y,
-      vx: Math.cos(angle)*speed,
-      vy: Math.sin(angle)*speed,
-      life: 1,
-      decay: 0.02 + Math.random() * 0.03,
-      hue
+      x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
+      life: 1, decay: 0.02 + Math.random() * 0.03, hue
     });
   }
 }
@@ -422,8 +482,7 @@ function spawnRipple(x, y, acc){
 function showPop(x, y, text, color){
   const el = document.createElement('div');
   el.className = 'pop';
-  el.style.left = x + 'px';
-  el.style.top = y + 'px';
+  el.style.left = x + 'px'; el.style.top = y + 'px';
   el.style.color = color;
   el.textContent = text;
   document.body.appendChild(el);
@@ -433,8 +492,7 @@ function showPop(x, y, text, color){
 function showComboPop(x, y, n){
   const el = document.createElement('div');
   el.className = 'combo-pop';
-  el.style.left = x + 'px';
-  el.style.top = (y - 24) + 'px';
+  el.style.left = x + 'px'; el.style.top = (y - 22) + 'px';
   el.textContent = n + 'x COMBO';
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 800);
@@ -444,132 +502,205 @@ function showComboPop(x, y, n){
 function updateHUD(){
   document.getElementById('hudScore').textContent = score;
   document.getElementById('hudCombo').textContent = combo;
-  if(totalClicks > 0){
-    const avgAcc = Math.round((1 - totalDist/totalClicks/target?.maxRadius || 0) * 100);
-    document.getElementById('hudAcc').textContent = Math.max(0, avgAcc) + '%';
-  }
+  document.getElementById('hudAcc').textContent = totalClicks > 0 ? accRunning + '%' : '—';
 }
 
-// ======================= RENDER LOOP =======================
+// ======================= RENDER =======================
+// Draw a filled shape with glow
+function drawShape(t){
+  const { x, y, size: s, shape, opacity: alpha, hue } = t;
+  const r = s * 0.7;
+  const col = hue === 45
+    ? `rgba(255,200,0,${alpha})`
+    : `rgba(0,255,200,${alpha})`;
+  const glowCol = hue === 45
+    ? `rgba(255,200,0,${0.5*alpha})`
+    : `rgba(0,255,200,${0.5*alpha})`;
+
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Outer glow
+  ctx.shadowColor = glowCol;
+  ctx.shadowBlur = s * 0.7;
+  ctx.fillStyle = col;
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 1.5;
+
+  switch(shape){
+    case 'diamond':
+      ctx.beginPath();
+      ctx.moveTo(0, -r);
+      ctx.lineTo(r * 0.7, 0);
+      ctx.lineTo(0, r);
+      ctx.lineTo(-r * 0.7, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = s * 0.3;
+      ctx.fillStyle = `rgba(255,255,255,${0.5*alpha})`;
+      ctx.beginPath();
+      ctx.moveTo(0, -r * 0.4);
+      ctx.lineTo(r * 0.25, 0);
+      ctx.lineTo(0, r * 0.4);
+      ctx.lineTo(-r * 0.25, 0);
+      ctx.closePath();
+      ctx.fill();
+      break;
+
+    case 'hexagon':
+      ctx.beginPath();
+      for(let i=0;i<6;i++){
+        const a = Math.PI/6 + i * Math.PI/3;
+        const px = Math.cos(a) * r;
+        const py = Math.sin(a) * r;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = s * 0.3;
+      ctx.fillStyle = `rgba(255,255,255,${0.4*alpha})`;
+      ctx.beginPath();
+      for(let i=0;i<6;i++){
+        const a = Math.PI/6 + i * Math.PI/3;
+        const px = Math.cos(a) * r * 0.45;
+        const py = Math.sin(a) * r * 0.45;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+      break;
+
+    case 'circle':
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.shadowBlur = s * 0.3;
+      ctx.fillStyle = `rgba(255,255,255,${0.45*alpha})`;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.4, 0, Math.PI*2);
+      ctx.fill();
+      break;
+
+    case 'cross':
+      const w = r * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(-w, -r);
+      ctx.lineTo(w, -r);
+      ctx.lineTo(w, -w);
+      ctx.lineTo(r, -w);
+      ctx.lineTo(r, w);
+      ctx.lineTo(w, w);
+      ctx.lineTo(w, r);
+      ctx.lineTo(-w, r);
+      ctx.lineTo(-w, w);
+      ctx.lineTo(-r, w);
+      ctx.lineTo(-r, -w);
+      ctx.lineTo(-w, -w);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = s * 0.2;
+      ctx.fillStyle = `rgba(255,255,255,${0.4*alpha})`;
+      ctx.beginPath();
+      ctx.moveTo(-w*0.4, -r*0.5);
+      ctx.lineTo(w*0.4, -r*0.5);
+      ctx.lineTo(w*0.4, -w*0.4);
+      ctx.lineTo(r*0.5, -w*0.4);
+      ctx.lineTo(r*0.5, w*0.4);
+      ctx.lineTo(w*0.4, w*0.4);
+      ctx.lineTo(w*0.4, r*0.5);
+      ctx.lineTo(-w*0.4, r*0.5);
+      ctx.lineTo(-w*0.4, w*0.4);
+      ctx.lineTo(-r*0.5, w*0.4);
+      ctx.lineTo(-r*0.5, -w*0.4);
+      ctx.lineTo(-w*0.4, -w*0.4);
+      ctx.closePath();
+      ctx.fill();
+      break;
+  }
+
+  ctx.restore();
+}
+
 function render(){
   ctx.clearRect(0, 0, W, H);
 
-  // Grid dots background
-  const gap = 40;
-  ctx.fillStyle = 'rgba(255,255,255,0.02)';
+  // Dot grid
+  const gap = 42;
+  ctx.fillStyle = 'rgba(255,255,255,0.018)';
   for(let x = gap; x < W; x += gap){
     for(let y = gap; y < H; y += gap){
-      ctx.beginPath();
-      ctx.arc(x, y, 0.6, 0, Math.PI*2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 0.5, 0, Math.PI*2); ctx.fill();
     }
   }
 
   // Ripples
   for(let i=ripples.length-1;i>=0;i--){
     const r = ripples[i];
-    r.x += r.vx;
-    r.y += r.vy;
+    r.x += r.vx; r.y += r.vy;
     r.life -= r.decay;
     if(r.life <= 0){ ripples.splice(i,1); continue; }
     ctx.beginPath();
-    ctx.arc(r.x, r.y, 3, 0, Math.PI*2);
-    ctx.fillStyle = r.hue === 'gold'
-      ? `rgba(255,200,0,${r.life*0.7})`
-      : `rgba(0,255,200,${r.life*0.7})`;
+    ctx.arc(r.x, r.y, 2.5, 0, Math.PI*2);
+    ctx.fillStyle = r.hue === 'gold' ? `rgba(255,200,0,${r.life*0.7})` : `rgba(0,255,200,${r.life*0.7})`;
     ctx.fill();
   }
 
-  // Target
-  if(target && !target.hit){
-    if(target.shrink){
-      const elapsed = Date.now() - target.startTime;
+  // Targets
+  for(const t of targets){
+    if(t.hit) continue;
+
+    // Update tracking targets
+    if(t.isTracking){
+      t.x += t.vx;
+      t.y += t.vy;
+      // Remove if off screen
+      if(t.x < -60 || t.x > W + 60 || t.y < -60 || t.y > H + 60){
+        if(!t.hit){ onMiss(); }
+        removeTarget(t);
+        continue;
+      }
+    }
+
+    // Shrink approaching timeout (static only)
+    if(!t.isTracking){
+      const elapsed = Date.now() - t.startTime;
       const cfg = DIFFICULTY[difficulty];
       const totalStay = cfg.stayMax;
       const progress = Math.min(elapsed / totalStay, 1);
-      target.radius = target.maxRadius * (1 - progress * 0.7);
-      target.opacity = 1 - progress * 0.5;
+      t.size = t.maxSize * (1 - progress * 0.55);
+      t.opacity = 1 - progress * 0.4;
     }
 
-    const r = target.radius;
-    const alpha = target.opacity;
-
-    // Outer glow
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, r + 12, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(0,255,200,${0.06*alpha})`;
-    ctx.fill();
-
-    // Ring 3 (outer)
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, r, 0, Math.PI*2);
-    ctx.strokeStyle = `rgba(0,255,200,${0.3*alpha})`;
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 8]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Ring 2
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, r * 0.7, 0, Math.PI*2);
-    ctx.strokeStyle = `rgba(0,255,200,${0.5*alpha})`;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Ring 1 (inner)
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, r * 0.35, 0, Math.PI*2);
-    ctx.strokeStyle = `rgba(0,255,200,${0.8*alpha})`;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Center dot
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, 3, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(0,255,200,${0.9*alpha})`;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, 1.2, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(255,255,255,${0.9*alpha})`;
-    ctx.fill();
-
-    // Crosshair lines
-    const cl = r * 1.6;
-    ctx.strokeStyle = `rgba(0,255,200,${0.15*alpha})`;
-    ctx.lineWidth = 0.5;
-    ctx.beginPath();
-    ctx.moveTo(target.x - cl, target.y);
-    ctx.lineTo(target.x - r*0.5, target.y);
-    ctx.moveTo(target.x + r*0.5, target.y);
-    ctx.lineTo(target.x + cl, target.y);
-    ctx.moveTo(target.x, target.y - cl);
-    ctx.lineTo(target.x, target.y - r*0.5);
-    ctx.moveTo(target.x, target.y + r*0.5);
-    ctx.lineTo(target.x, target.y + cl);
-    ctx.stroke();
+    drawShape(t);
   }
 
   requestAnimationFrame(render);
 }
 
 // ======================= GAME FLOW =======================
-function startGame(diff){
-  difficulty = diff;
+function startGame(){
   score = 0; combo = 0; maxCombo = 0;
-  totalClicks = 0; totalDist = 0;
-  gameActive = true; timeLeft = GAME_DURATION; lastHitTime = 0;
-  target = null;
+  totalClicks = 0; totalDist = 0; totalHits = 0;
+  gameActive = true; timeLeft = gameDuration; lastHitTime = 0;
+  accRunning = 0;
+  targets = [];
   ripples = [];
 
   document.getElementById('startOverlay').classList.add('hidden');
   document.getElementById('resultOverlay').classList.add('hidden');
+  document.getElementById('hudTime').style.color = '';
   document.getElementById('hudAcc').textContent = '—';
   updateHUD();
   document.getElementById('hudTime').textContent = timeLeft;
 
+  // Update bottom text
+  const labels = { static: '精准点击目标 · Click targets', tracking: '追踪移动目标 · Track & click', mixed: '混合训练 · Mixed mode' };
+  document.getElementById('hud-bottom').textContent = labels[gameMode] || labels.static;
+
   sfxStart();
   startTimer();
   spawnTarget();
+  scheduleNext();
 }
 
 function startTimer(){
@@ -586,14 +717,14 @@ function startTimer(){
 function endGame(){
   gameActive = false;
   if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
-  target = null;
+  if(spawnTimer){ clearTimeout(spawnTimer); spawnTimer = null; }
+  targets.forEach(t => { if(t.timer) clearTimeout(t.timer); });
+  targets = [];
 
   sfxEnd();
 
-  const avgAcc = totalClicks > 0
-    ? Math.round((1 - (totalDist / totalClicks) / (DIFFICULTY[difficulty].radius)) * 100)
-    : 0;
-  const avgTime = totalClicks > 0 ? Math.round(GAME_DURATION * 1000 / totalClicks) : 0;
+  const avgAcc = totalClicks > 0 ? accRunning : 0;
+  const avgTime = totalHits > 0 ? Math.round(gameDuration * 1000 / totalHits) : 0;
 
   if(score > bestScore){
     bestScore = score;
@@ -601,12 +732,13 @@ function endGame(){
     if(typeof window._syncScore === 'function') _syncScore('mole', score);
   }
 
-  const emoji = score >= 300 ? '👑' : score >= 180 ? '💎' : score >= 80 ? '⚡' : '⊙';
+  const emoji = score >= 300 ? '👑' : score >= 180 ? '💎' : score >= 80 ? '⚡' : '◇';
   document.getElementById('resultEmoji').textContent = emoji;
   document.getElementById('resultScore').textContent = score;
   document.getElementById('resultAcc').textContent = Math.max(0, Math.min(100, avgAcc)) + '%';
   document.getElementById('resultAvg').textContent = avgTime + 'ms';
   document.getElementById('resultCombo').textContent = maxCombo;
+  document.getElementById('resultHits').textContent = totalHits;
   document.getElementById('resultBest').textContent = bestScore;
   document.getElementById('resultOverlay').classList.remove('hidden');
 
@@ -619,7 +751,7 @@ function showStart(){
   document.getElementById('startOverlay').classList.remove('hidden');
 }
 
-document.getElementById('replayBtn').addEventListener('click', () => startGame(difficulty));
+document.getElementById('replayBtn').addEventListener('click', () => startGame());
 
 // ======================= CURSOR =======================
 document.addEventListener('mousemove', e => {
