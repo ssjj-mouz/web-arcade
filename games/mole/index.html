@@ -3,276 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>霓虹晶核 · 赛博打地鼠</title>
+<title>霓虹晶核 · 定位训练</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+
+:root{
+  --accent: #00ffc8;
+  --accent2: #ff40c8;
+}
+
 body{
-  background:#070b14;
-  background-image:
-    radial-gradient(ellipse at 50% 0%, rgba(0,255,200,0.06) 0%, transparent 55%),
-    radial-gradient(ellipse at 20% 80%, rgba(200,0,255,0.04) 0%, transparent 45%),
-    linear-gradient(180deg, #0a0e1a 0%, #060910 100%);
+  background:#060810;
   font-family:'Segoe UI','Inter',system-ui,sans-serif;
-  display:flex;flex-direction:column;align-items:center;
-  min-height:100vh;color:#e0e8ff;overflow-x:hidden;
-}
-
-/* ---- 顶部导航 ---- */
-.nav{
-  display:flex;justify-content:space-between;align-items:center;
-  width:min(560px,94vw);padding:12px 20px;margin-top:12px;
-  background:rgba(10,14,26,0.6);backdrop-filter:blur(14px);
-  border:1px solid rgba(0,255,200,0.12);border-radius:14px;
-  box-shadow:0 4px 30px rgba(0,0,0,0.5);
-}
-.nav h1{
-  font-size:1.05rem;font-weight:800;letter-spacing:2px;
-  background:linear-gradient(135deg,#00ffc8,#00aaff,#c840ff);
-  -webkit-background-clip:text;color:transparent;
-  text-shadow:none;
-}
-.nav-info{display:flex;gap:16px;align-items:center;font-size:0.8rem;color:#6a7a9a}
-.nav-info strong{color:#e0e8ff;font-weight:700}
-.btn-back,.btn-ghost{
-  padding:6px 14px;font-size:0.76rem;font-weight:600;
-  background:rgba(0,255,200,0.05);color:#8a9ab0;
-  border:1px solid rgba(0,255,200,0.1);border-radius:8px;
-  cursor:pointer;text-decoration:none;transition:0.25s;
-  font-family:inherit;
-}
-.btn-back:hover,.btn-ghost:hover{
-  color:#00ffc8;border-color:rgba(0,255,200,0.3);
-  box-shadow:0 0 20px rgba(0,255,200,0.08);
-}
-
-/* ---- 游戏主区域 ---- */
-#game-wrap{position:relative;width:min(560px,94vw);margin-top:14px}
-#game-board{
-  position:relative;width:100%;aspect-ratio:1;
-  background:
-    radial-gradient(ellipse at 50% 50%, rgba(10,20,40,0.6) 0%, rgba(5,8,16,0.9) 100%),
-    linear-gradient(0deg, rgba(0,255,200,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,255,200,0.03) 1px, transparent 1px);
-  background-size:100% 100%, 20px 20px, 20px 20px;
-  border-radius:20px;
-  border:1px solid rgba(0,255,200,0.1);
-  box-shadow:
-    0 16px 60px rgba(0,0,0,0.7),
-    inset 0 1px 0 rgba(255,255,255,0.02),
-    0 0 80px rgba(0,180,200,0.06);
+  height:100vh;width:100vw;
   overflow:hidden;
+  cursor:none;
+  color:#e0e8ff;
 }
 
-/* 角落装饰 */
-#game-board::before{
-  content:'';position:absolute;inset:-1px;border-radius:20px;
-  padding:1px;
-  background:linear-gradient(135deg, rgba(0,255,200,0.15), transparent 40%, transparent 60%, rgba(200,0,255,0.15));
-  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude;
-  pointer-events:none;z-index:0;
+canvas{
+  position:fixed;inset:0;
+  display:block;
 }
 
-/* ---- 3×3 网格 ---- */
-.board-grid{
-  position:absolute;inset:0;display:grid;
-  grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
-  padding:5%;gap:2%;
+/* ---- 自定义光标 ---- */
+#cursor{
+  position:fixed;pointer-events:none;z-index:9999;
+  width:28px;height:28px;
+  transform:translate(-50%,-50%);
+  transition:width 0.1s, height 0.1s;
 }
-.cell{position:relative;display:flex;align-items:flex-end;justify-content:center}
-
-/* ---- 能量裂隙 (替代洞) ---- */
-.rift{
-  position:absolute;bottom:5%;left:10%;width:80%;height:40%;
-  border-radius:50%;
-  background:radial-gradient(ellipse at 50% 60%, rgba(0,0,0,0.6) 0%, transparent 70%);
-  z-index:5;pointer-events:none;
-}
-.rift-ring{
-  position:absolute;bottom:12%;left:8%;width:84%;height:22%;
-  border-radius:50%;
-  border:2px solid rgba(0,255,200,0.25);
-  box-shadow:0 0 16px rgba(0,255,200,0.2), 0 0 40px rgba(0,255,200,0.06), inset 0 0 8px rgba(0,255,200,0.04);
-  z-index:4;pointer-events:none;
-  animation:riftPulse 2s ease-in-out infinite;
-}
-.rift-ring.outer{
-  bottom:6%;left:4%;width:92%;height:30%;
-  border-width:1px;border-color:rgba(180,0,255,0.2);
-  box-shadow:0 0 20px rgba(180,0,255,0.12), 0 0 50px rgba(180,0,255,0.04);
-  animation:riftPulse 2s ease-in-out 0.7s infinite;
-}
-@keyframes riftPulse{
-  0%,100%{opacity:0.7;transform:scale(1)}
-  50%{opacity:1;transform:scale(1.04)}
-}
-
-/* ---- 能量晶核 (替代地鼠) ---- */
-.crystal{
-  position:absolute;left:15%;width:70%;bottom:-70%;
-  z-index:6;cursor:pointer;pointer-events:auto;
-  transition:bottom 0.12s ease-out;
-}
-.crystal.up{bottom:38%;transition:bottom 0.1s cubic-bezier(0.34, 1.56, 0.64, 1)}
-.crystal.hidden{bottom:-70%;transition:bottom 0.08s ease-in}
-
-/* 晶核本体 - 菱形 */
-.crystal-core{
-  width:100%;aspect-ratio:0.85;
-  background:linear-gradient(180deg, #00ffc8 0%, #0088aa 30%, #005566 60%, #003344 100%);
-  clip-path:polygon(50% 0%, 100% 35%, 85% 100%, 15% 100%, 0% 35%);
-  position:relative;
-  box-shadow:
-    0 0 20px rgba(0,255,200,0.5),
-    0 0 50px rgba(0,255,200,0.2),
-    0 8px 24px rgba(0,0,0,0.5),
-    inset 0 -4px 12px rgba(0,0,0,0.3);
-  animation:crystalGlow 1.5s ease-in-out infinite;
-}
-@keyframes crystalGlow{
-  0%,100%{filter:brightness(1)}
-  50%{filter:brightness(1.2)}
-}
-
-/* 晶核高光 */
-.crystal-core::before{
+#cursor::before{
   content:'';position:absolute;
-  top:8%;left:30%;width:40%;height:30%;
-  background:linear-gradient(180deg, rgba(255,255,255,0.6), transparent);
-  clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
+  top:50%;left:0;width:100%;height:1px;
+  background:rgba(0,255,200,0.5);
+  box-shadow:0 0 6px rgba(0,255,200,0.3);
 }
-/* 内部能量线 */
-.crystal-core::after{
+#cursor::after{
   content:'';position:absolute;
-  top:35%;left:25%;width:50%;height:35%;
-  border:1px solid rgba(255,255,255,0.2);
-  border-radius:2px;
-  transform:rotate(45deg);
-  box-shadow:0 0 8px rgba(255,255,255,0.1);
+  left:50%;top:0;height:100%;width:1px;
+  background:rgba(0,255,200,0.5);
+  box-shadow:0 0 6px rgba(0,255,200,0.3);
+}
+#cursor .dot{
+  position:absolute;top:50%;left:50%;
+  width:6px;height:6px;border-radius:50%;
+  background:#00ffc8;
+  transform:translate(-50%,-50%);
+  box-shadow:0 0 10px #00ffc8, 0 0 24px rgba(0,255,200,0.4);
 }
 
-/* 晶核被击中 */
-.crystal-whacked .crystal-core{
-  background:linear-gradient(180deg, #334455 0%, #223344 30%, #112233 60%, #0a1520 100%)!important;
-  box-shadow:0 0 8px rgba(100,120,140,0.3),0 4px 12px rgba(0,0,0,0.6)!important;
-  filter:brightness(0.4)!important;animation:none!important;
+/* ---- HUD ---- */
+.hud{
+  position:fixed;z-index:100;pointer-events:none;
+  display:flex;gap:20px;
+}
+#hud-top{
+  top:20px;left:50%;transform:translateX(-50%);
+  display:flex;gap:16px;align-items:center;
+}
+.hud-item{
+  padding:8px 18px;
+  background:rgba(6,8,16,0.7);backdrop-filter:blur(10px);
+  border:1px solid rgba(0,255,200,0.1);
+  border-radius:12px;
+  font-size:0.82rem;font-weight:600;color:#6a7a9a;
+  text-align:center;
+  min-width:80px;
+}
+.hud-item .val{
+  display:block;font-size:1.5rem;font-weight:800;
+  color:#00ffc8;text-shadow:0 0 14px rgba(0,255,200,0.3);
+  line-height:1.2;
+}
+.hud-item .lbl{font-size:0.65rem;letter-spacing:1px;text-transform:uppercase}
+
+#hud-bottom{
+  bottom:24px;left:50%;transform:translateX(-50%);
+  font-size:0.7rem;color:#3a4a6a;letter-spacing:1px;
 }
 
-/* ---- 金色晶核 (稀有) ---- */
-.crystal-golden .crystal-core{
-  background:linear-gradient(180deg, #ffd700 0%, #ff8800 30%, #cc6600 60%, #883300 100%)!important;
-  box-shadow:
-    0 0 30px rgba(255,200,0,0.7),
-    0 0 60px rgba(255,180,0,0.3),
-    0 0 100px rgba(255,150,0,0.15),
-    0 8px 24px rgba(0,0,0,0.5)!important;
-  animation:goldenPulse 0.4s ease-in-out infinite!important;
+/* ---- 弹出分数 ---- */
+.pop{
+  position:fixed;pointer-events:none;z-index:200;
+  font-weight:900;font-size:1.2rem;
+  animation:popUp 0.7s ease-out forwards;
+  text-shadow:0 0 12px currentColor;
 }
-@keyframes goldenPulse{
-  0%,100%{filter:brightness(1)}
-  50%{filter:brightness(1.4)}
+@keyframes popUp{
+  0%{opacity:1;transform:translate(-50%,0) scale(0.6)}
+  100%{opacity:0;transform:translate(-50%,-60px) scale(1.3)}
 }
-
-/* ---- 打击特效 ---- */
-.hit-fx{
-  position:absolute;pointer-events:none;z-index:20;
-  width:0;height:0;
-}
-.hit-particle{
-  position:absolute;width:5px;height:5px;
-  background:#00ffc8;border-radius:1px;
-  box-shadow:0 0 6px #00ffc8;
-  animation:particleBurst 0.6s ease-out forwards;
-}
-.hit-particle.golden{background:#ffd700;box-shadow:0 0 10px #ffd700,0 0 20px #ffa000}
-@keyframes particleBurst{
-  0%{opacity:1;transform:translate(0,0) scale(1) rotate(0deg)}
-  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0) rotate(var(--rot))}
-}
-
-/* 冲击环 */
-.hit-ring{
-  position:absolute;width:20px;height:20px;
-  border:2px solid #00ffc8;
-  border-radius:50%;
-  animation:ringExpand 0.5s ease-out forwards;
-  pointer-events:none;z-index:19;
-}
-.hit-ring.golden{border-color:#ffd700;box-shadow:0 0 12px #ffd700}
-@keyframes ringExpand{
-  0%{opacity:1;transform:translate(-50%,-50%) scale(0.5)}
-  100%{opacity:0;transform:translate(-50%,-50%) scale(3.5)}
-}
-
-/* ---- 浮动分数 ---- */
-.score-pop{
-  position:absolute;pointer-events:none;z-index:25;
-  font-size:1.15rem;font-weight:900;color:#00ffc8;
-  text-shadow:0 0 14px rgba(0,255,200,0.6);
-  animation:scoreUp 0.7s ease-out forwards;
-}
-.score-pop.golden{font-size:1.5rem;color:#ffd700;text-shadow:0 0 20px rgba(255,200,0,0.7)}
-@keyframes scoreUp{
-  0%{opacity:1;transform:translateY(0) scale(0.8)}
-  100%{opacity:0;transform:translateY(-60px) scale(1.3)}
-}
-
-/* ---- 连击提示 ---- */
-.combo-pop{
-  position:absolute;pointer-events:none;z-index:25;
-  font-size:1rem;font-weight:900;color:#ff40c8;
-  text-shadow:0 0 16px rgba(255,64,200,0.5);
-  animation:comboUp 0.9s ease-out forwards;
-  letter-spacing:1px;
-}
-@keyframes comboUp{
-  0%{opacity:1;transform:translateY(0) scale(0.3)}
-  50%{transform:translateY(-24px) scale(1.3)}
-  100%{opacity:0;transform:translateY(-60px) scale(1)}
-}
-
-/* ---- 倒计时闪烁 ---- */
-.tick-cover{position:absolute;inset:0;pointer-events:none;z-index:12}
-.tick-flash{
-  position:absolute;inset:0;
-  background:radial-gradient(ellipse at 50% 50%, rgba(255,50,50,0.06), transparent 70%);
-  animation:tickIn 0.6s ease-out forwards;
-}
-@keyframes tickIn{0%{opacity:1}100%{opacity:0}}
 
 /* ---- 覆盖层 ---- */
 .overlay{
-  position:absolute;inset:0;z-index:100;
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(5,8,16,0.93);backdrop-filter:blur(12px);
-  border-radius:20px;padding:28px;
+  position:fixed;inset:0;z-index:500;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(4,6,12,0.94);backdrop-filter:blur(14px);
 }
-.overlay.show{display:flex}
+.overlay.hidden{display:none}
 
-/* 难度卡片 */
 .card{
-  background:rgba(10,14,26,0.7);backdrop-filter:blur(10px);
-  border:1px solid rgba(0,255,200,0.1);
-  border-radius:16px;padding:26px 28px 22px;
-  width:min(88%,280px);text-align:center;
-  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+  text-align:center;
+  padding:36px 40px;
+  background:rgba(10,14,26,0.6);
+  border:1px solid rgba(0,255,200,0.08);
+  border-radius:20px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5), 0 0 80px rgba(0,180,200,0.04);
+  width:min(88vw,340px);
 }
 .card h1{
-  font-size:1.3rem;font-weight:800;margin-bottom:4px;letter-spacing:1px;
+  font-size:1.5rem;font-weight:800;letter-spacing:3px;margin-bottom:6px;
   background:linear-gradient(135deg,#00ffc8,#00aaff,#c840ff);
   -webkit-background-clip:text;color:transparent;
 }
-.card .sub{font-size:0.78rem;color:#4a5a7a;margin-bottom:18px}
-.card .big-score{font-size:2.8rem;font-weight:900;color:#00ffc8;margin-bottom:2px;text-shadow:0 0 30px rgba(0,255,200,0.3)}
-.card .stat{font-size:0.8rem;color:#4a5a7a;margin-bottom:3px}
-.card .stat b{color:#a0b8d0}
+.card .sub{
+  font-size:0.78rem;color:#4a5a7a;margin-bottom:22px;line-height:1.5;
+}
+.card .stat-row{
+  display:flex;justify-content:center;gap:28px;margin-bottom:22px;
+}
+.card .stat{
+  text-align:center;
+}
+.card .stat .n{
+  display:block;font-size:1.8rem;font-weight:800;color:#e0e8ff;line-height:1.1;
+}
+.card .stat .t{font-size:0.62rem;color:#4a5a7a;letter-spacing:1px}
 
-/* 难度按钮 */
-.diff-btns{display:flex;flex-direction:column;gap:8px}
+.diff-btns{display:flex;flex-direction:column;gap:7px}
 .diff-btn{
-  display:flex;align-items:center;padding:11px 16px;
-  font-size:0.84rem;font-weight:600;font-family:inherit;
+  display:flex;align-items:center;
+  padding:12px 16px;
+  font-size:0.82rem;font-weight:600;font-family:inherit;
   background:rgba(255,255,255,0.02);color:#b0c8e0;
   border:1px solid rgba(255,255,255,0.05);border-radius:10px;
   cursor:pointer;transition:0.25s;text-align:left;width:100%;
@@ -294,456 +157,488 @@ body{
   border:1px solid rgba(255,255,255,0.05);
 }
 
-/* 结算卡片 */
-.result-card{
-  background:rgba(10,14,26,0.7);backdrop-filter:blur(10px);
-  border:1px solid rgba(0,255,200,0.1);
-  border-radius:16px;padding:28px 30px 24px;
-  width:min(84%,250px);text-align:center;
-  box-shadow:0 12px 40px rgba(0,0,0,0.5);
-}
-.result-card .big-score{font-size:2.6rem;font-weight:900;color:#00ffc8;margin-bottom:2px;text-shadow:0 0 30px rgba(0,255,200,0.3)}
-.result-card .stat{font-size:0.78rem;color:#4a5a7a;margin-bottom:3px}
-.result-card .stat b{color:#a0b8d0}
-.result-card .btn-row{display:flex;gap:10px;margin-top:16px;justify-content:center}
+.btn-row{display:flex;gap:10px;justify-content:center;margin-top:18px}
 .btn{
-  padding:10px 24px;font-size:0.82rem;font-weight:700;font-family:inherit;
+  padding:10px 26px;font-size:0.82rem;font-weight:700;font-family:inherit;
   border:none;border-radius:10px;cursor:pointer;transition:0.25s;
   background:linear-gradient(135deg,#00ffc8,#00aacc);color:#051015;
   box-shadow:0 0 20px rgba(0,255,200,0.2);
 }
 .btn:hover{transform:scale(1.06);box-shadow:0 0 35px rgba(0,255,200,0.35)}
-.btn-ghost2{
-  padding:10px 24px;font-size:0.82rem;font-weight:700;font-family:inherit;
+.btn-ghost{
+  padding:10px 26px;font-size:0.82rem;font-weight:700;font-family:inherit;
   background:rgba(255,255,255,0.03);color:#6a7a9a;
   border:1px solid rgba(255,255,255,0.06);border-radius:10px;
   cursor:pointer;transition:0.25s;
 }
-.btn-ghost2:hover{color:#a0b8d0;border-color:rgba(255,255,255,0.15)}
+.btn-ghost:hover{color:#a0b8d0;border-color:rgba(255,255,255,0.15)}
 
-/* ---- HUD ---- */
-.hud{
-  position:absolute;z-index:8;
-  font-weight:700;
-  background:rgba(5,8,16,0.6);backdrop-filter:blur(8px);
-  border:1px solid rgba(0,255,200,0.1);
-  border-radius:10px;padding:4px 14px;
+.back-btn{
+  position:fixed;top:20px;left:20px;z-index:600;
+  padding:8px 16px;
+  font-size:0.76rem;font-weight:600;font-family:inherit;
+  background:rgba(6,8,16,0.6);backdrop-filter:blur(10px);
+  color:#6a7a9a;border:1px solid rgba(255,255,255,0.06);
+  border-radius:10px;cursor:pointer;transition:0.25s;
+  text-decoration:none;
 }
-#scoreHUD{top:4%;left:5%;font-size:1.1rem;color:#00ffc8;text-shadow:0 0 10px rgba(0,255,200,0.3)}
-#timerHUD{
-  top:4%;right:5%;font-size:1.3rem;color:#e0e8ff;
-  transition:color 0.3s;
-}
-#timerHUD.urgent{color:#ff4050;animation:timerBlink 0.5s ease-in-out infinite}
-@keyframes timerBlink{0%,100%{opacity:1}50%{opacity:0.5}}
+.back-btn:hover{color:#00ffc8;border-color:rgba(0,255,200,0.2);box-shadow:0 0 20px rgba(0,255,200,0.06)}
 
-@media(max-width:500px){
-  .crystal-core{aspect-ratio:0.75}
-  .rift-ring{bottom:14%;height:18%}
-  .rift-ring.outer{bottom:8%;height:24%}
-  .card,.result-card{width:92%}
+.combo-pop{
+  position:fixed;pointer-events:none;z-index:200;
+  font-weight:900;font-size:0.95rem;color:#ff40c8;
+  text-shadow:0 0 14px rgba(255,64,200,0.5);
+  animation:comboUp 0.8s ease-out forwards;
+  letter-spacing:1px;
+}
+@keyframes comboUp{
+  0%{opacity:1;transform:translate(-50%,0) scale(0.3)}
+  50%{transform:translate(-50%,-18px) scale(1.2)}
+  100%{opacity:0;transform:translate(-50%,-50px) scale(1)}
 }
 </style>
 </head>
 <body>
 
-<div class="nav">
-  <a class="btn-back" href="../../index.html">← 大厅</a>
-  <h1>⚡ 霓虹晶核</h1>
-  <div class="nav-info">
-    <span id="diffLabel">简单</span>
-    <span>最高 <strong id="bestLabel">0</strong></span>
-    <button class="btn-ghost" id="resetBtn">重来</button>
+<canvas id="c"></canvas>
+<div id="cursor"><div class="dot"></div></div>
+
+<!-- 返回 -->
+<a class="back-btn" href="../../index.html">← 大厅</a>
+
+<!-- 顶栏 HUD -->
+<div class="hud" id="hud-top">
+  <div class="hud-item"><span class="val" id="hudScore">0</span><span class="lbl">分数</span></div>
+  <div class="hud-item"><span class="val" id="hudTime">30</span><span class="lbl">剩余</span></div>
+  <div class="hud-item"><span class="val" id="hudAcc">—</span><span class="lbl">精度</span></div>
+  <div class="hud-item"><span class="val" id="hudCombo">0</span><span class="lbl">连击</span></div>
+</div>
+
+<!-- 底栏提示 -->
+<div class="hud" id="hud-bottom">点击出现的靶心 · Click the targets</div>
+
+<!-- 开始覆盖层 -->
+<div class="overlay" id="startOverlay">
+  <div class="card">
+    <h1>⊙ 霓虹晶核</h1>
+    <p class="sub">全屏定位训练 · 精准点击靶心<br>限时30秒，越快越准分越高</p>
+    <div class="diff-btns">
+      <button class="diff-btn easy" onclick="startGame('easy')">
+        <span class="info"><span class="label">简单模式</span><span class="note">大靶心 · 间隔长 · 轻松上手</span></span>
+        <span class="tag">入门</span>
+      </button>
+      <button class="diff-btn normal" onclick="startGame('normal')">
+        <span class="info"><span class="label">普通模式</span><span class="note">中等大小 · 节奏适中</span></span>
+        <span class="tag">进阶</span>
+      </button>
+      <button class="diff-btn hard" onclick="startGame('hard')">
+        <span class="info"><span class="label">困难模式</span><span class="note">小靶心 · 快速消失 · 极限挑战</span></span>
+        <span class="tag">极限</span>
+      </button>
+    </div>
   </div>
 </div>
 
-<div id="game-wrap">
-  <div id="game-board">
-    <div class="board-grid" id="boardGrid"></div>
-
-    <!-- HUD -->
-    <div class="hud" id="scoreHUD">0</div>
-    <div class="hud" id="timerHUD">30</div>
-
-    <!-- 粒子层 -->
-    <div id="fxLayer" style="position:absolute;inset:0;pointer-events:none;z-index:22"></div>
-    <div id="tickLayer" style="position:absolute;inset:0;pointer-events:none;z-index:14"></div>
-
-    <!-- 开始 -->
-    <div class="overlay show" id="startOverlay">
-      <div class="card">
-        <h1>⚡ 霓虹晶核</h1>
-        <p class="sub">限时30秒，敲碎能量晶核！</p>
-        <div class="diff-btns">
-          <button class="diff-btn easy" onclick="startGame('easy')">
-            <span class="info"><span class="label">简单模式</span><span class="note">晶核出现较慢，节奏舒缓</span></span>
-            <span class="tag">慢速</span>
-          </button>
-          <button class="diff-btn normal" onclick="startGame('normal')">
-            <span class="info"><span class="label">普通模式</span><span class="note">速度适中，考验反应</span></span>
-            <span class="tag">适中</span>
-          </button>
-          <button class="diff-btn hard" onclick="startGame('hard')">
-            <span class="info"><span class="label">困难模式</span><span class="note">晶核飞速涌现，极限挑战</span></span>
-            <span class="tag">快速</span>
-          </button>
-        </div>
-      </div>
+<!-- 结算覆盖层 -->
+<div class="overlay hidden" id="resultOverlay">
+  <div class="card">
+    <div style="font-size:2.6rem;margin-bottom:4px" id="resultEmoji">⊙</div>
+    <div class="stat-row">
+      <div class="stat"><span class="n" id="resultScore" style="color:#00ffc8">0</span><span class="t">得分</span></div>
+      <div class="stat"><span class="n" id="resultAcc">0%</span><span class="t">精度</span></div>
+      <div class="stat"><span class="n" id="resultAvg">0ms</span><span class="t">均时</span></div>
     </div>
-
-    <!-- 结算 -->
-    <div class="overlay" id="resultOverlay">
-      <div class="result-card">
-        <div style="font-size:2.4rem;margin-bottom:6px" id="resultEmoji">💎</div>
-        <div class="big-score" id="resultScore">0</div>
-        <div class="stat" style="margin-bottom:10px">得分</div>
-        <div class="stat">连击最高 <b id="resultCombo">0</b></div>
-        <div class="stat">命中率 <b id="resultAccuracy">0%</b></div>
-        <div class="stat">最高记录 <b id="resultBest">0</b></div>
-        <div class="btn-row">
-          <button class="btn" id="replayBtn">再来一局</button>
-          <button class="btn-ghost2" onclick="showDifficulty()">换难度</button>
-        </div>
-      </div>
+    <div class="stat-row" style="margin-bottom:16px">
+      <div class="stat"><span class="n" id="resultCombo" style="font-size:1.3rem">0</span><span class="t">最大连击</span></div>
+      <div class="stat"><span class="n" id="resultBest" style="font-size:1.3rem">0</span><span class="t">最高记录</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="replayBtn">再来一局</button>
+      <button class="btn-ghost" onclick="showStart()">换难度</button>
     </div>
   </div>
 </div>
 
 <script>
-// ======================== CONFIG ========================
+// ======================= CONFIG =======================
 const DIFFICULTY = {
-  easy:   { popMin: 1600, popMax: 2800, stayMin: 1100, stayMax: 2000, maxActive: 1 },
-  normal: { popMin: 1000, popMax: 2000, stayMin: 700,  stayMax: 1300, maxActive: 2 },
-  hard:   { popMin: 600,  popMax: 1300, stayMin: 400,  stayMax: 800,  maxActive: 2 }
+  easy:   { radius: 40, stayMin: 2500, stayMax: 4000, interval: 800, shrink: false },
+  normal: { radius: 26, stayMin: 1600, stayMax: 2600, interval: 600, shrink: false },
+  hard:   { radius: 16, stayMin: 800,  stayMax: 1500, interval: 400, shrink: true }
 };
 
 const GAME_DURATION = 30;
-const SCORE_NORMAL = 10;
-const SCORE_GOLDEN = 30;
-const GOLDEN_CHANCE = 0.12;
-const COMBO_TIMEOUT = 1500;
+const COMBO_TIMEOUT = 2000;
 
-// ======================== STATE ========================
+// ======================= STATE =======================
 let difficulty = 'easy';
-let score = 0, combo = 0, maxCombo = 0, hits = 0, misses = 0;
-let gameActive = false, timeLeft = GAME_DURATION, totalCrystals = 0;
-let timerInterval = null, popTimers = [];
-let crystals = [];
-let bestScore = parseInt(localStorage.getItem('moleBest') || '0');
+let score = 0, combo = 0, maxCombo = 0;
+let gameActive = false, timeLeft = GAME_DURATION;
+let timerInterval = null;
+let target = null;
+let totalClicks = 0, totalDist = 0;
 let lastHitTime = 0;
+let bestScore = parseInt(localStorage.getItem('moleBest') || '0');
 
-const boardEl = document.getElementById('boardGrid');
-const fxLayer = document.getElementById('fxLayer');
-const tickLayer = document.getElementById('tickLayer');
-const board = document.getElementById('game-board');
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const cursorEl = document.getElementById('cursor');
 
-// ======================== AUDIO ========================
+let W, H;
+function resize(){
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ======================= AUDIO =======================
 let actx = null;
 function ensureAudio(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); }
 
 function playTone(freq, dur, type, vol, delay){
   try{
     ensureAudio();
-    const t = (actx.currentTime + (delay||0));
+    const t = actx.currentTime + (delay||0);
     const o = actx.createOscillator();
     const g = actx.createGain();
     o.type=type||'sine'; o.frequency.value=freq;
-    g.gain.setValueAtTime(vol||0.1, t);
+    g.gain.setValueAtTime(vol||0.08, t);
     g.gain.exponentialRampToValueAtTime(0.001, t+dur);
     o.connect(g); g.connect(actx.destination);
     o.start(t); o.stop(t+dur);
   }catch(e){}
 }
 
-function sfxHit(){ playTone(800,0.05,'sine',0.08);setTimeout(()=>playTone(1200,0.04,'sine',0.05),25); }
-function sfxGolden(){ playTone(1000,0.06,'sine',0.1);setTimeout(()=>playTone(1500,0.06,'sine',0.08),40);setTimeout(()=>playTone(2000,0.08,'sine',0.06),80); }
-function sfxMiss(){ playTone(180,0.05,'sawtooth',0.05); }
-function sfxTick(){ playTone(500,0.04,'square',0.04); }
-function sfxStart(){ playTone(440,0.1,'sine',0.07);setTimeout(()=>playTone(660,0.1,'sine',0.07),80);setTimeout(()=>playTone(880,0.15,'sine',0.06),160); }
-function sfxEnd(){ playTone(880,0.1,'sine',0.08);setTimeout(()=>playTone(1100,0.1,'sine',0.08),100);setTimeout(()=>playTone(1500,0.18,'sine',0.07),200); }
+function sfxHit(){ playTone(700,0.04,'sine',0.06);setTimeout(()=>playTone(1000,0.04,'sine',0.05),25); }
+function sfxPerfect(){ playTone(1000,0.06,'sine',0.08);setTimeout(()=>playTone(1400,0.06,'sine',0.06),40);setTimeout(()=>playTone(1800,0.08,'sine',0.05),80); }
+function sfxMiss(){ playTone(160,0.05,'sawtooth',0.04); }
+function sfxStart(){ playTone(440,0.08,'sine',0.06);setTimeout(()=>playTone(660,0.08,'sine',0.06),70);setTimeout(()=>playTone(880,0.12,'sine',0.05),140); }
+function sfxEnd(){ playTone(880,0.08,'sine',0.06);setTimeout(()=>playTone(1100,0.08,'sine',0.06),90);setTimeout(()=>playTone(1500,0.14,'sine',0.05),180); }
 
-// ======================== BOARD ========================
-function buildBoard(){
-  boardEl.innerHTML = '';
-  crystals = [];
-  for(let i=0;i<9;i++){
-    const cell = document.createElement('div');
-    cell.className = 'cell';
-
-    // 晶核
-    const crystal = document.createElement('div');
-    crystal.className = 'crystal hidden';
-    crystal.dataset.index = i;
-    const core = document.createElement('div');
-    core.className = 'crystal-core';
-    crystal.appendChild(core);
-    cell.appendChild(crystal);
-
-    // 裂隙环 (装饰)
-    const ring = document.createElement('div');
-    ring.className = 'rift-ring';
-    cell.appendChild(ring);
-    const ringOuter = document.createElement('div');
-    ringOuter.className = 'rift-ring outer';
-    cell.appendChild(ringOuter);
-
-    // 裂隙 (暗色底)
-    const rift = document.createElement('div');
-    rift.className = 'rift';
-    cell.appendChild(rift);
-
-    boardEl.appendChild(cell);
-
-    crystals.push({ el: crystal, isUp: false, isGolden: false, isWhacked: false, timer: null, index: i });
-  }
-}
-
-// ======================== CRYSTAL POP ========================
-function popCrystal(c){
-  if(!gameActive || c.isUp) return;
-
-  const diff = DIFFICULTY[difficulty];
-  const active = crystals.filter(x => x.isUp).length;
-  if(active >= diff.maxActive) return;
-
-  c.isGolden = Math.random() < GOLDEN_CHANCE;
-  c.isWhacked = false;
-  c.isUp = true;
-  c.el.classList.remove('hidden','crystal-whacked');
-  c.el.classList.add('up');
-  if(c.isGolden) c.el.classList.add('crystal-golden');
-
-  const stayTime = diff.stayMin + Math.random() * (diff.stayMax - diff.stayMin);
-  c.timer = setTimeout(() => hideCrystal(c, false), stayTime);
-}
-
-function hideCrystal(c, wasHit){
-  if(c.timer){ clearTimeout(c.timer); c.timer = null; }
-  if(!c.isUp) return;
-  c.isUp = false;
-  c.el.classList.remove('crystal-golden','up');
-  c.el.classList.add('hidden');
-  if(!wasHit) misses++;
-}
-
-// ======================== CLICK ========================
-boardEl.addEventListener('click', e => {
+// ======================= TARGET =======================
+function spawnTarget(){
   if(!gameActive) return;
-  const cryEl = e.target.closest('.crystal');
-  if(!cryEl) return;
-  const idx = parseInt(cryEl.dataset.index);
-  const c = crystals[idx];
-  if(!c || !c.isUp || c.isWhacked) return;
+  const cfg = DIFFICULTY[difficulty];
+  const margin = cfg.radius + 30;
+  const x = margin + Math.random() * (W - margin * 2);
+  const y = margin + Math.random() * (H - margin * 2);
 
-  c.isWhacked = true;
-  const wasGolden = c.isGolden;
-  const now = Date.now();
-  hits++;
-  totalCrystals++;
+  target = {
+    x, y,
+    radius: cfg.radius,
+    maxRadius: cfg.radius,
+    startTime: Date.now(),
+    shrink: cfg.shrink,
+    opacity: 1
+  };
 
-  if(now - lastHitTime < COMBO_TIMEOUT){ combo++; if(combo > maxCombo) maxCombo = combo; }
-  else { combo = 0; }
-  lastHitTime = now;
+  const stay = cfg.stayMin + Math.random() * (cfg.stayMax - cfg.stayMin);
+  target.timer = setTimeout(() => {
+    if(target && !target.hit){
+      misses();
+      target = null;
+      scheduleNext();
+    }
+  }, stay);
+}
 
-  let pts = wasGolden ? SCORE_GOLDEN : SCORE_NORMAL;
-  if(combo >= 3) pts = Math.round(pts * (1 + combo * 0.15));
-  score += pts;
-
-  if(wasGolden) sfxGolden(); else sfxHit();
-  showHitFX(c, wasGolden);
-  showScorePop(c, pts, wasGolden);
-  if(combo >= 3) showComboPop(c, combo);
-
-  hideCrystal(c, true);
-  c.el.classList.add('crystal-whacked');
+function misses(){
+  combo = 0;
   updateHUD();
+  sfxMiss();
+}
+
+function scheduleNext(){
+  if(!gameActive) return;
+  const delay = DIFFICULTY[difficulty].interval;
+  setTimeout(() => spawnTarget(), delay);
+}
+
+// ======================= CLICK =======================
+canvas.addEventListener('click', e => {
+  if(!gameActive) return;
+  const mx = e.clientX;
+  const my = e.clientY;
+
+  if(!target) return;
+
+  const dx = mx - target.x;
+  const dy = my - target.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+
+  if(dist <= target.radius){
+    // Hit!
+    totalClicks++;
+    totalDist += dist;
+    target.hit = true;
+    if(target.timer){ clearTimeout(target.timer); target.timer = null; }
+
+    const now = Date.now();
+    if(now - lastHitTime < COMBO_TIMEOUT){ combo++; if(combo > maxCombo) maxCombo = combo; }
+    else { combo = 0; }
+    lastHitTime = now;
+
+    // Score: accuracy-based
+    const acc = 1 - (dist / target.radius);
+    let pts = Math.round(10 + acc * 40); // 10-50 points
+    if(combo >= 3) pts = Math.round(pts * (1 + combo * 0.1));
+    score += pts;
+
+    if(acc > 0.85){ sfxPerfect(); showPop(mx, my, '#'+pts, '#ffd700'); }
+    else { sfxHit(); showPop(mx, my, '+' + pts, '#00ffc8'); }
+
+    if(combo >= 4) showComboPop(mx, my, combo);
+
+    // ripple on canvas
+    spawnRipple(target.x, target.y, acc);
+
+    target = null;
+    updateHUD();
+    scheduleNext();
+  }
 });
 
-// ======================== FX ========================
-function getBoardPos(el){
-  const cr = el.getBoundingClientRect();
-  const br = board.getBoundingClientRect();
-  return { x: cr.left + cr.width/2 - br.left, y: cr.top + cr.height*0.35 - br.top };
-}
-
-function showHitFX(c, golden){
-  const {x,y} = getBoardPos(c.el);
-
-  // 冲击环
-  const ring = document.createElement('div');
-  ring.className = 'hit-ring' + (golden ? ' golden' : '');
-  ring.style.left = x + 'px'; ring.style.top = y + 'px';
-  board.appendChild(ring);
-  setTimeout(() => ring.remove(), 500);
-
-  // 粒子
-  const container = document.createElement('div');
-  container.className = 'hit-fx';
-  container.style.left = x + 'px';
-  container.style.top = y + 'px';
-  board.appendChild(container);
-
-  const count = golden ? 14 : 8;
+// ======================= RIPPLE PARTICLES =======================
+let ripples = [];
+function spawnRipple(x, y, acc){
+  const count = acc > 0.85 ? 16 : 8;
+  const hue = acc > 0.85 ? 'gold' : 'cyan';
   for(let i=0;i<count;i++){
-    const p = document.createElement('div');
-    p.className = 'hit-particle' + (golden ? ' golden' : '');
-    const angle = (Math.PI*2/count)*i + Math.random()*0.6;
-    const dist = 28 + Math.random()*40;
-    p.style.setProperty('--tx', Math.cos(angle)*dist + 'px');
-    p.style.setProperty('--ty', Math.sin(angle)*dist + 'px');
-    p.style.setProperty('--rot', (Math.random()-0.5)*360 + 'deg');
-    container.appendChild(p);
+    const angle = (Math.PI*2/count)*i + Math.random()*0.5;
+    const speed = 2 + Math.random() * 6;
+    ripples.push({
+      x, y,
+      vx: Math.cos(angle)*speed,
+      vy: Math.sin(angle)*speed,
+      life: 1,
+      decay: 0.02 + Math.random() * 0.03,
+      hue
+    });
   }
-  setTimeout(() => container.remove(), 600);
 }
 
-function showScorePop(c, pts, golden){
-  const {x,y} = getBoardPos(c.el);
+// ======================= POPUPS =======================
+function showPop(x, y, text, color){
   const el = document.createElement('div');
-  el.className = 'score-pop' + (golden ? ' golden' : '');
+  el.className = 'pop';
   el.style.left = x + 'px';
   el.style.top = y + 'px';
-  el.textContent = (golden ? '★' : '+') + pts;
-  board.appendChild(el);
+  el.style.color = color;
+  el.textContent = text;
+  document.body.appendChild(el);
   setTimeout(() => el.remove(), 700);
 }
 
-function showComboPop(c, comboCount){
-  const {x,y} = getBoardPos(c.el);
+function showComboPop(x, y, n){
   const el = document.createElement('div');
   el.className = 'combo-pop';
   el.style.left = x + 'px';
-  el.style.top = (y - 20) + 'px';
-  el.textContent = comboCount + 'x 连击!';
-  board.appendChild(el);
-  setTimeout(() => el.remove(), 900);
+  el.style.top = (y - 24) + 'px';
+  el.textContent = n + 'x COMBO';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 800);
 }
 
-// ======================== TIMER ========================
+// ======================= HUD =======================
+function updateHUD(){
+  document.getElementById('hudScore').textContent = score;
+  document.getElementById('hudCombo').textContent = combo;
+  if(totalClicks > 0){
+    const avgAcc = Math.round((1 - totalDist/totalClicks/target?.maxRadius || 0) * 100);
+    document.getElementById('hudAcc').textContent = Math.max(0, avgAcc) + '%';
+  }
+}
+
+// ======================= RENDER LOOP =======================
+function render(){
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid dots background
+  const gap = 40;
+  ctx.fillStyle = 'rgba(255,255,255,0.02)';
+  for(let x = gap; x < W; x += gap){
+    for(let y = gap; y < H; y += gap){
+      ctx.beginPath();
+      ctx.arc(x, y, 0.6, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // Ripples
+  for(let i=ripples.length-1;i>=0;i--){
+    const r = ripples[i];
+    r.x += r.vx;
+    r.y += r.vy;
+    r.life -= r.decay;
+    if(r.life <= 0){ ripples.splice(i,1); continue; }
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, 3, 0, Math.PI*2);
+    ctx.fillStyle = r.hue === 'gold'
+      ? `rgba(255,200,0,${r.life*0.7})`
+      : `rgba(0,255,200,${r.life*0.7})`;
+    ctx.fill();
+  }
+
+  // Target
+  if(target && !target.hit){
+    if(target.shrink){
+      const elapsed = Date.now() - target.startTime;
+      const cfg = DIFFICULTY[difficulty];
+      const totalStay = cfg.stayMax;
+      const progress = Math.min(elapsed / totalStay, 1);
+      target.radius = target.maxRadius * (1 - progress * 0.7);
+      target.opacity = 1 - progress * 0.5;
+    }
+
+    const r = target.radius;
+    const alpha = target.opacity;
+
+    // Outer glow
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, r + 12, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0,255,200,${0.06*alpha})`;
+    ctx.fill();
+
+    // Ring 3 (outer)
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, r, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(0,255,200,${0.3*alpha})`;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 8]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Ring 2
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, r * 0.7, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(0,255,200,${0.5*alpha})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Ring 1 (inner)
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, r * 0.35, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(0,255,200,${0.8*alpha})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Center dot
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, 3, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0,255,200,${0.9*alpha})`;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, 1.2, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${0.9*alpha})`;
+    ctx.fill();
+
+    // Crosshair lines
+    const cl = r * 1.6;
+    ctx.strokeStyle = `rgba(0,255,200,${0.15*alpha})`;
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(target.x - cl, target.y);
+    ctx.lineTo(target.x - r*0.5, target.y);
+    ctx.moveTo(target.x + r*0.5, target.y);
+    ctx.lineTo(target.x + cl, target.y);
+    ctx.moveTo(target.x, target.y - cl);
+    ctx.lineTo(target.x, target.y - r*0.5);
+    ctx.moveTo(target.x, target.y + r*0.5);
+    ctx.lineTo(target.x, target.y + cl);
+    ctx.stroke();
+  }
+
+  requestAnimationFrame(render);
+}
+
+// ======================= GAME FLOW =======================
+function startGame(diff){
+  difficulty = diff;
+  score = 0; combo = 0; maxCombo = 0;
+  totalClicks = 0; totalDist = 0;
+  gameActive = true; timeLeft = GAME_DURATION; lastHitTime = 0;
+  target = null;
+  ripples = [];
+
+  document.getElementById('startOverlay').classList.add('hidden');
+  document.getElementById('resultOverlay').classList.add('hidden');
+  document.getElementById('hudAcc').textContent = '—';
+  updateHUD();
+  document.getElementById('hudTime').textContent = timeLeft;
+
+  sfxStart();
+  startTimer();
+  spawnTarget();
+}
+
 function startTimer(){
-  timeLeft = GAME_DURATION;
-  updateTimerHUD();
   timerInterval = setInterval(() => {
     timeLeft--;
-    updateTimerHUD();
+    document.getElementById('hudTime').textContent = timeLeft;
     if(timeLeft <= 5 && timeLeft > 0){
-      sfxTick();
-      const flash = document.createElement('div');
-      flash.className = 'tick-flash';
-      tickLayer.appendChild(flash);
-      setTimeout(() => flash.remove(), 600);
+      document.getElementById('hudTime').style.color = '#ff4050';
     }
     if(timeLeft <= 0) endGame();
   }, 1000);
 }
 
-function updateTimerHUD(){
-  const el = document.getElementById('timerHUD');
-  el.textContent = timeLeft;
-  el.classList.toggle('urgent', timeLeft <= 5);
-}
-
-function updateHUD(){
-  document.getElementById('scoreHUD').textContent = score;
-}
-
-// ======================== GAME FLOW ========================
-function startGame(diff){
-  difficulty = diff;
-  score = 0; combo = 0; maxCombo = 0; hits = 0; misses = 0; totalCrystals = 0;
-  gameActive = true; lastHitTime = 0;
-
-  document.getElementById('startOverlay').classList.remove('show');
-  document.getElementById('resultOverlay').classList.remove('show');
-
-  const labels = { easy: '简单', normal: '普通', hard: '困难' };
-  document.getElementById('diffLabel').textContent = labels[diff] || '简单';
-  document.getElementById('bestLabel').textContent = bestScore;
-
-  popTimers.forEach(t => clearTimeout(t));
-  popTimers = [];
-  crystals.forEach(c => { if(c.timer) clearTimeout(c.timer); c.isUp = false; c.el.classList.remove('up','crystal-golden'); c.el.classList.add('hidden'); });
-
-  buildBoard();
-  updateHUD();
-  sfxStart();
-  startTimer();
-  schedulePop();
-}
-
-function schedulePop(){
-  if(!gameActive) return;
-  const diff = DIFFICULTY[difficulty];
-  const down = crystals.filter(c => !c.isUp);
-  if(down.length > 0){
-    const c = down[Math.floor(Math.random() * down.length)];
-    popCrystal(c);
-  }
-  const delay = diff.popMin + Math.random() * (diff.popMax - diff.popMin);
-  const id = setTimeout(() => schedulePop(), delay);
-  popTimers.push(id);
-}
-
 function endGame(){
   gameActive = false;
   if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
-  popTimers.forEach(t => clearTimeout(t));
-  popTimers = [];
-  crystals.forEach(c => { if(c.timer){ clearTimeout(c.timer); c.timer = null; } c.isUp = false; c.el.classList.add('hidden'); });
+  target = null;
 
   sfxEnd();
 
-  const totalShots = hits + misses;
-  const accuracy = totalShots > 0 ? Math.round(hits/totalShots*100) : 0;
+  const avgAcc = totalClicks > 0
+    ? Math.round((1 - (totalDist / totalClicks) / (DIFFICULTY[difficulty].radius)) * 100)
+    : 0;
+  const avgTime = totalClicks > 0 ? Math.round(GAME_DURATION * 1000 / totalClicks) : 0;
 
   if(score > bestScore){
     bestScore = score;
     localStorage.setItem('moleBest', bestScore);
     if(typeof window._syncScore === 'function') _syncScore('mole', score);
-    document.getElementById('bestLabel').textContent = bestScore;
   }
 
-  const emoji = score >= 200 ? '👑' : score >= 100 ? '💎' : score >= 50 ? '⚡' : '🔮';
+  const emoji = score >= 300 ? '👑' : score >= 180 ? '💎' : score >= 80 ? '⚡' : '⊙';
   document.getElementById('resultEmoji').textContent = emoji;
   document.getElementById('resultScore').textContent = score;
+  document.getElementById('resultAcc').textContent = Math.max(0, Math.min(100, avgAcc)) + '%';
+  document.getElementById('resultAvg').textContent = avgTime + 'ms';
   document.getElementById('resultCombo').textContent = maxCombo;
-  document.getElementById('resultAccuracy').textContent = accuracy + '%';
   document.getElementById('resultBest').textContent = bestScore;
-  document.getElementById('resultOverlay').classList.add('show');
+  document.getElementById('resultOverlay').classList.remove('hidden');
+
+  document.getElementById('hudTime').textContent = '0';
+  document.getElementById('hudTime').style.color = '';
 }
 
-function showDifficulty(){
-  document.getElementById('resultOverlay').classList.remove('show');
-  document.getElementById('startOverlay').classList.add('show');
+function showStart(){
+  document.getElementById('resultOverlay').classList.add('hidden');
+  document.getElementById('startOverlay').classList.remove('hidden');
 }
-
-document.getElementById('resetBtn').addEventListener('click', () => {
-  if(gameActive){
-    gameActive = false;
-    if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
-    popTimers.forEach(t => clearTimeout(t));
-    popTimers = [];
-    crystals.forEach(c => { if(c.timer){ clearTimeout(c.timer); c.timer = null; } });
-  }
-  showDifficulty();
-});
 
 document.getElementById('replayBtn').addEventListener('click', () => startGame(difficulty));
 
-// ======================== BOOT ========================
-document.getElementById('bestLabel').textContent = bestScore;
-buildBoard();
-</script>
-<script>
+// ======================= CURSOR =======================
+document.addEventListener('mousemove', e => {
+  cursorEl.style.left = e.clientX + 'px';
+  cursorEl.style.top = e.clientY + 'px';
+});
+
+// ======================= BOOT =======================
+render();
+
 try {
   const _user = localStorage.getItem('arcadeUser');
   if(_user){
-    window._syncScore = function(game, score){
+    window._syncScore = function(game, sc){
       try {
         const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
         if(!all[_user]) all[_user] = {};
-        if(!all[_user][game] || score > all[_user][game]){
-          all[_user][game] = score;
+        if(!all[_user][game] || sc > all[_user][game]){
+          all[_user][game] = sc;
           localStorage.setItem('arcadeProfiles', JSON.stringify(all));
         }
       } catch(e){}
