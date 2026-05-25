@@ -1768,6 +1768,14 @@ async function hostTick(roomId) {
                 const targetEl = p2.el;
                 if (targetEl) showBubble(targetEl, doc.chatP2.text, doc.chatP2.sender);
             }
+            if (doc.guestLeft) {
+                if (hostGameTimer) { clearInterval(hostGameTimer); hostGameTimer = null; }
+                if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
+                if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+                isLocked = true;
+                showOverlay('好友已离开', '#ef4444', '对方退出了房间', '返回大厅', 'backToLobby()');
+                return;
+            }
         }
 
         // 1. 处理客机移动
@@ -2019,6 +2027,14 @@ async function guestTick(roomId) {
     try {
         const res = await db.collection('game_sessions').doc(roomId).get();
         const doc = parseDoc(res);
+        if (doc && doc.hostLeft) {
+            if (guestPollTimer) { clearInterval(guestPollTimer); guestPollTimer = null; }
+            if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
+            if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+            isLocked = true;
+            showOverlay('房主已离开', '#ef4444', '对方退出了房间', '返回大厅', 'backToLobby()');
+            return;
+        }
         if (!doc || !doc.state) {
             disconnectCount++;
             if (disconnectCount >= 3) {
@@ -2076,10 +2092,23 @@ async function guestUseItem(item) {
     } catch(e) { console.error('[guestUseItem] error:', e); }
 }
 
+// ===== 通知对方离开 =====
+async function notifyLeave() {
+    if (!currentRoomId) return;
+    const field = isHost ? 'hostLeft' : 'guestLeft';
+    try {
+        await db.collection('game_sessions').doc(currentRoomId).update({
+            [field]: Date.now()
+        });
+    } catch(e) {}
+}
+
 // ===== 返回大厅 =====
 async function backToLobby() {
+    notifyLeave();
     if (guestPollTimer) { clearInterval(guestPollTimer); guestPollTimer = null; }
     if (hostGameTimer) { clearInterval(hostGameTimer); hostGameTimer = null; }
+    const rid = currentRoomId;
     currentRoomId = null;
     isMultiplayer = false;
     isHost = false;
@@ -2169,6 +2198,10 @@ nextLevel = function() {
 // 清理
 window.addEventListener('beforeunload', () => {
     if (currentRoomId) {
+        const field = isHost ? 'hostLeft' : 'guestLeft';
+        db.collection('game_sessions').doc(currentRoomId).update({
+            [field]: Date.now()
+        }).catch(() => {});
         callCF('room.delete', { roomId: currentRoomId }).catch(() => {});
     }
     if (roomsPollTimer) clearInterval(roomsPollTimer);
