@@ -1718,7 +1718,7 @@ function startHostGameLoop(roomId) {
     lastP2UseItemTime = Date.now();
     queuedP2Input = null;
     queuedP2Item = null;
-    hostGameTimer = setInterval(() => hostTick(roomId), 200);
+    hostGameTimer = setInterval(() => hostTick(roomId), 100);
 }
 
 async function writeHostState(roomId) {
@@ -1983,6 +1983,18 @@ function applyGuestState(msg, fullDoc) {
         }
     }
 
+    // 客机本地碰撞检测（防止因同步延迟看到远处的敌人却已被捉）
+    if (!isHost && !isLocked && !freezeSafe && p2.el) {
+        const caught = (p2.x === enemy.x && p2.y === enemy.y) ||
+            (enemy2.active && p2.x === enemy2.x && p2.y === enemy2.y);
+        if (caught) {
+            isLocked = true;
+            lockReason = 'lose';
+            if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
+            if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+        }
+    }
+
     // 锁定/结束状态
     if (isLocked && document.getElementById('winScreen').style.display !== 'flex') {
         if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
@@ -2020,7 +2032,7 @@ function startGuestGame() {
     lastChatTime = 0;
 
     if (guestPollTimer) clearInterval(guestPollTimer);
-    guestPollTimer = setInterval(() => guestTick(currentRoomId), 200);
+    guestPollTimer = setInterval(() => guestTick(currentRoomId), 100);
 }
 
 async function guestTick(roomId) {
@@ -2074,7 +2086,7 @@ let lastGuestInputWrite = 0;
 async function guestSendP2Input(input) {
     if (!currentRoomId || isHost) return;
     const now = Date.now();
-    if (now - lastGuestInputWrite < 200) return;
+    if (now - lastGuestInputWrite < 100) return;
     lastGuestInputWrite = now;
     try {
         await db.collection('game_sessions').doc(currentRoomId).update({
@@ -2171,7 +2183,7 @@ initLevel = function() {
         lastStateVer = 0;
         lastChatTime = 0;
         if (currentRoomId) {
-            guestPollTimer = setInterval(() => guestTick(currentRoomId), 200);
+            guestPollTimer = setInterval(() => guestTick(currentRoomId), 100);
         }
     } else {
         origInitLevel();
