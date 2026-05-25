@@ -368,79 +368,162 @@
             padding: 28px 30px 70px;
         }
 
-        /* ========== 全息轮播图区 ========== */
+        /* ========== 3D 全息轮播 (Win+Tab 风格) ========== */
         .carousel-container {
             position: relative;
             width: 100%;
-            height: 340px;
+            height: 400px;
             margin-bottom: 40px;
+            perspective: 1400px;
+            perspective-origin: 50% 50%;
+            transform-style: preserve-3d;
             border-radius: 28px;
             overflow: hidden;
             border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--card-border-alpha));
-            box-shadow: 0 24px 50px -15px rgba(0, 0, 0, 0.7);
+            box-shadow:
+                0 24px 50px -15px rgba(0,0,0,0.7),
+                inset 0 1px 0 rgba(255,255,255,0.03);
+            background: #0a0a14;
         }
-
-        .carousel-slide {
+        .carousel-container::after {
+            content: '';
             position: absolute;
             inset: 0;
-            opacity: 0;
-            transform: scale(1.04);
-            transition: all 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 28px;
+            pointer-events: none;
+            z-index: 20;
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.4), inset 0 0 10px rgba(0,0,0,0.6);
+        }
+
+        /* ---- 3D 卡片基类 ---- */
+        .carousel-slide {
+            position: absolute;
+            top: 30px; bottom: 50px; left: 12%; right: 12%;
+            border-radius: 22px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 30px;
+            padding: 24px;
+            overflow: hidden;
+            backface-visibility: hidden;
+            will-change: transform, opacity;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 60px -20px rgba(0,0,0,0.6);
         }
 
-        .carousel-slide.active {
+        /* 3D 位置状态 */
+        .carousel-slide.pos-current {
+            transform: translateX(0) translateZ(0) rotateY(0deg) scale(1);
             opacity: 1;
-            transform: scale(1);
-            z-index: 5;
+            z-index: 10;
+            filter: brightness(1.05);
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .carousel-slide.pos-prev {
+            transform: translateX(-40%) translateZ(-160px) rotateY(22deg) scale(0.82);
+            opacity: 0.65;
+            z-index: 6;
+            filter: brightness(0.55);
+            pointer-events: none;
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .carousel-slide.pos-next {
+            transform: translateX(40%) translateZ(-160px) rotateY(-22deg) scale(0.82);
+            opacity: 0.65;
+            z-index: 6;
+            filter: brightness(0.55);
+            pointer-events: none;
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .carousel-slide.pos-far-prev {
+            transform: translateX(-70%) translateZ(-280px) rotateY(35deg) scale(0.6);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .carousel-slide.pos-far-next {
+            transform: translateX(70%) translateZ(-280px) rotateY(-35deg) scale(0.6);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .carousel-slide.pos-hidden {
+            transform: translateX(0) translateZ(-400px) rotateY(0deg) scale(0.4);
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* ---- 光泽条 (卡片顶部扫光) ---- */
+        .carousel-slide::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: 10%; right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            z-index: 3;
+        }
+        .carousel-slide.pos-current::before {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            left: 5%; right: 5%;
         }
 
         .slide-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(0,0,0,0.25);
+            background: rgba(0,0,0,0.2);
             z-index: 1;
+            border-radius: 22px;
         }
         [data-theme="light"] .slide-overlay {
-            background: rgba(0,0,0,0.08);
+            background: rgba(0,0,0,0.05);
         }
 
         .slide-icon {
-            font-size: 4.2rem;
+            font-size: 4.5rem;
             line-height: 1;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             position: relative;
             z-index: 2;
-            filter: drop-shadow(0 4px 20px rgba(255,255,255,0.15));
+            filter: drop-shadow(0 4px 20px rgba(255,255,255,0.2));
+            transition: transform 0.5s;
+        }
+        .carousel-slide.pos-current .slide-icon {
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
 
         .slide-badge {
             display: inline-flex;
-            padding: 4px 14px;
+            padding: 5px 16px;
             border-radius: 999px;
             font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 0.5px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(4px);
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             color: #fff;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.15);
             margin-bottom: 14px;
             position: relative;
             z-index: 2;
         }
 
         .slide-title {
-            font-size: 2.8rem;
+            font-size: 2.9rem;
             font-weight: 900;
             letter-spacing: -1px;
             color: #fff;
-            text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+            text-shadow: 0 2px 25px rgba(0,0,0,0.5), 0 0 60px rgba(255,255,255,0.1);
             margin-bottom: 8px;
             position: relative;
             z-index: 2;
@@ -449,8 +532,8 @@
 
         .slide-desc {
             font-size: 0.95rem;
-            color: rgba(255,255,255,0.75);
-            max-width: 520px;
+            color: rgba(255,255,255,0.7);
+            max-width: 500px;
             margin: 0 auto 20px;
             line-height: 1.6;
             position: relative;
@@ -460,128 +543,155 @@
         .slide-btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 28px;
+            gap: 10px;
+            padding: 11px 30px;
             border-radius: 30px;
             font-size: 0.95rem;
             font-weight: 800;
             text-decoration: none;
             color: #fff;
-            background: rgba(0,0,0,0.35);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: 0.25s;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.18);
+            transition: 0.3s;
             position: relative;
             z-index: 2;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
         .slide-btn:hover {
-            transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.25);
-            border-color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 25px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3);
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.22);
+            border-color: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.5);
         }
 
+        /* ---- 指示器 ---- */
         .carousel-nav {
             position: absolute;
-            bottom: 16px;
+            bottom: 14px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 8px;
-            z-index: 10;
+            gap: 10px;
+            z-index: 25;
         }
-
         .nav-dot {
-            width: 28px;
-            height: 6px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 999px;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.35s;
+            border: none;
         }
         .nav-dot.active {
             background: #fff;
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-            width: 44px;
+            box-shadow: 0 0 14px rgba(255,255,255,0.7), 0 0 30px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.5);
+            transform: scale(1.3);
         }
 
-        /* 上下页箭头 */
+        /* ---- 翻页箭头 ---- */
         .carousel-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            z-index: 10;
-            width: 44px;
-            height: 44px;
+            z-index: 25;
+            width: 48px; height: 48px;
             border-radius: 50%;
-            border: none;
-            background: rgba(255,255,255,0.12);
-            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             color: #fff;
             font-size: 2rem;
-            line-height: 44px;
+            line-height: 46px;
             text-align: center;
             cursor: pointer;
-            transition: 0.25s;
+            transition: 0.3s;
             opacity: 0;
             padding: 0;
         }
-        .carousel-container:hover .carousel-arrow {
-            opacity: 1;
-        }
+        .carousel-container:hover .carousel-arrow { opacity: 1; }
         .carousel-arrow:hover {
-            background: rgba(255,255,255,0.25);
-            transform: translateY(-50%) scale(1.15);
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.35);
+            transform: translateY(-50%) scale(1.12);
+            box-shadow: 0 0 30px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3);
         }
-        .carousel-arrow-left { left: 12px; }
-        .carousel-arrow-right { right: 12px; }
+        .carousel-arrow-left { left: 16px; }
+        .carousel-arrow-right { right: 16px; }
 
-        /* 各游戏专属渐变背景 */
+        /* ---- 粒子画布 ---- */
+        #carouselParticles {
+            position: absolute;
+            inset: 0;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        /* ---- 各游戏专属渐变背景 (增强) ---- */
         .slide-sky {
-            background: radial-gradient(circle at 30% 20%, rgba(30,144,255,0.5), transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(0,255,255,0.2), transparent 40%),
-                        linear-gradient(135deg, #0b3b6b, #1e90ff);
+            background: radial-gradient(ellipse at 30% 20%, rgba(30,144,255,0.55) 0%, transparent 55%),
+                        radial-gradient(ellipse at 75% 80%, rgba(0,200,255,0.3) 0%, transparent 45%),
+                        radial-gradient(ellipse at 50% 50%, rgba(0,100,200,0.2) 0%, transparent 60%),
+                        linear-gradient(140deg, #0a2a4a 0%, #144a80 40%, #1e90ff 100%);
+            box-shadow: 0 0 60px rgba(30,144,255,0.15);
         }
         .slide-match {
-            background: radial-gradient(circle at 70% 20%, rgba(32,178,170,0.4), transparent 50%),
-                        radial-gradient(circle at 20% 80%, rgba(0,200,180,0.2), transparent 40%),
-                        linear-gradient(135deg, #043b3b, #20b2aa);
+            background: radial-gradient(ellipse at 70% 20%, rgba(32,178,170,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 25% 80%, rgba(0,200,180,0.3) 0%, transparent 45%),
+                        radial-gradient(ellipse at 50% 50%, rgba(0,150,140,0.2) 0%, transparent 60%),
+                        linear-gradient(140deg, #032a2a 0%, #0a5550 40%, #20b2aa 100%);
+            box-shadow: 0 0 60px rgba(32,178,170,0.15);
         }
         .slide-tower {
-            background: radial-gradient(circle at 50% 20%, rgba(255,165,0,0.4), transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(200,100,0,0.2), transparent 40%),
-                        linear-gradient(135deg, #4a2e0b, #ffa500);
+            background: radial-gradient(ellipse at 50% 20%, rgba(255,165,0,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 80% 80%, rgba(200,100,0,0.35) 0%, transparent 45%),
+                        radial-gradient(ellipse at 50% 50%, rgba(180,80,0,0.2) 0%, transparent 60%),
+                        linear-gradient(140deg, #301a05 0%, #6b3a0a 40%, #ffa500 100%);
+            box-shadow: 0 0 60px rgba(255,165,0,0.15);
         }
         .slide-typist {
-            background: radial-gradient(circle at 30% 30%, rgba(138,43,226,0.4), transparent 50%),
-                        radial-gradient(circle at 70% 70%, rgba(100,0,200,0.2), transparent 40%),
-                        linear-gradient(135deg, #1a1a2e, #8a2be2);
+            background: radial-gradient(ellipse at 30% 30%, rgba(138,43,226,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 70%, rgba(100,0,200,0.3) 0%, transparent 45%),
+                        radial-gradient(ellipse at 50% 50%, rgba(120,0,200,0.2) 0%, transparent 60%),
+                        linear-gradient(140deg, #140a28 0%, #2d1055 40%, #8a2be2 100%);
+            box-shadow: 0 0 60px rgba(138,43,226,0.15);
         }
         .slide-beats {
-            background: radial-gradient(circle at 60% 20%, rgba(217,70,239,0.4), transparent 50%),
-                        radial-gradient(circle at 20% 80%, rgba(255,0,200,0.2), transparent 40%),
-                        linear-gradient(135deg, #2d1b4c, #d946ef);
+            background: radial-gradient(ellipse at 60% 20%, rgba(217,70,239,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 20% 80%, rgba(255,0,200,0.3) 0%, transparent 45%),
+                        radial-gradient(ellipse at 50% 50%, rgba(200,0,180,0.2) 0%, transparent 60%),
+                        linear-gradient(140deg, #200a2e 0%, #4a1565 40%, #d946ef 100%);
+            box-shadow: 0 0 60px rgba(217,70,239,0.15);
         }
         .slide-particle {
-            background: radial-gradient(circle at 40% 30%, rgba(44,83,100,0.5), transparent 50%),
-                        radial-gradient(circle at 70% 70%, rgba(100,200,200,0.15), transparent 40%),
-                        linear-gradient(135deg, #0f2027, #2c5364);
+            background: radial-gradient(ellipse at 40% 30%, rgba(44,83,100,0.55) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 70%, rgba(100,200,200,0.25) 0%, transparent 45%),
+                        radial-gradient(ellipse at 50% 50%, rgba(50,150,160,0.2) 0%, transparent 60%),
+                        linear-gradient(140deg, #0a1a20 0%, #153540 40%, #2c5364 100%);
+            box-shadow: 0 0 60px rgba(44,83,100,0.15);
         }
         .slide-coop {
-            background: radial-gradient(circle at 25% 30%, rgba(59,130,246,0.4), transparent 50%),
-                        radial-gradient(circle at 75% 70%, rgba(239,68,68,0.3), transparent 40%),
-                        linear-gradient(135deg, #1e1e3a, #3b82f6);
+            background: radial-gradient(ellipse at 25% 30%, rgba(59,130,246,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 75% 70%, rgba(239,68,68,0.35) 0%, transparent 45%),
+                        radial-gradient(ellipse at 50% 50%, rgba(100,80,200,0.2) 0%, transparent 60%),
+                        linear-gradient(140deg, #161630 0%, #2a2a5a 40%, #3b82f6 100%);
+            box-shadow: 0 0 60px rgba(59,130,246,0.15);
         }
         .slide-breakout {
-            background: radial-gradient(circle at 40% 20%, rgba(168,85,247,0.4), transparent 50%),
-                        radial-gradient(circle at 70% 80%, rgba(236,72,153,0.3), transparent 40%),
-                        linear-gradient(135deg, #2a1a3a, #a855f7);
+            background: radial-gradient(ellipse at 40% 20%, rgba(168,85,247,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 80%, rgba(236,72,153,0.35) 0%, transparent 45%),
+                        radial-gradient(ellipse at 50% 50%, rgba(180,80,200,0.2) 0%, transparent 60%),
+                        linear-gradient(140deg, #1e0e2e 0%, #3d1845 40%, #a855f7 100%);
+            box-shadow: 0 0 60px rgba(168,85,247,0.15);
         }
         .slide-mole {
-            background: radial-gradient(circle at 50% 20%, rgba(34,197,94,0.4), transparent 50%),
-                        radial-gradient(circle at 60% 80%, rgba(101,67,33,0.3), transparent 40%),
-                        linear-gradient(135deg, #1a3a1a, #4a7c3f);
+            background: radial-gradient(ellipse at 50% 20%, rgba(34,197,94,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 60% 80%, rgba(101,67,33,0.35) 0%, transparent 45%),
+                        radial-gradient(ellipse at 50% 50%, rgba(50,160,70,0.2) 0%, transparent 60%),
+                        linear-gradient(140deg, #122a12 0%, #2a5528 40%, #4a7c3f 100%);
+            box-shadow: 0 0 60px rgba(34,197,94,0.15);
         }
 
         /* ========== OS 过滤器/分类栏 ========== */
@@ -1070,13 +1180,24 @@
         }
 
         @media (max-width: 980px) {
+            .carousel-container { height: 340px; perspective: 1000px; }
+            .carousel-slide { top: 24px; bottom: 44px; left: 10%; right: 10%; }
+            .carousel-slide.pos-prev { transform: translateX(-30%) translateZ(-100px) rotateY(15deg) scale(0.82); }
+            .carousel-slide.pos-next { transform: translateX(30%) translateZ(-100px) rotateY(-15deg) scale(0.82); }
+            .carousel-slide.pos-far-prev,
+            .carousel-slide.pos-far-next { opacity: 0; pointer-events: none; }
             .slide-title { font-size: 2.2rem; }
             .slide-icon { font-size: 3.4rem; }
         }
 
         @media (max-width: 780px) {
-            .carousel-container { height: 300px; }
-            .slide-title { font-size: 1.8rem; }
+            .carousel-container { height: 300px; perspective: 800px; }
+            .carousel-slide { top: 20px; bottom: 42px; left: 6%; right: 6%; border-radius: 16px; }
+            .carousel-slide.pos-prev { transform: translateX(-25%) translateZ(-80px) rotateY(10deg) scale(0.85); }
+            .carousel-slide.pos-next { transform: translateX(25%) translateZ(-80px) rotateY(-10deg) scale(0.85); }
+            .carousel-slide.pos-far-prev,
+            .carousel-slide.pos-far-next { opacity: 0; pointer-events: none; }
+            .slide-title { font-size: 1.7rem; }
             .slide-desc { font-size: 0.85rem; max-width: 90%; }
             .slide-icon { font-size: 2.8rem; margin-bottom: 8px; }
             .game-grid { grid-template-columns: 1fr; }
@@ -1219,8 +1340,9 @@
     </header>
 
     <main>
-        <!-- 全息轮播图·九款游戏 -->
+        <!-- 3D 全息轮播 -->
         <div class="carousel-container">
+            <canvas id="carouselParticles"></canvas>
             <div class="carousel-slide slide-sky active">
                 <div class="slide-overlay"></div>
                 <div class="slide-icon">✈️</div>
@@ -1312,7 +1434,6 @@
                 <div class="nav-dot" onclick="setSlide(6)"></div>
                 <div class="nav-dot" onclick="setSlide(7)"></div>
                 <div class="nav-dot" onclick="setSlide(8)"></div>
-                <div class="nav-dot" onclick="setSlide(9)"></div>
             </div>
 
             <button class="carousel-arrow carousel-arrow-left" onclick="prevSlide()" aria-label="上一页">‹</button>
@@ -1650,32 +1771,140 @@
             if (e.target === e.currentTarget) hideLeaderboard();
         });
 
-        // ========== 2. 全息轮播图 ==========
+        // ========== 2. 3D 全息轮播 (Win+Tab 风格) ==========
         let currentSlide = 0;
         const slides = document.querySelectorAll('.carousel-slide');
         const dots = document.querySelectorAll('.nav-dot');
+        const totalSlides = slides.length;
         let autoPlayInterval;
+        let isTransitioning = false;
+
+        function getOffset(i) {
+            let d = i - currentSlide;
+            if (d > totalSlides / 2) d -= totalSlides;
+            if (d < -totalSlides / 2) d += totalSlides;
+            return d;
+        }
+
+        function posClass(offset) {
+            if (offset === 0) return 'pos-current';
+            if (offset === -1) return 'pos-prev';
+            if (offset === 1) return 'pos-next';
+            if (offset === -2) return 'pos-far-prev';
+            if (offset === 2) return 'pos-far-next';
+            return 'pos-hidden';
+        }
+
+        function updateCarousel() {
+            for (let i = 0; i < slides.length; i++) {
+                const off = getOffset(i);
+                slides[i].classList.remove('pos-current', 'pos-prev', 'pos-next', 'pos-far-prev', 'pos-far-next', 'pos-hidden');
+                slides[i].classList.add(posClass(off));
+            }
+            dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+        }
 
         function setSlide(index) {
-            slides[currentSlide].classList.remove('active');
-            dots[currentSlide].classList.remove('active');
+            if (isTransitioning || index === currentSlide) return;
+            isTransitioning = true;
+            const dir = getOffset(index) > 0 ? 1 : -1;
+            // 粒子爆散
+            spawnTransitionParticles(dir);
+            slides[currentSlide].classList.remove('pos-current');
             currentSlide = index;
-            slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.add('active');
+            updateCarousel();
             resetAutoPlay();
+            setTimeout(() => { isTransitioning = false; }, 750);
         }
 
-        function nextSlide() {
-            setSlide((currentSlide + 1) % slides.length);
-        }
-        function prevSlide() {
-            setSlide((currentSlide - 1 + slides.length) % slides.length);
-        }
+        function nextSlide() { setSlide((currentSlide + 1) % totalSlides); }
+        function prevSlide() { setSlide((currentSlide - 1 + totalSlides) % totalSlides); }
 
         function resetAutoPlay() {
             clearInterval(autoPlayInterval);
             autoPlayInterval = setInterval(nextSlide, 5000);
         }
+
+        // ---- 粒子特效 (Canvas 2D) ----
+        const particleCanvas = document.getElementById('carouselParticles');
+        const pctx = particleCanvas.getContext('2d');
+        let particles = [];
+        let particleRAF = null;
+
+        function resizeParticleCanvas() {
+            const rect = particleCanvas.parentElement.getBoundingClientRect();
+            particleCanvas.width = rect.width;
+            particleCanvas.height = rect.height;
+        }
+        resizeParticleCanvas();
+        window.addEventListener('resize', resizeParticleCanvas);
+
+        function spawnTransitionParticles(dir) {
+            const cx = particleCanvas.width / 2;
+            const cy = particleCanvas.height / 2;
+            for (let i = 0; i < 60; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 2 + Math.random() * 8;
+                const hue = (currentSlide * 40 + Math.random() * 60) % 360;
+                particles.push({
+                    x: cx + dir * 100 + (Math.random() - 0.5) * 200,
+                    y: cy + (Math.random() - 0.5) * 150,
+                    vx: dir * speed * Math.cos(angle) * 1.5,
+                    vy: speed * Math.sin(angle),
+                    life: 1,
+                    decay: 0.01 + Math.random() * 0.025,
+                    size: 1.5 + Math.random() * 3.5,
+                    hue
+                });
+            }
+            if (!particleRAF) {
+                particleRAF = requestAnimationFrame(animateParticles);
+            }
+        }
+
+        function animateParticles() {
+            pctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.05;
+                p.life -= p.decay;
+                if (p.life <= 0) { particles.splice(i, 1); continue; }
+                pctx.save();
+                pctx.globalAlpha = p.life * 0.8;
+                pctx.shadowColor = `hsla(${p.hue}, 100%, 65%, ${p.life})`;
+                pctx.shadowBlur = 8;
+                pctx.fillStyle = `hsla(${p.hue}, 90%, 70%, ${p.life})`;
+                pctx.beginPath();
+                pctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                pctx.fill();
+                pctx.restore();
+            }
+            if (particles.length > 0) {
+                particleRAF = requestAnimationFrame(animateParticles);
+            } else {
+                particleRAF = null;
+            }
+        }
+
+        // ---- 触摸/拖拽支持 ----
+        let touchStartX = 0, touchStartY = 0;
+        const carouselEl = document.querySelector('.carousel-container');
+        carouselEl.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        carouselEl.addEventListener('touchend', e => {
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+                dx > 0 ? prevSlide() : nextSlide();
+            }
+        });
+
+        // 初始化
+        updateCarousel();
         resetAutoPlay();
 
         // ========== 3. 换肤系统 ==========
