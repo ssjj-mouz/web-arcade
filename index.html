@@ -178,157 +178,130 @@
             pointer-events: none;
         }
 
-        /* === Header: RGB 分裂坠入 === */
-        header.entrance-waiting { transform: translateY(-100%); opacity: 0; filter: brightness(2); }
+        /* === Header: 霓虹渐变洗刷 === */
+        header.entrance-waiting { opacity: 0; }
         header.entrance-done {
-            animation: hdrGlitchDrop 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: hdrNeonWash 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
-        @keyframes hdrGlitchDrop {
-            0%   { transform: translateY(-100%); opacity: 0; filter: brightness(2) blur(4px); }
-            15%  { transform: translateY(-12%); opacity: 0.3; filter: brightness(1.5) blur(2px); }
-            25%  { transform: translateY(-18%); opacity: 0.5; filter: brightness(1.2) blur(0px); }
-            40%  { transform: translateY(-3%); opacity: 0.8; filter: brightness(1.05); }
-            55%  { transform: translateY(-8%); opacity: 0.9; filter: brightness(1.02); }
-            70%  { transform: translateY(2px); opacity: 1; filter: brightness(1); }
-            85%  { transform: translateY(-1px); filter: brightness(1.01); }
-            100% { transform: translateY(0); opacity: 1; filter: brightness(1); }
+        @keyframes hdrNeonWash {
+            0%   { opacity: 0; }
+            12%  { opacity: 0.18; }
+            28%  { opacity: 0.55; }
+            55%  { opacity: 0.88; }
+            100% { opacity: 1; }
         }
         header.entrance-done::after {
             content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 99;
-            animation: hdrScanFlash 0.8s linear forwards;
+            animation: hdrGradientSweep 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
-        @keyframes hdrScanFlash {
-            0%   { background: linear-gradient(180deg, transparent 0%, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4) 48%, transparent 52%); background-size: 100% 200%; background-position: 0 -100%; }
-            40%  { background-position: 0 100%; }
-            50%  { background: linear-gradient(180deg, transparent 0%, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.6) 48%, transparent 52%); background-size: 100% 200%; background-position: 0 100%; }
-            70%  { background: transparent; opacity: 0.5; }
-            100% { background: transparent; opacity: 0; }
-        }
-
-        /* === Carousel: 能量核心扩散 === */
-        .carousel-container.entrance-waiting {
-            clip-path: circle(0% at 50% 50%);
-            opacity: 0;
-        }
-        .carousel-container.entrance-done {
-            animation: coreExpand 0.9s 0.15s cubic-bezier(0.25, 1, 0.3, 1) forwards;
-        }
-        @keyframes coreExpand {
-            0%   { clip-path: circle(0% at 50% 50%); opacity: 0; filter: brightness(3); }
-            30%  { clip-path: circle(18% at 50% 50%); opacity: 0.5; filter: brightness(2); }
-            60%  { clip-path: circle(48% at 50% 50%); opacity: 0.8; filter: brightness(1.3); }
-            85%  { clip-path: circle(75% at 50% 50%); opacity: 1; filter: brightness(1.05); }
-            100% { clip-path: circle(100% at 50% 50%); opacity: 1; filter: brightness(1); }
-        }
-        /* 扩散后的边缘光晕脉冲 */
-        .carousel-container.entrance-done::before {
-            content: ''; position: absolute; inset: 0; z-index: 21; pointer-events: none;
-            border-radius: 28px;
-            animation: coreEdgePulse 1.2s 0.15s ease-out forwards;
-        }
-        @keyframes coreEdgePulse {
-            0%   { box-shadow: inset 0 0 0 rgba(var(--accent-r),var(--accent-g),var(--accent-b),0); }
-            25%  { box-shadow: inset 0 0 80px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.5), 0 0 60px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4); }
-            60%  { box-shadow: inset 0 0 40px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2), 0 0 30px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15); }
-            100% { box-shadow: inset 0 0 0 rgba(var(--accent-r),var(--accent-g),var(--accent-b),0), 0 0 0 rgba(var(--accent-r),var(--accent-g),var(--accent-b),0); }
+        @keyframes hdrGradientSweep {
+            0%   { background: linear-gradient(90deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.5) 0%, rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.3) 2%, transparent 5%); }
+            15%  { background: linear-gradient(90deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.6) 18%, rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.35) 21%, transparent 26%); }
+            32%  { background: linear-gradient(90deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.7) 40%, rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.4) 43%, transparent 48%); }
+            52%  { background: linear-gradient(90deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.7) 65%, rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.35) 68%, transparent 73%); }
+            72%  { background: linear-gradient(90deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3) 88%, transparent 94%); }
+            85%  { opacity: 0.5; }
+            100% { opacity: 0; }
         }
 
-        /* === Section-title: 霓虹光束写入 === */
+        /* === Section-title: 光柱流淌 === */
         .section-title.entrance-waiting { opacity: 0; }
         .section-title.entrance-done {
-            animation: neonBeamWrite 0.7s 0.4s cubic-bezier(0.25, 1, 0.3, 1) forwards;
-            clip-path: inset(0 100% 0 0);
+            animation: titleFlowIn 0.75s 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
-        @keyframes neonBeamWrite {
-            0%   { clip-path: inset(0 100% 0 0); opacity: 0; }
-            30%  { opacity: 0.6; }
-            100% { clip-path: inset(0 0% 0 0); opacity: 1; }
+        @keyframes titleFlowIn {
+            0%   { opacity: 0; }
+            25%  { opacity: 0.4; }
+            100% { opacity: 1; }
         }
-        /* 标题写完后的光柱扫描 */
         .section-title.entrance-done::after {
-            content: ''; position: absolute; top: 0; left: -6px; bottom: 0; width: 6px;
+            content: ''; position: absolute; top: -4px; left: -4px; bottom: -4px; width: 10px;
             background: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
-            border-radius: 0 3px 3px 0;
-            animation: beamSweep 0.7s 0.4s ease-out forwards;
-            pointer-events: none;
+            border-radius: 0 5px 5px 0; pointer-events: none;
+            animation: beamSlide 0.8s 0.35s ease-out forwards;
         }
-        @keyframes beamSweep {
-            0%   { opacity: 0; box-shadow: 0 0 20px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.8), 0 0 40px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4); }
-            50%  { opacity: 1; box-shadow: 0 0 30px rgba(var(--accent-r),var(--accent-g),var(--accent-b),1), 0 0 60px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.6); }
-            100% { opacity: 0; box-shadow: 0 0 0 rgba(var(--accent-r),var(--accent-g),var(--accent-b),0); }
+        @keyframes beamSlide {
+            0%   { left: -4px; opacity: 0; box-shadow: 0 0 8px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.5); }
+            30%  { left: 40%; opacity: 1; box-shadow: 0 0 30px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.9), 0 0 60px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4); }
+            60%  { left: 80%; opacity: 0.5; box-shadow: 0 0 15px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4); }
+            100% { left: calc(100% + 30px); opacity: 0; box-shadow: 0 0 0 rgba(var(--accent-r),var(--accent-g),var(--accent-b),0); }
         }
 
-        /* === Filter-bar: 全息闪烁逐个现身 === */
+        /* === Filter-bar: 柔光序列浮现 === */
         .filter-bar.entrance-waiting { opacity: 0; }
         .filter-bar.entrance-done .filter-btn {
-            animation: holoFlicker 0.45s var(--fb-delay, 0.5s) cubic-bezier(0.34, 1.3, 0.64, 1) both;
+            animation: btnGlowIn 0.5s var(--fb-delay, 0.45s) cubic-bezier(0.22, 1, 0.36, 1) both;
         }
-        @keyframes holoFlicker {
-            0%   { opacity: 0; transform: scale(0.7) skewX(8deg); filter: brightness(2); }
-            40%  { opacity: 0.4; transform: scale(1.05) skewX(-2deg); filter: brightness(1.5); }
-            70%  { opacity: 0.8; transform: scale(0.96) skewX(1deg); filter: brightness(1.1); }
-            100% { opacity: 1; transform: scale(1) skewX(0deg); filter: brightness(1); }
+        @keyframes btnGlowIn {
+            0%   { opacity: 0; transform: translateY(10px); }
+            30%  { opacity: 0.3; transform: translateY(3px); }
+            65%  { opacity: 0.75; transform: translateY(-1px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
-
-        /* === Search-bar: 横线扫描揭示 === */
-        .search-bar.entrance-waiting {
-            clip-path: inset(0 0 0 100%);
-            opacity: 0;
+        .filter-bar.entrance-done .filter-btn::after {
+            content: ''; position: absolute; inset: 0; border-radius: 20px; pointer-events: none;
+            animation: btnGlowPulse 0.5s var(--fb-delay, 0.45s) ease-out forwards;
         }
-        .search-bar.entrance-done {
-            animation: scanReveal 0.55s 0.55s cubic-bezier(0.25, 1, 0.3, 1) forwards;
-        }
-        @keyframes scanReveal {
-            0%   { clip-path: inset(0 0 0 100%); opacity: 0; }
-            100% { clip-path: inset(0 0 0 0%); opacity: 1; }
-        }
-
-        /* === Game-card: 底部全息升腾 === */
-        .game-card.entrance-waiting {
-            clip-path: inset(100% 0 0 0);
-            opacity: 0;
-        }
-        .game-card.entrance-done {
-            animation: holoRise 0.55s var(--entrance-delay, 0.7s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-        @keyframes holoRise {
-            0%   { clip-path: inset(100% 0 0 0); opacity: 0; filter: brightness(2); }
-            30%  { clip-path: inset(60% 0 0 0); opacity: 0.3; filter: brightness(1.8); }
-            100% { clip-path: inset(0% 0 0 0); opacity: 1; filter: brightness(1); }
-        }
-        /* 卡片完全显现后的边缘辉光 */
-        .game-card.entrance-done::before {
-            content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: 24px;
-            animation: cardEdgeGlow 0.6s var(--entrance-delay, 0.7s) ease-out forwards;
-        }
-        @keyframes cardEdgeGlow {
-            0%   { box-shadow: inset 0 0 0 rgba(var(--accent-r),var(--accent-g),var(--accent-b),0); }
-            40%  { box-shadow: inset 0 0 30px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.35); }
+        @keyframes btnGlowPulse {
+            0%   { box-shadow: inset 0 0 22px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.45); }
             100% { box-shadow: inset 0 0 0 rgba(var(--accent-r),var(--accent-g),var(--accent-b),0); }
         }
 
-        /* === Nav-dot: 能量脉冲弹出 === */
-        .carousel-nav .nav-dot.entrance-waiting { transform: scale(0); opacity: 0; }
-        .carousel-nav .nav-dot.entrance-done {
-            animation: pulsePop 0.4s var(--entrance-delay, 1.1s) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        /* === Search-bar: 中心扩散 === */
+        .search-bar.entrance-waiting { opacity: 0; transform: scaleX(0.05); }
+        .search-bar.entrance-done {
+            animation: searchBloom 0.6s 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
-        @keyframes pulsePop {
-            0%   { transform: scale(0); opacity: 0; box-shadow: 0 0 0 rgba(var(--accent-r),var(--accent-g),var(--accent-b),0); }
-            50%  { transform: scale(1.4); opacity: 1; box-shadow: 0 0 18px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.6); }
-            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 rgba(var(--accent-r),var(--accent-g),var(--accent-b),0); }
+        @keyframes searchBloom {
+            0%   { opacity: 0; transform: scaleX(0.05); filter: brightness(2.5); }
+            20%  { opacity: 0.3; transform: scaleX(0.25); filter: brightness(1.6); }
+            55%  { opacity: 0.75; transform: scaleX(0.8); filter: brightness(1.1); }
+            100% { opacity: 1; transform: scaleX(1); filter: brightness(1); }
         }
 
-        /* === Mini-runner: 数据流涌现 === */
-        .mini-runner.entrance-waiting {
-            clip-path: inset(100% 0 0 0);
-            opacity: 0;
+        /* === Game-card: 渐变光幕扫下 === */
+        .game-card.entrance-waiting { opacity: 0; transform: translateY(20px); }
+        .game-card.entrance-done {
+            animation: cardRiseIn 0.55s var(--entrance-delay, 0.6s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
+        @keyframes cardRiseIn {
+            0%   { opacity: 0; transform: translateY(20px); }
+            28%  { opacity: 0.2; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .game-card.entrance-done::before {
+            content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: 24px;
+            animation: cardGradientSweep 0.7s var(--entrance-delay, 0.6s) ease-out forwards;
+        }
+        @keyframes cardGradientSweep {
+            0%   { background: linear-gradient(180deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4) 0%, rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.15) 6%, transparent 12%); }
+            22%  { background: linear-gradient(180deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.45) 28%, rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.2) 36%, transparent 44%); }
+            48%  { background: linear-gradient(180deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4) 55%, rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.18) 65%, transparent 72%); }
+            72%  { background: linear-gradient(180deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.12) 82%, transparent 92%); }
+            100% { background: transparent; }
+        }
+
+        /* === Nav-dot: 弹性蹦入 === */
+        .carousel-nav .nav-dot.entrance-waiting { transform: scale(0); opacity: 0; }
+        .carousel-nav .nav-dot.entrance-done {
+            animation: dotBounceIn 0.4s var(--entrance-delay, 1.0s) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes dotBounceIn {
+            0%   { transform: scale(0); opacity: 0; }
+            40%  { transform: scale(1.55); opacity: 1; box-shadow: 0 0 20px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.6), 0 0 40px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.25); }
+            70%  { transform: scale(0.85); box-shadow: 0 0 8px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.25); }
+            100% { transform: scale(1); box-shadow: 0 0 0 rgba(var(--accent-r),var(--accent-g),var(--accent-b),0); }
+        }
+
+        /* === Mini-runner: 柔光上浮 === */
+        .mini-runner.entrance-waiting { opacity: 0; transform: translateY(25px); }
         .mini-runner.entrance-done {
-            animation: dataStreamUp 0.5s 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: runnerFloat 0.55s 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
-        @keyframes dataStreamUp {
-            0%   { clip-path: inset(100% 0 0 0); opacity: 0; filter: brightness(2); }
-            100% { clip-path: inset(0% 0 0 0); opacity: 1; filter: brightness(1); }
+        @keyframes runnerFloat {
+            0%   { opacity: 0; transform: translateY(25px); }
+            32%  { opacity: 0.28; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         /* 入场期间禁用原有 transition 的干扰 (仅用于非轮播组件) */
@@ -2505,10 +2478,11 @@
         }
         smoothFollow();
 
-        // ========== 流星背景 ==========
+        // ========== 混沌流星背景 ==========
         const starCanvas = document.getElementById('starfieldCanvas');
         const starCtx = starCanvas.getContext('2d');
         let meteors = [];
+        let sparkParticles = [];
         let bgStars = [];
         let starW, starH;
 
@@ -2520,50 +2494,67 @@
         window.addEventListener('resize', () => {
             resizeStarfield();
             initStars();
-            initMeteors();
+            meteors = [];
+            sparkParticles = [];
         });
 
         function initStars() {
             bgStars = [];
-            const count = Math.floor((starW * starH) / 3000);
+            const count = Math.floor((starW * starH) / 2000);
             for (let i = 0; i < count; i++) {
                 bgStars.push({
                     x: Math.random() * starW,
                     y: Math.random() * starH,
-                    r: Math.random() * 1.2 + 0.2,
-                    twinkleSpeed: 0.003 + Math.random() * 0.015,
+                    r: Math.random() * 1.5 + 0.2,
+                    twinkleSpeed: 0.002 + Math.random() * 0.025,
                     twinkleOffset: Math.random() * Math.PI * 2,
                     hue: Math.random() < 0.25 ? 'accent' : (Math.random() < 0.12 ? 'accent2' : 'white')
                 });
             }
         }
 
-        function spawnMeteor() {
-            const fromLeft = Math.random() < 0.5;
-            const x = fromLeft ? -20 : starW + 20;
-            const y = Math.random() * starH * 0.6;
-            const angle = fromLeft
-                ? Math.PI * 0.15 + Math.random() * Math.PI * 0.2
-                : Math.PI * 0.65 + Math.random() * Math.PI * 0.2;
-            const speed = 4 + Math.random() * 8;
+        function spawnMeteor(forceAngle) {
+            // 从屏幕边缘随机位置生成，方向更混沌
+            const edge = Math.floor(Math.random() * 4); // 0:top 1:right 2:bottom 3:left
+            let x, y, baseAngle;
+            const margin = 30;
+            switch (edge) {
+                case 0: x = Math.random() * starW; y = -margin; baseAngle = Math.PI * 0.35 + Math.random() * Math.PI * 0.3; break;
+                case 1: x = starW + margin; y = Math.random() * starH; baseAngle = Math.PI * 0.55 + Math.random() * Math.PI * 0.4; break;
+                case 2: x = Math.random() * starW; y = starH + margin; baseAngle = Math.PI * 1.35 + Math.random() * Math.PI * 0.3; break;
+                default: x = -margin; y = Math.random() * starH; baseAngle = Math.PI * 1.65 + Math.random() * Math.PI * 0.4; break;
+            }
+            const angleVariation = (Math.random() - 0.5) * Math.PI * 0.5;
+            const angle = baseAngle + angleVariation;
+            const speed = 3 + Math.random() * 14;
             const vx = Math.cos(angle) * speed;
             const vy = Math.sin(angle) * speed;
-            const len = 60 + Math.random() * 130;
+            const len = 40 + Math.random() * 200;
             const hueRoll = Math.random();
             const hue = hueRoll < 0.35 ? 'accent' : (hueRoll < 0.55 ? 'accent2' : 'white');
-            return { x, y, vx, vy, life: 1, decay: 0.003 + Math.random() * 0.008, len, hue, headR: 1.5 + Math.random() * 2.5 };
+            return {
+                x, y, vx, vy, life: 1, decay: 0.002 + Math.random() * 0.012,
+                len, hue, headR: 1 + Math.random() * 3.5,
+                sparkTimer: 0, sparkInterval: 0.3 + Math.random() * 0.6,
+                curve: (Math.random() - 0.5) * 0.04
+            };
         }
 
-        function initMeteors() {
-            meteors = [];
-            for (let i = 0; i < 3; i++) {
-                const m = spawnMeteor();
-                m.life = Math.random();
-                m.x += m.vx * 60 * m.life;
-                m.y += m.vy * 60 * m.life;
-                meteors.push(m);
+        function spawnSparks(mx, my, vx, vy, hue) {
+            const count = 1 + Math.floor(Math.random() * 4);
+            for (let i = 0; i < count; i++) {
+                sparkParticles.push({
+                    x: mx, y: my,
+                    vx: vx * 0.3 + (Math.random() - 0.5) * 2,
+                    vy: vy * 0.3 + (Math.random() - 0.5) * 2,
+                    life: 0.15 + Math.random() * 0.35,
+                    decay: 0.015 + Math.random() * 0.04,
+                    r: 0.3 + Math.random() * 1.2,
+                    hue
+                });
             }
         }
+
         initStars();
 
         function drawStarfield(time) {
@@ -2578,57 +2569,112 @@
 
             // 背景星点
             bgStars.forEach(s => {
-                const alpha = 0.15 + Math.sin(time * s.twinkleSpeed + s.twinkleOffset) * 0.2;
-                if (s.hue === 'accent') starCtx.fillStyle = `rgba(${ar},${ag},${ab},${Math.max(0.05,alpha)})`;
-                else if (s.hue === 'accent2') starCtx.fillStyle = `rgba(${a2r},${a2g},${a2b},${Math.max(0.05,alpha)})`;
-                else starCtx.fillStyle = `rgba(255,255,255,${Math.max(0.05,alpha)})`;
+                const alpha = 0.12 + Math.sin(time * s.twinkleSpeed + s.twinkleOffset) * 0.25;
+                if (s.hue === 'accent') starCtx.fillStyle = `rgba(${ar},${ag},${ab},${Math.max(0.03,alpha)})`;
+                else if (s.hue === 'accent2') starCtx.fillStyle = `rgba(${a2r},${a2g},${a2b},${Math.max(0.03,alpha)})`;
+                else starCtx.fillStyle = `rgba(255,255,255,${Math.max(0.03,alpha)})`;
                 starCtx.beginPath();
                 starCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
                 starCtx.fill();
             });
 
-            // 流星
-            if (Math.random() < 0.012) meteors.push(spawnMeteor());
-            if (meteors.length > 6) meteors.splice(0, meteors.length - 6);
+            // 生成新流星 - 高频混沌
+            const spawnChance = 0.025 + Math.sin(time * 0.0003) * 0.01;
+            if (Math.random() < spawnChance) meteors.push(spawnMeteor());
+            if (meteors.length > 12) meteors.splice(0, meteors.length - 12);
 
+            // 绘制火屑粒子
+            for (let i = sparkParticles.length - 1; i >= 0; i--) {
+                const sp = sparkParticles[i];
+                sp.x += sp.vx;
+                sp.y += sp.vy;
+                sp.vy += 0.01;
+                sp.life -= sp.decay;
+                if (sp.life <= 0) { sparkParticles.splice(i, 1); continue; }
+                let sr, sg, sb;
+                if (sp.hue === 'accent') { sr = ar; sg = ag; sb = ab; }
+                else if (sp.hue === 'accent2') { sr = a2r; sg = a2g; sb = a2b; }
+                else { sr = 255; sg = 255; sb = 255; }
+                starCtx.fillStyle = `rgba(${sr},${sg},${sb},${sp.life})`;
+                starCtx.shadowColor = `rgba(${sr},${sg},${sb},${sp.life * 0.5})`;
+                starCtx.shadowBlur = 3;
+                starCtx.beginPath();
+                starCtx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2);
+                starCtx.fill();
+            }
+            starCtx.shadowBlur = 0;
+
+            // 绘制流星
             for (let i = meteors.length - 1; i >= 0; i--) {
                 const m = meteors[i];
                 m.x += m.vx;
                 m.y += m.vy;
+                // 轻微弯曲
+                m.vx += m.curve;
                 m.life -= m.decay;
-                if (m.life <= 0 || m.x < -200 || m.x > starW + 200 || m.y > starH + 100) {
+                if (m.life <= 0 || m.x < -300 || m.x > starW + 300 || m.y < -300 || m.y > starH + 300) {
                     meteors.splice(i, 1);
                     continue;
                 }
 
-                const alpha = m.life;
-                const tailX = m.x - m.vx * m.len * 0.06;
-                const tailY = m.y - m.vy * m.len * 0.06;
+                // 火屑生成
+                m.sparkTimer += 1;
+                if (m.sparkTimer >= m.sparkInterval * 60) {
+                    m.sparkTimer = 0;
+                    spawnSparks(m.x, m.y, m.vx, m.vy, m.hue);
+                }
+
+                const alpha = Math.min(1, m.life * 1.5);
+                const tailLen = m.len * (0.5 + m.life * 0.5);
+                const tailX = m.x - m.vx * tailLen * 0.05;
+                const tailY = m.y - m.vy * tailLen * 0.05;
 
                 let r, g, b;
                 if (m.hue === 'accent') { r = ar; g = ag; b = ab; }
                 else if (m.hue === 'accent2') { r = a2r; g = a2g; b = a2b; }
                 else { r = 255; g = 255; b = 255; }
 
+                // 拖尾渐变 - 两层叠加更有质感
                 const grad = starCtx.createLinearGradient(m.x, m.y, tailX, tailY);
-                grad.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
+                grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+                grad.addColorStop(0.15, `rgba(${r},${g},${b},${alpha})`);
+                grad.addColorStop(0.6, `rgba(${r},${g},${b},${alpha * 0.4})`);
                 grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
 
                 starCtx.strokeStyle = grad;
-                starCtx.lineWidth = m.headR * 2;
+                starCtx.lineWidth = m.headR * 2.5;
                 starCtx.lineCap = 'round';
-                starCtx.shadowColor = `rgba(${r},${g},${b},${alpha * 0.6})`;
-                starCtx.shadowBlur = 8;
+                starCtx.shadowColor = `rgba(${r},${g},${b},${alpha * 0.5})`;
+                starCtx.shadowBlur = 14;
                 starCtx.beginPath();
                 starCtx.moveTo(m.x, m.y);
                 starCtx.lineTo(tailX, tailY);
                 starCtx.stroke();
-                starCtx.shadowBlur = 0;
 
-                // 头部亮点
-                starCtx.fillStyle = `rgba(255,255,255,${alpha * 0.9})`;
+                // 内层细亮拖尾
+                const innerGrad = starCtx.createLinearGradient(m.x, m.y, tailX, tailY);
+                innerGrad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+                innerGrad.addColorStop(1, `rgba(255,255,255,0)`);
+                starCtx.strokeStyle = innerGrad;
+                starCtx.lineWidth = m.headR * 0.7;
+                starCtx.shadowBlur = 0;
                 starCtx.beginPath();
-                starCtx.arc(m.x, m.y, m.headR * 1.2, 0, Math.PI * 2);
+                starCtx.moveTo(m.x, m.y);
+                starCtx.lineTo(tailX, tailY);
+                starCtx.stroke();
+
+                // 头部光晕
+                starCtx.shadowColor = `rgba(${r},${g},${b},${alpha})`;
+                starCtx.shadowBlur = 18;
+                starCtx.fillStyle = `rgba(255,255,255,${alpha})`;
+                starCtx.beginPath();
+                starCtx.arc(m.x, m.y, m.headR * 1.5, 0, Math.PI * 2);
+                starCtx.fill();
+
+                // 外层光晕
+                starCtx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.5})`;
+                starCtx.beginPath();
+                starCtx.arc(m.x, m.y, m.headR * 3, 0, Math.PI * 2);
                 starCtx.fill();
             }
 
@@ -2636,7 +2682,6 @@
             starCtx.shadowBlur = 0;
             requestAnimationFrame(drawStarfield);
         }
-        initMeteors();
         requestAnimationFrame(drawStarfield);
 
         // ========== 组件入场动画系统 ==========
