@@ -207,7 +207,7 @@ const GAMES = [
   {key:'particle',name:'星海流沙',icon:'🌌',color:'#2c5364',cat:'沙盒'},
   {key:'coop',name:'双子星探险',icon:'👯',color:'#3b82f6',cat:'双人'},
   {key:'breakout',name:'宝石消消乐',icon:'💎',color:'#a855f7',cat:'消除'},
-  {key:'drawGuess',name:'你画我猜',icon:'🎨',color:'#f59e0b',cat:'联机'}
+  {key:'snake',name:'贪吃蛇',icon:'🐍',color:'#22c55e',cat:'经典'}
 ];
 
 const currentUser = localStorage.getItem('arcadeUser');
@@ -316,7 +316,7 @@ function render(){
   GAMES.forEach((g,i)=>{
     const score = myScores[g.key]||0;
     const plays = playCounts[g.name]||0;
-    html += `<a class="game-card" href="games/${g.key==='skyDefense'?'sky-defense':g.key==='drawGuess'?'mole':g.key==='match'?'match':g.key==='tower'?'tower':g.key==='typist'?'typist':g.key==='beats'?'beats':g.key==='coop'?'coop':g.key==='particle'?'particle':'breakout'}/index.html">
+    html += `<a class="game-card" href="games/${g.key==='skyDefense'?'sky-defense':g.key==='snake'?'snake':g.key==='match'?'match':g.key==='tower'?'tower':g.key==='typist'?'typist':g.key==='beats'?'beats':g.key==='coop'?'coop':g.key==='particle'?'particle':'breakout'}/index.html">
       <div class="g-rank">#${i+1}</div>
       <div class="g-icon">${g.icon}</div>
       <div class="g-name">${g.name}</div>
