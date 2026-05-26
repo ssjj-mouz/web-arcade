@@ -4,6 +4,8 @@ const app = cloudbase.init({ env: process.env.TCB_ENV_ID });
 const db = app.database();
 const _ = db.command;
 
+const ADMIN_PASSPHRASE = '666';
+
 function genCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   let code = '';
@@ -11,10 +13,15 @@ function genCode() {
   return code;
 }
 
+function makeToken() {
+  return 'tk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+}
+
 exports.main = async (event) => {
   const { action, ...params } = event;
   try {
     switch (action) {
+      case 'auth.verify': return await verifyAuth(params);
       case 'room.create': return await createRoom(params);
       case 'room.join': return await joinRoom(params);
       case 'room.list': return await listRooms();
@@ -38,6 +45,13 @@ exports.main = async (event) => {
     return { error: e.message };
   }
 };
+
+async function verifyAuth({ passcode }) {
+  if (passcode !== ADMIN_PASSPHRASE) {
+    return { error: '暗号错误' };
+  }
+  return { token: makeToken() };
+}
 
 async function createRoom({ hostname, difficulty }) {
   const id = genCode();

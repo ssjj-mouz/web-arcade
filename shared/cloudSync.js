@@ -207,6 +207,9 @@
   // ====================== 导出 ======================
   window.CloudSync = {
     init,
+    verifyPasscode(passcode) {
+      return app.callFunction({ name: 'gameApi', data: { action: 'auth.verify', passcode } });
+    },
     saveProfile,
     loadAllProfiles,
     deleteProfile,

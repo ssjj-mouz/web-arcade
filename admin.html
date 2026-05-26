@@ -392,8 +392,7 @@ tr:hover td{background:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.03
 
 <script>
 // ======================= CONSTANTS =======================
-const PASSPHRASE = 'ARCADE';
-const AUTH_KEY = 'arcadeAdminAuth';
+const AUTH_KEY = 'arcadeAdminToken';
 
 const THEMES = {
   neon:{r:0,g:255,b:255,r2:255,g2:0,b2:255,bg1:'#0a0f2e',bg2:'#03050b',l1:'#fff',l2:'#0ff',l3:'#a0f',sr:10,sg:15,sb:46,sr2:5,sg2:8,sb2:30,tr:238,tg:245,tb:255,mr:148,mg:163,mb:184,ca:0.3},
@@ -422,21 +421,31 @@ const GAMES = [
 ];
 
 // ======================= AUTH GATE =======================
-function checkPasscode(e){
+async function checkPasscode(e){
   e.preventDefault();
-  const input = document.getElementById('authInput').value.trim().toUpperCase();
+  const input = document.getElementById('authInput').value.trim();
   const errEl = document.getElementById('authError');
-  if(input === PASSPHRASE){
-    errEl.textContent = '';
-    localStorage.setItem(AUTH_KEY, '1');
-    document.getElementById('authGate').style.display = 'none';
-    document.getElementById('mainContent').style.display = '';
-    renderAll();
-  } else {
-    errEl.textContent = '✦ 暗号错误 · ACCESS DENIED';
-    document.getElementById('authInput').value = '';
-    document.getElementById('authInput').focus();
+  if (!input) return;
+  errEl.textContent = '';
+  const btn = e.target.querySelector('button');
+  btn.textContent = '...'; btn.disabled = true;
+  try {
+    const res = await CloudSync.verifyPasscode(input);
+    const data = res.result || {};
+    if (data.token) {
+      localStorage.setItem(AUTH_KEY, data.token);
+      document.getElementById('authGate').style.display = 'none';
+      document.getElementById('mainContent').style.display = '';
+      renderAll();
+    } else {
+      errEl.textContent = '✦ 暗号错误 · ACCESS DENIED';
+      document.getElementById('authInput').value = '';
+      document.getElementById('authInput').focus();
+    }
+  } catch (ex) {
+    errEl.textContent = '✦ 验证服务不可用，请稍后重试';
   }
+  btn.textContent = '验证'; btn.disabled = false;
 }
 
 function lockGate(){
@@ -448,7 +457,7 @@ function lockGate(){
 }
 
 // Auto-auth if previously authenticated
-if(localStorage.getItem(AUTH_KEY) === '1'){
+if(localStorage.getItem(AUTH_KEY)){
   document.getElementById('authGate').style.display = 'none';
   document.getElementById('mainContent').style.display = '';
 }
@@ -697,7 +706,7 @@ document.getElementById('resetAllOverlay').addEventListener('click',e=>{if(e.tar
 document.getElementById('authInput').focus();
 
 // Initial render if already authed
-if(localStorage.getItem(AUTH_KEY) === '1') renderAll();
+if(localStorage.getItem(AUTH_KEY)) renderAll();
 
 // 异步从云端拉取数据后刷新
 function refreshFromCloud(){
