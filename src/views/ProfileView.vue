@@ -42,9 +42,9 @@
       </div>
 
       <!-- Game scores -->
-      <div class="section-title">🎯 游戏成绩</div>
-      <div class="game-grid">
-        <a v-for="(g, i) in sortedGames" :key="g.key" class="game-card" @click="router.push('/game/' + gameDir(g.key))">
+      <div class="profile-section-title">🎯 游戏成绩</div>
+      <div class="profile-game-grid">
+        <a v-for="(g, i) in sortedGames" :key="g.key" class="profile-game-card" @click="router.push('/game/' + gameDir(g.key))">
           <div class="g-rank">#{{ i + 1 }}</div>
           <div class="g-icon">{{ g.icon }}</div>
           <div class="g-name">{{ g.name }}</div>
