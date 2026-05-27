@@ -381,10 +381,10 @@
             border-radius: 14px;
             padding: 10px;
             display: none;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
             z-index: 100;
-            width: 400px;
+            width: 480px;
             box-shadow: 0 16px 40px rgba(0,0,0,0.5);
         }
         .cursor-panel.open { display: grid; }
@@ -1339,6 +1339,145 @@
             from { transform: translate(-50%, -50%) rotate(0deg); }
             to   { transform: translate(-50%, -50%) rotate(360deg); }
         }
+        /* === 指针模式：碳纤暗影 (暗黑箭头 + 锐利白边) === */
+        [data-cursor="carbon"] body { cursor: none; }
+        [data-cursor="carbon"] #cursor-neon { opacity: 0 !important; }
+        [data-cursor="carbon"] #cursorTip { opacity: 0 !important; }
+        [data-cursor="carbon"] .cursor-trail { opacity: 0 !important; }
+        [data-cursor="carbon"] #cursorArrow { opacity: 1 !important; }
+        [data-cursor="carbon"] #cursorArrow polygon:first-of-type {
+            fill: rgba(30,30,30,0.85) !important;
+            stroke: rgba(255,255,255,0.7) !important;
+        }
+        [data-cursor="carbon"] #cursorArrow polygon:last-of-type {
+            fill: rgba(200,200,200,0.5) !important;
+        }
+        [data-cursor="carbon"] #cursorArrow {
+            filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.8))
+                    drop-shadow(0 0 2px rgba(255,255,255,0.3)) !important;
+        }
+
+        /* === 指针模式：光子棱镜 (白箭 + 彩虹色散光晕) === */
+        [data-cursor="photon"] body { cursor: none; }
+        [data-cursor="photon"] #cursor-neon { opacity: 0 !important; }
+        [data-cursor="photon"] #cursorTip { opacity: 0 !important; }
+        [data-cursor="photon"] .cursor-trail { opacity: 0 !important; }
+        [data-cursor="photon"] #cursorArrow { opacity: 1 !important; }
+        [data-cursor="photon"] #cursorArrow polygon:first-of-type {
+            fill: rgba(255,255,255,0.15) !important;
+            stroke: rgba(255,255,255,0.9) !important;
+        }
+        [data-cursor="photon"] #cursorArrow polygon:last-of-type {
+            fill: rgba(255,255,255,0.8) !important;
+        }
+        [data-cursor="photon"] #cursorArrow {
+            filter: drop-shadow(-2px 0 3px rgba(255,80,80,0.6))
+                    drop-shadow(2px 0 3px rgba(80,80,255,0.6))
+                    drop-shadow(0 -2px 3px rgba(80,255,80,0.5))
+                    drop-shadow(0 4px 8px rgba(255,255,255,0.3)) !important;
+            animation: photonShimmer 3s linear infinite;
+        }
+        @keyframes photonShimmer {
+            0%,100% { filter: drop-shadow(-2px 0 3px rgba(255,80,80,0.6)) drop-shadow(2px 0 3px rgba(80,80,255,0.6)) drop-shadow(0 -2px 3px rgba(80,255,80,0.5)) drop-shadow(0 4px 8px rgba(255,255,255,0.3)); }
+            33%     { filter: drop-shadow(-2px 0 3px rgba(255,255,80,0.6)) drop-shadow(2px 0 3px rgba(255,80,80,0.6)) drop-shadow(0 -2px 3px rgba(80,80,255,0.5)) drop-shadow(0 4px 8px rgba(255,255,255,0.3)); }
+            66%     { filter: drop-shadow(-2px 0 3px rgba(80,80,255,0.6)) drop-shadow(2px 0 3px rgba(80,255,80,0.6)) drop-shadow(0 -2px 3px rgba(255,80,80,0.5)) drop-shadow(0 4px 8px rgba(255,255,255,0.3)); }
+        }
+
+        /* === 指针模式：余烬之箭 (橙红渐变 + 灼热呼吸) === */
+        [data-cursor="ember"] body { cursor: none; }
+        [data-cursor="ember"] #cursor-neon { opacity: 0 !important; }
+        [data-cursor="ember"] #cursorTip { opacity: 0 !important; }
+        [data-cursor="ember"] .cursor-trail { opacity: 0 !important; }
+        [data-cursor="ember"] #cursorArrow { opacity: 1 !important; }
+        [data-cursor="ember"] #cursorArrow polygon:first-of-type {
+            fill: rgba(200,60,10,0.3) !important;
+            stroke: rgba(255,140,40,0.9) !important;
+        }
+        [data-cursor="ember"] #cursorArrow polygon:last-of-type {
+            fill: rgba(255,180,60,0.7) !important;
+        }
+        [data-cursor="ember"] #cursorArrow {
+            filter: drop-shadow(0 0 4px rgba(255,160,40,0.8))
+                    drop-shadow(0 0 10px rgba(255,100,20,0.5))
+                    drop-shadow(0 2px 6px rgba(200,50,0,0.4)) !important;
+            animation: emberPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes emberPulse {
+            0%,100% { filter: drop-shadow(0 0 4px rgba(255,160,40,0.8)) drop-shadow(0 0 10px rgba(255,100,20,0.5)) drop-shadow(0 2px 6px rgba(200,50,0,0.4)); }
+            50%     { filter: drop-shadow(0 0 8px rgba(255,200,60,1)) drop-shadow(0 0 18px rgba(255,120,30,0.7)) drop-shadow(0 2px 10px rgba(220,60,10,0.5)); }
+        }
+
+        /* === 指针模式：故障畸变 (青红偏移 + 扫描线抖动) === */
+        [data-cursor="glitch"] body { cursor: none; }
+        [data-cursor="glitch"] #cursor-neon { opacity: 0 !important; }
+        [data-cursor="glitch"] #cursorTip { opacity: 0 !important; }
+        [data-cursor="glitch"] .cursor-trail { opacity: 0 !important; }
+        [data-cursor="glitch"] #cursorArrow { opacity: 1 !important; }
+        [data-cursor="glitch"] #cursorArrow polygon:first-of-type {
+            fill: rgba(0,255,255,0.2) !important;
+            stroke: rgba(0,255,255,0.8) !important;
+        }
+        [data-cursor="glitch"] #cursorArrow polygon:last-of-type {
+            fill: rgba(0,255,255,0.6) !important;
+        }
+        [data-cursor="glitch"] #cursorArrow {
+            filter: drop-shadow(0 0 3px rgba(0,255,255,0.7))
+                    drop-shadow(3px 0 0 rgba(255,0,100,0.6))
+                    drop-shadow(-2px 0 0 rgba(0,200,255,0.5)) !important;
+            animation: glitchShake 0.15s steps(2) infinite;
+        }
+        @keyframes glitchShake {
+            0%,100% { transform: translate(0,0); }
+            25%     { transform: translate(2px, -1px); }
+            50%     { transform: translate(-1px, 1px); }
+            75%     { transform: translate(-2px, 0); }
+        }
+
+        /* === 指针模式：冰霜之箭 (冰蓝晶化 + 寒芒闪烁) === */
+        [data-cursor="frost"] body { cursor: none; }
+        [data-cursor="frost"] #cursor-neon { opacity: 0 !important; }
+        [data-cursor="frost"] #cursorTip { opacity: 0 !important; }
+        [data-cursor="frost"] .cursor-trail { opacity: 0 !important; }
+        [data-cursor="frost"] #cursorArrow { opacity: 1 !important; }
+        [data-cursor="frost"] #cursorArrow polygon:first-of-type {
+            fill: rgba(180,220,255,0.2) !important;
+            stroke: rgba(200,240,255,0.9) !important;
+        }
+        [data-cursor="frost"] #cursorArrow polygon:last-of-type {
+            fill: rgba(220,245,255,0.8) !important;
+        }
+        [data-cursor="frost"] #cursorArrow {
+            filter: drop-shadow(0 0 4px rgba(200,240,255,0.9))
+                    drop-shadow(0 0 12px rgba(100,200,255,0.6))
+                    drop-shadow(0 0 25px rgba(50,150,255,0.3))
+                    drop-shadow(0 3px 4px rgba(0,100,200,0.4)) !important;
+        }
+
+        /* === 指针模式：毒液侵蚀 (荧光绿 + 液态滴落) === */
+        [data-cursor="venom"] body { cursor: none; }
+        [data-cursor="venom"] #cursor-neon { opacity: 0 !important; }
+        [data-cursor="venom"] #cursorTip { opacity: 0 !important; }
+        [data-cursor="venom"] .cursor-trail { opacity: 0 !important; }
+        [data-cursor="venom"] #cursorArrow { opacity: 1 !important; }
+        [data-cursor="venom"] #cursorArrow polygon:first-of-type {
+            fill: rgba(80,200,40,0.2) !important;
+            stroke: rgba(140,255,60,0.9) !important;
+        }
+        [data-cursor="venom"] #cursorArrow polygon:last-of-type {
+            fill: rgba(160,255,80,0.7) !important;
+        }
+        [data-cursor="venom"] #cursorArrow {
+            filter: drop-shadow(0 0 3px rgba(140,255,60,0.8))
+                    drop-shadow(0 0 10px rgba(100,255,30,0.5))
+                    drop-shadow(0 6px 4px rgba(60,180,20,0.35))
+                    drop-shadow(1px 8px 2px rgba(40,140,10,0.2)) !important;
+            animation: venomDrip 0.8s ease-in infinite alternate;
+        }
+        @keyframes venomDrip {
+            0%   { filter: drop-shadow(0 0 3px rgba(140,255,60,0.8)) drop-shadow(0 0 10px rgba(100,255,30,0.5)) drop-shadow(0 6px 4px rgba(60,180,20,0.35)) drop-shadow(1px 8px 2px rgba(40,140,10,0.2)); }
+            100% { filter: drop-shadow(0 0 4px rgba(160,255,80,0.9)) drop-shadow(0 0 14px rgba(120,255,40,0.6)) drop-shadow(0 8px 6px rgba(80,200,30,0.4)) drop-shadow(1px 12px 4px rgba(60,160,20,0.25)); }
+        }
+
         /* 光标箭头 - 赛博朋克风格 */
         .cursor-arrow {
             position: fixed;
