@@ -48,7 +48,10 @@
           <div class="g-rank">#{{ i + 1 }}</div>
           <div class="g-icon">{{ g.icon }}</div>
           <div class="g-name">{{ g.name }}</div>
-          <div class="g-score">{{ (user.myScores[g.key] || 0) > 0 ? '最高 ' + (user.myScores[g.key] || 0).toLocaleString() : '<span class="no-score">暂无记录</span>' }}</div>
+          <div class="g-score">
+            <template v-if="(user.myScores[g.key] || 0) > 0">最高 {{ (user.myScores[g.key] || 0).toLocaleString() }}</template>
+            <span v-else class="no-score">暂无记录</span>
+          </div>
           <div class="g-plays">{{ (playCounts[g.name] || 0) > 0 ? '玩了 ' + (playCounts[g.name] || 0) + ' 次' : '尚未游玩' }}</div>
         </a>
       </div>
