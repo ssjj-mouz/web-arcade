@@ -1,0 +1,3035 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Web Arcade OS · 赛博游戏厅</title>
+    <style>
+        /* ========== 主题变量 ========== */
+        :root {
+            --accent-r: 0; --accent-g: 255; --accent-b: 255;
+            --accent2-r: 255; --accent2-g: 0; --accent2-b: 255;
+            --bg1: #0a0f2e; --bg2: #03050b;
+            --logo-1: #ffffff; --logo-2: #0ff; --logo-3: #a0f;
+            --surface-r: 10; --surface-g: 15; --surface-b: 46;
+            --surface2-r: 5; --surface2-g: 8; --surface2-b: 30;
+            --text-r: 238; --text-g: 245; --text-b: 255;
+            --muted-r: 148; --muted-g: 163; --muted-b: 184;
+            --card-border-alpha: 0.3;
+        }
+        [data-theme="flame"] {
+            --accent-r: 255; --accent-g: 120; --accent-b: 0;
+            --accent2-r: 255; --accent2-g: 50; --accent2-b: 0;
+            --bg1: #2e1208; --bg2: #140603;
+            --logo-1: #ffffff; --logo-2: #ff7800; --logo-3: #ff3300;
+            --surface-r: 46; --surface-g: 18; --surface-b: 10;
+            --surface2-r: 30; --surface2-g: 10; --surface2-b: 5;
+            --text-r: 238; --text-g: 245; --text-b: 255;
+            --muted-r: 200; --muted-g: 170; --muted-b: 150;
+            --card-border-alpha: 0.3;
+        }
+        [data-theme="frost"] {
+            --accent-r: 120; --accent-g: 220; --accent-b: 255;
+            --accent2-r: 180; --accent2-g: 200; --accent2-b: 255;
+            --bg1: #082438; --bg2: #030d18;
+            --logo-1: #ffffff; --logo-2: #78dcff; --logo-3: #b4c8ff;
+            --surface-r: 10; --surface-g: 24; --surface-b: 42;
+            --surface2-r: 6; --surface2-g: 12; --surface2-b: 26;
+            --text-r: 238; --text-g: 245; --text-b: 255;
+            --muted-r: 148; --muted-g: 200; --muted-b: 220;
+            --card-border-alpha: 0.3;
+        }
+        [data-theme="purple"] {
+            --accent-r: 180; --accent-g: 100; --accent-b: 255;
+            --accent2-r: 255; --accent2-g: 80; --accent2-b: 200;
+            --bg1: #1e0838; --bg2: #0c0318;
+            --logo-1: #ffffff; --logo-2: #b464ff; --logo-3: #ff50c8;
+            --surface-r: 20; --surface-g: 10; --surface-b: 44;
+            --surface2-r: 12; --surface2-g: 5; --surface2-b: 26;
+            --text-r: 238; --text-g: 245; --text-b: 255;
+            --muted-r: 190; --muted-g: 170; --muted-b: 210;
+            --card-border-alpha: 0.3;
+        }
+        [data-theme="green"] {
+            --accent-r: 50; --accent-g: 255; --accent-b: 80;
+            --accent2-r: 0; --accent2-g: 200; --accent2-b: 200;
+            --bg1: #0a1e0a; --bg2: #030b03;
+            --logo-1: #ffffff; --logo-2: #50ff80; --logo-3: #00c8c8;
+            --surface-r: 12; --surface-g: 30; --surface-b: 15;
+            --surface2-r: 6; --surface2-g: 16; --surface2-b: 8;
+            --text-r: 238; --text-g: 245; --text-b: 255;
+            --muted-r: 150; --muted-g: 200; --muted-b: 160;
+            --card-border-alpha: 0.3;
+        }
+        [data-theme="light"] {
+            --accent-r: 50; --accent-g: 120; --accent-b: 255;
+            --accent2-r: 255; --accent2-g: 80; --accent2-b: 180;
+            --bg1: #f0f4f8; --bg2: #e2e8f0;
+            --logo-1: #1a202c; --logo-2: #3278ff; --logo-3: #e050a0;
+            --surface-r: 255; --surface-g: 255; --surface-b: 255;
+            --surface2-r: 240; --surface2-g: 244; --surface2-b: 248;
+            --text-r: 26; --text-g: 32; --text-b: 44;
+            --muted-r: 100; --muted-g: 116; --muted-b: 139;
+            --card-border-alpha: 0.15;
+        }
+        [data-theme="cybergold"] {
+            --accent-r: 255; --accent-g: 191; --accent-b: 0;
+            --accent2-r: 255; --accent2-g: 80; --accent2-b: 0;
+            --bg1: #1a1200; --bg2: #0a0800;
+            --logo-1: #ffffff; --logo-2: #ffbf00; --logo-3: #ff5000;
+            --surface-r: 26; --surface-g: 18; --surface-b: 0;
+            --surface2-r: 16; --surface2-g: 10; --surface2-b: 0;
+            --text-r: 255; --text-g: 248; --text-b: 230;
+            --muted-r: 180; --muted-g: 160; --muted-b: 120;
+            --card-border-alpha: 0.3;
+        }
+        [data-theme="synthwave"] {
+            --accent-r: 255; --accent-g: 50; --accent-b: 150;
+            --accent2-r: 0; --accent2-g: 255; --accent2-b: 200;
+            --bg1: #1a0520; --bg2: #0d0210;
+            --logo-1: #ffffff; --logo-2: #ff3296; --logo-3: #00ffc8;
+            --surface-r: 30; --surface-g: 8; --surface-b: 36;
+            --surface2-r: 18; --surface2-g: 4; --surface2-b: 22;
+            --text-r: 250; --text-g: 240; --text-b: 255;
+            --muted-r: 200; --muted-g: 150; --muted-b: 200;
+            --card-border-alpha: 0.3;
+        }
+        [data-theme="matrix"] {
+            --accent-r: 0; --accent-g: 255; --accent-b: 65;
+            --accent2-r: 0; --accent2-g: 200; --accent2-b: 100;
+            --bg1: #001000; --bg2: #000500;
+            --logo-1: #00ff41; --logo-2: #00cc32; --logo-3: #008a20;
+            --surface-r: 0; --surface-g: 18; --surface-b: 0;
+            --surface2-r: 0; --surface2-g: 10; --surface2-b: 0;
+            --text-r: 180; --text-g: 255; --text-b: 180;
+            --muted-r: 0; --muted-g: 180; --muted-b: 60;
+            --card-border-alpha: 0.25;
+        }
+        [data-theme="crimson"] {
+            --accent-r: 220; --accent-g: 30; --accent-b: 30;
+            --accent2-r: 180; --accent2-g: 0; --accent2-b: 80;
+            --bg1: #1a0505; --bg2: #0d0202;
+            --logo-1: #ffffff; --logo-2: #ff3030; --logo-3: #b00050;
+            --surface-r: 30; --surface-g: 8; --surface-b: 8;
+            --surface2-r: 18; --surface2-g: 4; --surface2-b: 4;
+            --text-r: 255; --text-g: 220; --text-b: 220;
+            --muted-r: 180; --muted-g: 120; --muted-b: 120;
+            --card-border-alpha: 0.3;
+        }
+        [data-theme="aurora"] {
+            --accent-r: 0; --accent-g: 255; --accent-b: 180;
+            --accent2-r: 150; --accent2-g: 80; --accent2-b: 255;
+            --bg1: #061a1a; --bg2: #020a0a;
+            --logo-1: #ffffff; --logo-2: #00ffb4; --logo-3: #9650ff;
+            --surface-r: 8; --surface-g: 26; --surface-b: 26;
+            --surface2-r: 4; --surface2-g: 16; --surface2-b: 16;
+            --text-r: 220; --text-g: 255; --text-b: 250;
+            --muted-r: 120; --muted-g: 200; --muted-b: 190;
+            --card-border-alpha: 0.3;
+        }
+
+        /* ========== 全局样式 & 赛博朋克玻璃主题 ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        html, body { width: 100%; cursor: none; }
+        a, button, .game-card, input, select, textarea, .hdr-icon-btn, .filter-btn, .nav-dot { cursor: none; }
+        body {
+            font-family: 'Segoe UI', 'Poppins', 'Inter', system-ui, sans-serif;
+            background: radial-gradient(circle at 10% 20%, var(--bg1), var(--bg2));
+            min-height: 100vh;
+            color: rgb(var(--text-r), var(--text-g), var(--text-b));
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 动态网格线背景 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.10) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.10) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 30%, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 星空画布 */
+        #starfieldCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ========== 组件入场动画 — 科技风透明渐变 ========== */
+        .entrance-waiting { opacity: 0; }
+
+        .entrance-done {
+            animation: techReveal 1.4s var(--entrance-delay, 0s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes techReveal {
+            0%   { opacity: 0; filter: blur(12px); transform: translateY(8px); }
+            30%  { opacity: 0.25; filter: blur(6px); }
+            60%  { opacity: 0.65; filter: blur(2px); transform: translateY(2px); }
+            100% { opacity: 1;   filter: blur(0);  transform: translateY(0); }
+        }
+
+        /* 大组件加扫描线 — 细白线从上扫到下 */
+        header.entrance-done::after,
+        .search-bar.entrance-done::after {
+            content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px; pointer-events: none; z-index: 99;
+            background: rgba(255,255,255,0.25);
+            box-shadow: 0 0 20px rgba(255,255,255,0.15), 0 0 50px rgba(255,255,255,0.04);
+            animation: scanLine 1.4s var(--entrance-delay, 0s) ease-out forwards;
+            border-radius: inherit;
+        }
+        @keyframes scanLine {
+            0%   { top: 0; opacity: 0; }
+            6%   { top: 0; opacity: 1; }
+            80%  { top: calc(100% - 2px); opacity: 0.5; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg1); }
+        ::-webkit-scrollbar-thumb {
+            background: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            border-radius: 10px;
+            box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgb(var(--accent2-r),var(--accent2-g),var(--accent2-b));
+            box-shadow: 0 0 6px rgb(var(--accent2-r),var(--accent2-g),var(--accent2-b));
+        }
+
+        /* ========== OS 开机动画序列 ========== */
+        #boot-screen {
+            position: fixed;
+            inset: 0;
+            background: #0a0b0e;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            font-family: 'Courier New', monospace;
+            transition: opacity 0.8s ease-out;
+        }
+        #boot-screen::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(0deg, transparent 48%, rgba(0,255,65,0.03) 50%, transparent 52%);
+            background-size: 100% 4px;
+            animation: bootScan 0.5s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes bootScan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+        .boot-lines {
+            position: relative;
+            z-index: 1;
+            max-width: 520px;
+            width: 100%;
+        }
+        .boot-line {
+            margin-bottom: 6px;
+            opacity: 0;
+            font-size: 0.95rem;
+            color: #0f0;
+            text-shadow: 0 0 6px rgba(0,255,0,0.4);
+            font-family: 'Courier New', monospace;
+        }
+        .boot-line .highlight {
+            color: #0ff;
+            text-shadow: 0 0 8px rgba(0,255,255,0.4);
+        }
+        .boot-line .warn {
+            color: #ff0;
+            text-shadow: 0 0 8px rgba(255,255,0,0.3);
+        }
+        .boot-line .ok { color: #0f0; }
+        .boot-progress {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 520px;
+            height: 3px;
+            background: rgba(0,255,0,0.08);
+            border-radius: 2px;
+            margin-top: 24px;
+            overflow: hidden;
+        }
+        .boot-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #0f0, #0ff);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 16px rgba(0,255,0,0.3);
+        }
+        .boot-title {
+            position: relative;
+            z-index: 1;
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(0,255,255,0.3);
+            margin-top: 20px;
+            opacity: 0;
+            letter-spacing: 2px;
+        }
+
+        /* ========== 头部区域 ========== */
+        header {
+            position: relative;
+            z-index: 20;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 28px;
+            background: rgba(var(--surface2-r),var(--surface2-g),var(--surface2-b),0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+        }
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--logo-1), var(--logo-2), var(--logo-3));
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .score-pop { animation: scoreGlow 0.4s cubic-bezier(0.2, 1.2, 0.8, 1); }
+        @keyframes scoreGlow {
+            0% { transform: scale(1); }
+            50% {
+                text-shadow: 0 0 12px rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+                transform: scale(1.08);
+                background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3);
+            }
+            100% { transform: scale(1); }
+        }
+
+        /* ===== 头栏图标按钮 ===== */
+        .hdr-icon-btn {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .hdr-icon-btn:hover {
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.12);
+            border-color: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4);
+            color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            box-shadow: 0 0 18px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);
+            transform: translateY(-2px);
+        }
+
+        /* ===== 换肤面板 ===== */
+        .theme-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: rgba(var(--surface2-r),var(--surface2-g),var(--surface2-b),0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--card-border-alpha));
+            border-radius: 14px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 100;
+            min-width: 170px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+        }
+        .theme-panel.open { display: flex; }
+        .theme-opt {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: 0.15s;
+            border: none;
+            background: transparent;
+            color: rgb(var(--muted-r), var(--muted-g), var(--muted-b));
+            text-align: left;
+            width: 100%;
+        }
+        .theme-opt:hover { background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08); color: rgb(var(--text-r), var(--text-g), var(--text-b)); }
+        .theme-opt.active { background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15); color: rgb(var(--text-r), var(--text-g), var(--text-b)); }
+        .theme-swatch {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid rgba(var(--muted-r),var(--muted-g),var(--muted-b),0.2);
+        }
+
+        main {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 28px 30px 70px;
+        }
+
+        /* ========== 3D 平行四边形层叠轮播 ========== */
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 430px;
+            margin-bottom: 40px;
+            perspective: 1500px;
+            perspective-origin: 50% 45%;
+            transform-style: preserve-3d;
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--card-border-alpha));
+            box-shadow: 0 24px 50px -15px rgba(0,0,0,0.7);
+            background: #080812;
+        }
+        .carousel-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 28px;
+            pointer-events: none;
+            z-index: 20;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.7);
+        }
+
+
+        /* ---- 卡片基类: 平行四边形 + 嵌套框架 ---- */
+        .carousel-slide {
+            position: absolute;
+            top: 28px; bottom: 48px; left: 10%; right: 10%;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 28px 32px;
+            overflow: visible;
+            backface-visibility: hidden;
+            will-change: transform, opacity;
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 25px 70px -25px rgba(0,0,0,0.7);
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* -- 嵌套框架第一层 (稍大, 平行四边形) -- */
+        .carousel-slide::before {
+            content: '';
+            position: absolute;
+            inset: -12px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            z-index: -1;
+            pointer-events: none;
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+            transform: skewX(-4deg);
+        }
+        /* -- 嵌套框架第二层 (更大, 平行四边形) -- */
+        .carousel-slide::after {
+            content: '';
+            position: absolute;
+            inset: -26px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.015);
+            border: 1px solid rgba(255,255,255,0.03);
+            z-index: -2;
+            pointer-events: none;
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+            transform: skewX(-5deg);
+        }
+
+        /* ---- 3D 位置状态 (skewX 创建平行四边形) ---- */
+        .carousel-slide.pos-current {
+            transform: translateX(0) translateZ(0) rotateY(0deg) scale(1) skewX(-3deg);
+            opacity: 1;
+            z-index: 12;
+            filter: brightness(1.08);
+        }
+        .carousel-slide.pos-current::before {
+            border-color: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 0 60px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.1);
+        }
+        .carousel-slide.pos-current::after {
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: 0 0 80px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.05);
+        }
+        .carousel-slide.pos-prev {
+            transform: translateX(-30%) translateZ(-180px) rotateY(18deg) scale(0.8) skewX(-3deg);
+            opacity: 0.7;
+            z-index: 8;
+            filter: brightness(0.5);
+            pointer-events: none;
+        }
+        .carousel-slide.pos-next {
+            transform: translateX(30%) translateZ(-180px) rotateY(-18deg) scale(0.8) skewX(-3deg);
+            opacity: 0.7;
+            z-index: 8;
+            filter: brightness(0.5);
+            pointer-events: none;
+        }
+        .carousel-slide.pos-far-prev {
+            transform: translateX(-55%) translateZ(-320px) rotateY(30deg) scale(0.58) skewX(-3deg);
+            opacity: 0.35;
+            z-index: 4;
+            pointer-events: none;
+            filter: brightness(0.35);
+        }
+        .carousel-slide.pos-far-next {
+            transform: translateX(55%) translateZ(-320px) rotateY(-30deg) scale(0.58) skewX(-3deg);
+            opacity: 0.35;
+            z-index: 4;
+            pointer-events: none;
+            filter: brightness(0.35);
+        }
+        .carousel-slide.pos-hidden {
+            transform: translateX(0) translateZ(-450px) rotateY(0deg) scale(0.35) skewX(-3deg);
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* 内容轻微反倾斜保持可读 */
+        .slide-icon, .slide-badge, .slide-title, .slide-desc, .slide-btn {
+            transform: skewX(3deg);
+        }
+
+        /* 当前卡片光扫 */
+        .carousel-slide.pos-current::before {
+            animation: framePulse 2.5s ease-in-out infinite;
+        }
+        @keyframes framePulse {
+            0%, 100% { border-color: rgba(255,255,255,0.18); }
+            50% { border-color: rgba(255,255,255,0.35); }
+        }
+
+        .slide-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 20px;
+            pointer-events: none;
+        }
+        [data-theme="light"] .slide-overlay {
+            background: rgba(0,0,0,0.06);
+        }
+
+        .slide-icon {
+            font-size: 4.5rem;
+            line-height: 1;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 4px 20px rgba(255,255,255,0.2));
+            transition: transform 0.5s;
+        }
+        .carousel-slide.pos-current .slide-icon {
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .slide-badge {
+            display: inline-flex;
+            padding: 5px 16px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.15);
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .slide-title {
+            font-size: 2.9rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: #fff;
+            text-shadow: 0 2px 25px rgba(0,0,0,0.5), 0 0 60px rgba(255,255,255,0.1);
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
+            line-height: 1.1;
+        }
+
+        .slide-desc {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.7);
+            max-width: 500px;
+            margin: 0 auto 20px;
+            line-height: 1.6;
+            position: relative;
+            z-index: 2;
+        }
+
+        .slide-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 30px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            text-decoration: none;
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.18);
+            transition: 0.3s;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .slide-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 25px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3);
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.22);
+            border-color: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.5);
+        }
+
+        /* ---- 指示器 ---- */
+        .carousel-nav {
+            position: absolute;
+            bottom: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 25;
+        }
+        .nav-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            cursor: pointer;
+            transition: 0.35s;
+            border: none;
+        }
+        .nav-dot.active {
+            background: #fff;
+            box-shadow: 0 0 14px rgba(255,255,255,0.7), 0 0 30px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.5);
+            transform: scale(1.3);
+        }
+
+        /* ---- 翻页箭头 ---- */
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 25;
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #fff;
+            font-size: 2rem;
+            line-height: 46px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            opacity: 0;
+            padding: 0;
+        }
+        .carousel-container:hover .carousel-arrow { opacity: 1; }
+        .carousel-arrow:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.35);
+            transform: translateY(-50%) scale(1.12);
+            box-shadow: 0 0 30px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3);
+        }
+        .carousel-arrow-left { left: 16px; }
+        .carousel-arrow-right { right: 16px; }
+
+        /* ---- 粒子画布 ---- */
+        #carouselParticles {
+            position: absolute;
+            inset: 0;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        /* ---- 各游戏专属渐变背景 ---- */
+        .slide-sky {
+            background: radial-gradient(ellipse at 30% 20%, rgba(30,144,255,0.55) 0%, transparent 55%),
+                        radial-gradient(ellipse at 75% 80%, rgba(0,200,255,0.3) 0%, transparent 45%),
+                        linear-gradient(150deg, #0a2a4a 0%, #144a80 40%, #1e90ff 100%);
+        }
+        .slide-match {
+            background: radial-gradient(ellipse at 70% 20%, rgba(32,178,170,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 25% 80%, rgba(0,200,180,0.3) 0%, transparent 45%),
+                        linear-gradient(150deg, #032a2a 0%, #0a5550 40%, #20b2aa 100%);
+        }
+        .slide-tower {
+            background: radial-gradient(ellipse at 50% 20%, rgba(255,165,0,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 80% 80%, rgba(200,100,0,0.35) 0%, transparent 45%),
+                        linear-gradient(150deg, #301a05 0%, #6b3a0a 40%, #ffa500 100%);
+        }
+        .slide-typist {
+            background: radial-gradient(ellipse at 30% 30%, rgba(138,43,226,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 70%, rgba(100,0,200,0.3) 0%, transparent 45%),
+                        linear-gradient(150deg, #140a28 0%, #2d1055 40%, #8a2be2 100%);
+        }
+        .slide-beats {
+            background: radial-gradient(ellipse at 60% 20%, rgba(217,70,239,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 20% 80%, rgba(255,0,200,0.3) 0%, transparent 45%),
+                        linear-gradient(150deg, #200a2e 0%, #4a1565 40%, #d946ef 100%);
+        }
+        .slide-particle {
+            background: radial-gradient(ellipse at 40% 30%, rgba(44,83,100,0.55) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 70%, rgba(100,200,200,0.25) 0%, transparent 45%),
+                        linear-gradient(150deg, #0a1a20 0%, #153540 40%, #2c5364 100%);
+        }
+        .slide-coop {
+            background: radial-gradient(ellipse at 25% 30%, rgba(59,130,246,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 75% 70%, rgba(239,68,68,0.35) 0%, transparent 45%),
+                        linear-gradient(150deg, #161630 0%, #2a2a5a 40%, #3b82f6 100%);
+        }
+        .slide-breakout {
+            background: radial-gradient(ellipse at 40% 20%, rgba(168,85,247,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 80%, rgba(236,72,153,0.35) 0%, transparent 45%),
+                        linear-gradient(150deg, #1e0e2e 0%, #3d1845 40%, #a855f7 100%);
+        }
+        .slide-snake {
+            background: radial-gradient(ellipse at 30% 20%, rgba(34,197,94,0.5) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 60%, rgba(74,222,128,0.35) 0%, transparent 45%),
+                        linear-gradient(150deg, #081a0e 0%, #103d1e 40%, #22c55e 100%);
+        }
+
+        /* ========== OS 过滤器/分类栏 ========== */
+        .filter-bar {
+            position: relative;
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: rgba(var(--surface-r),var(--surface-g),var(--surface-b),0.7);
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--card-border-alpha));
+            color: rgb(var(--muted-r), var(--muted-g), var(--muted-b));
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .filter-btn.active {
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2);
+            color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            border-color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            box-shadow: 0 0 15px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2);
+        }
+        .filter-btn:hover { background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.1); }
+
+        /* ========== 搜索栏 ========== */
+        .search-bar {
+            position: relative;
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(var(--surface-r),var(--surface-g),var(--surface-b),0.7);
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);
+            border-radius: 40px; padding: 10px 20px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(12px); transition: 0.25s;
+        }
+        .search-bar:focus-within {
+            border-color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            box-shadow: 0 0 24px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.12);
+        }
+        .search-bar input {
+            flex: 1; background: transparent; border: none; outline: none;
+            color: rgb(var(--text-r),var(--text-g),var(--text-b));
+            font-size: 0.95rem; font-weight: 500;
+        }
+        .search-bar input::placeholder { color: rgb(var(--muted-r),var(--muted-g),var(--muted-b)); }
+        .search-bar .search-icon { font-size: 1.1rem; opacity: 0.5; flex-shrink: 0; }
+        .search-bar .search-clear {
+            display: none; background: none; border: none;
+            color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+            cursor: pointer; font-size: 1rem; padding: 2px 8px; border-radius: 50%;
+            transition: 0.15s; flex-shrink: 0;
+        }
+        .search-bar .search-clear.show { display: block; }
+        .search-bar .search-clear:hover { color: rgb(var(--text-r),var(--text-g),var(--text-b)); }
+        .search-count {
+            font-size: 0.78rem; color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+            flex-shrink: 0;
+        }
+
+        /* ========== 收藏按钮 ========== */
+        .card-fav {
+            position: absolute; top: 10px; right: 10px; z-index: 5;
+            background: rgba(0,0,0,0.3); border: none; border-radius: 50%;
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.9rem; transition: 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .card-fav:hover { transform: scale(1.2); }
+        .card-fav.favorited { background: rgba(255,80,80,0.25); }
+
+        /* ========== 游玩次数 ========== */
+        .card-playcount {
+            font-size: 0.65rem; color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+            margin-left: 6px; white-space: nowrap;
+        }
+
+        /* 收藏过滤器 */
+        .filter-btn.fav-filter {
+            position: relative;
+        }
+        .filter-btn.fav-filter.active-fav {
+            background: rgba(255,80,80,0.15);
+            color: #ff5050;
+            border-color: rgba(255,80,80,0.3);
+        }
+
+        /* ========== 游戏网格 ========== */
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-left: 20px;
+            border-left: 6px solid rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 32px;
+        }
+
+        .game-card {
+            background: rgba(var(--surface-r),var(--surface-g),var(--surface-b),0.7);
+            backdrop-filter: blur(14px);
+            border-radius: 24px;
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--card-border-alpha));
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            cursor: pointer;
+            display: flex;
+            box-shadow: 0 15px 35px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.01);
+            border-color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            box-shadow: 0 30px 40px -15px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.25);
+            background: rgba(calc(var(--surface-r)*1.5), calc(var(--surface-g)*1.5), calc(var(--surface-b)*1.5), 0.75);
+        }
+        .card-cover {
+            width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.8rem;
+            background: linear-gradient(145deg, rgba(var(--surface-r),var(--surface-g),var(--surface-b),0.8), rgba(var(--surface2-r),var(--surface2-g),var(--surface2-b),0.9));
+            transition: 0.25s;
+        }
+        .game-card:hover .card-cover {
+            filter: drop-shadow(0 0 8px currentColor);
+            transform: scale(1.05);
+        }
+
+        .cover-sky { background: linear-gradient(135deg, #0b3b6b, #1e90ff); }
+        .cover-match { background: linear-gradient(135deg, #043b3b, #20b2aa); }
+        .cover-tower { background: linear-gradient(135deg, #4a2e0b, #ffa500); }
+        .cover-type { background: linear-gradient(135deg, #1a1a2e, #8a2be2); }
+        .cover-beat { background: linear-gradient(135deg, #2d1b4c, #d946ef); }
+        .cover-sand { background: linear-gradient(135deg, #0f2027, #2c5364); }
+
+        .card-info { flex: 1; padding: 20px; }
+        .card-info h2 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--logo-1), var(--logo-2));
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .card-info p {
+            font-size: 0.85rem;
+            color: rgb(var(--muted-r), var(--muted-g), var(--muted-b));
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .tags span {
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            border: 0.5px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--card-border-alpha));
+        }
+        .btn-play {
+            background: linear-gradient(95deg, rgb(var(--accent-r),var(--accent-g),var(--accent-b)), rgb(calc(var(--accent-r)*0.4),calc(var(--accent-g)*0.4),calc(var(--accent-b)*0.4)));
+            border: none;
+            padding: 6px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+        .btn-play:hover {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 0 15px rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            transform: scale(1.05);
+        }
+
+        #cursor-neon {
+            position: fixed;
+            width: 360px;
+            height: 360px;
+            background: radial-gradient(circle, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15), transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            filter: blur(30px);
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        /* 光标箭头 - 赛博朋克风格 */
+        .cursor-arrow {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            filter: drop-shadow(0 0 6px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.7))
+                    drop-shadow(0 0 12px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3));
+            transition: opacity 0.2s;
+        }
+        /* 光标中心高亮 */
+        .cursor-tip {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10001;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px rgb(var(--accent-r),var(--accent-g),var(--accent-b)),
+                        0 0 20px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.6);
+            opacity: 0.9;
+        }
+        /* 光标拖尾粒子 */
+        .cursor-trail {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        /* 鼠标点击爆裂粒子 */
+        .click-particle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            z-index: 10002;
+            transform: translate(-50%, -50%);
+        }
+
+        /* ========== 6. 嵌入跑酷迷你游戏 ========== */
+        .mini-runner { width: 100%; position: relative; margin-top: 28px; }
+        .mini-runner canvas { display: block; width: 100%; height: 120px; cursor: pointer; touch-action: none; }
+
+        /* ========== 7. 用户登录 ========== */
+        #login-overlay {
+            position: fixed; inset: 0; z-index: 10000;
+            display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(2,6,23,0.92);
+            backdrop-filter: blur(16px);
+        }
+        #login-overlay.show { display: flex; }
+        .login-card {
+            background: rgba(var(--surface-r),var(--surface-g),var(--surface-b),0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2);
+            border-radius: 20px;
+            padding: 36px 40px 32px;
+            width: min(90%, 380px);
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .login-card h1 {
+            font-size: 2rem; font-weight: 900;
+            background: linear-gradient(135deg, var(--logo-1), var(--logo-2), var(--logo-3));
+            -webkit-background-clip: text; color: transparent;
+            margin-bottom: 4px;
+        }
+        .login-card .sub {
+            font-size: 0.85rem; color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+            margin-bottom: 24px;
+        }
+        .login-input-wrap {
+            display: flex; align-items: center;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+        .login-input-wrap:focus-within {
+            border-color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            box-shadow: 0 0 20px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.12);
+        }
+        .login-input-wrap input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: rgb(var(--text-r),var(--text-g),var(--text-b));
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .login-input-wrap input::placeholder {
+            color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+        }
+        .login-input-wrap .login-icon {
+            font-size: 1.2rem; margin-right: 10px;
+        }
+        .login-suggestions {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .login-suggestions .suggest-btn {
+            padding: 6px 14px;
+            border-radius: 30px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.15s;
+        }
+        .login-suggestions .suggest-btn:hover {
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.12);
+            border-color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            color: rgb(var(--text-r),var(--text-g),var(--text-b));
+        }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            background: linear-gradient(135deg, rgb(var(--accent-r),var(--accent-g),var(--accent-b)), rgb(var(--accent2-r),var(--accent2-g),var(--accent2-b)));
+            color: #fff;
+            transition: 0.2s;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3);
+        }
+
+        /* ===== 用户胶囊 ===== */
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(var(--surface-r),var(--surface-g),var(--surface-b),0.45);
+            padding: 5px 8px 5px 5px;
+            border-radius: 60px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);
+            transition: 0.25s;
+        }
+        .user-pill:hover {
+            border-color: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.35);
+            box-shadow: 0 0 20px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.06);
+        }
+        .user-pill .avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; flex-shrink: 0;
+        }
+        .user-pill .user-name {
+            font-size: 0.82rem; font-weight: 600;
+            color: rgb(var(--text-r),var(--text-g),var(--text-b));
+            max-width: 70px; overflow: hidden; text-overflow: ellipsis;
+        }
+        .user-pill .pill-score {
+            font-weight: 700; font-size: 0.78rem;
+            color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            padding: 2px 10px;
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.1);
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        .user-pill .pill-logout {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+            border: none;
+            color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+            cursor: pointer;
+            font-size: 0.65rem;
+            transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .user-pill .pill-logout:hover {
+            color: #ef4444;
+            background: rgba(239,68,68,0.12);
+        }
+
+        #global-score {
+            font-weight: 700;
+            font-size: 0.85rem;
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.12);
+            padding: 5px 12px;
+            border-radius: 32px;
+            border-left: 2px solid rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            white-space: nowrap;
+        }
+
+        /* ========== 排行榜 ========== */
+        #leaderboard-overlay {
+            position: fixed; inset: 0; z-index: 10001;
+            display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(2,6,23,0.85);
+            backdrop-filter: blur(12px);
+        }
+        #leaderboard-overlay.show { display: flex; }
+        .lb-card {
+            background: rgba(var(--surface-r),var(--surface-g),var(--surface-b),0.9);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);
+            border-radius: 20px;
+            width: min(92%, 420px);
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+        }
+        .lb-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-bottom: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.1);
+        }
+        .lb-header h2 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--logo-1), var(--logo-2), var(--logo-3));
+            -webkit-background-clip: text; color: transparent;
+        }
+        .lb-close {
+            background: rgba(255,255,255,0.06);
+            border: none; border-radius: 50%;
+            width: 30px; height: 30px;
+            cursor: pointer;
+            color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+            font-size: 0.9rem;
+            transition: 0.15s;
+        }
+        .lb-close:hover { color: #fff; background: rgba(255,255,255,0.12); }
+        .lb-body {
+            padding: 14px 22px 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .lb-loading {
+            text-align: center;
+            color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+            padding: 30px 0;
+            font-size: 0.9rem;
+        }
+        .lb-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            transition: 0.15s;
+            margin-bottom: 4px;
+        }
+        .lb-row:hover { background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.06); }
+        .lb-row.is-me {
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.1);
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);
+        }
+        .lb-rank {
+            font-size: 1rem;
+            font-weight: 800;
+            width: 28px;
+            text-align: center;
+            color: rgb(var(--muted-r),var(--muted-g),var(--muted-b));
+            flex-shrink: 0;
+        }
+        .lb-rank.gold { color: #fbbf24; }
+        .lb-rank.silver { color: #94a3b8; }
+        .lb-rank.bronze { color: #d97706; }
+        .lb-name {
+            flex: 1;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: rgb(var(--text-r),var(--text-g),var(--text-b));
+        }
+        .lb-score {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+        }
+
+        @media (max-width: 980px) {
+            .carousel-container { height: 360px; perspective: 1000px; }
+            .carousel-slide { top: 22px; bottom: 44px; left: 8%; right: 8%; }
+            .carousel-slide::before { inset: -9px; }
+            .carousel-slide::after { inset: -18px; }
+            .carousel-slide.pos-prev { transform: translateX(-26%) translateZ(-130px) rotateY(12deg) scale(0.8) skewX(-3deg); }
+            .carousel-slide.pos-next { transform: translateX(26%) translateZ(-130px) rotateY(-12deg) scale(0.8) skewX(-3deg); }
+            .carousel-slide.pos-far-prev,
+            .carousel-slide.pos-far-next { opacity: 0; pointer-events: none; }
+            .slide-title { font-size: 2.2rem; }
+            .slide-icon { font-size: 3.4rem; }
+        }
+
+        @media (max-width: 780px) {
+            .carousel-container { height: 290px; perspective: 700px; }
+            .carousel-slide { top: 16px; bottom: 40px; left: 4%; right: 4%; border-radius: 14px; }
+            .carousel-slide::before { inset: -6px; border-radius: 16px; }
+            .carousel-slide::after { inset: -13px; border-radius: 17px; }
+            .carousel-slide.pos-prev { transform: translateX(-20%) translateZ(-100px) rotateY(8deg) scale(0.82) skewX(-3deg); }
+            .carousel-slide.pos-next { transform: translateX(20%) translateZ(-100px) rotateY(-8deg) scale(0.82) skewX(-3deg); }
+            .carousel-slide.pos-far-prev,
+            .carousel-slide.pos-far-next { opacity: 0; pointer-events: none; }
+            .slide-title { font-size: 1.6rem; }
+            .slide-desc { font-size: 0.82rem; max-width: 90%; }
+            .slide-icon { font-size: 2.6rem; margin-bottom: 6px; }
+            .game-grid { grid-template-columns: 1fr; }
+            header { padding: 12px 14px; }
+            main { padding: 20px 14px 60px; }
+            .logo { font-size: 1.2rem; }
+            .hdr-icon-btn { width: 34px; height: 34px; font-size: 0.85rem; }
+            .user-pill { gap: 6px; padding: 4px 6px 4px 4px; }
+            .user-pill .user-name { max-width: 50px; font-size: 0.72rem; }
+            .user-pill .pill-score { font-size: 0.7rem; padding: 2px 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 动态星空背景 -->
+    <canvas id="starfieldCanvas"></canvas>
+
+    <!-- OS 开机启动序列动画 -->
+    <div id="boot-screen">
+        <div class="boot-lines">
+            <div class="boot-line">> SYSTEM BOOT SEQUENCE INITIATED...</div>
+            <div class="boot-line">> LOADING <span class="highlight">KERNEL MODULES</span> <span class="ok">[OK]</span></div>
+            <div class="boot-line">> MOUNTING <span class="highlight">NEON INTERFACE</span> <span class="ok">[OK]</span></div>
+            <div class="boot-line">> CALIBRATING <span class="highlight">HOLOGRAPHIC DISPLAY</span> <span class="ok">[OK]</span></div>
+            <div class="boot-line">> INITIALIZING <span class="highlight">GAME ENGINES</span> <span class="ok">[OK]</span></div>
+            <div class="boot-line">> ESTABLISHING <span class="highlight">ARCADE NETWORK</span> <span class="ok">[OK]</span></div>
+            <div class="boot-line">> SYNCING <span class="highlight">PLAYER PROFILES</span> <span class="ok">[OK]</span></div>
+            <div class="boot-line">> <span class="warn">WARNING:</span> <span style="color:#888">NEON CORE OVERCLOCK AT 112%</span></div>
+            <div class="boot-line">> <span class="highlight">SYSTEM READY</span> <span class="ok">[OK]</span></div>
+        </div>
+        <div class="boot-progress"><div class="boot-progress-bar" id="bootProgress"></div></div>
+        <div class="boot-title" id="bootTitle">⚡ WEB ARCADE OS</div>
+    </div>
+
+    <!-- 动态光标 -->
+    <div id="cursor-neon"></div>
+    <svg class="cursor-arrow" id="cursorArrow" width="22" height="30" viewBox="0 0 22 30">
+        <polygon points="2,2 18,16 12,16 15,26 11,27 8,18 2,22"
+                 fill="rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2)"
+                 stroke="rgb(var(--accent-r),var(--accent-g),var(--accent-b))"
+                 stroke-width="1.2" stroke-linejoin="round"/>
+        <polygon points="4,5 14,14 10,14 12,21 10,22 8,16 4,18"
+                 fill="rgb(var(--accent-r),var(--accent-g),var(--accent-b))"
+                 opacity="0.4"/>
+    </svg>
+    <div class="cursor-tip" id="cursorTip"></div>
+
+    <!-- 用户登录遮罩 -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <h1>Web Arcade OS</h1>
+            <p class="sub">谁在玩游戏？输入昵称开始</p>
+            <div class="login-input-wrap">
+                <span class="login-icon">👾</span>
+                <input type="text" id="loginInput" placeholder="输入你的昵称..." maxlength="12" autocomplete="off">
+            </div>
+            <div class="login-suggestions">
+                <button class="suggest-btn" onclick="pickSuggestion(this)">赛博玩家</button>
+                <button class="suggest-btn" onclick="pickSuggestion(this)">像素猎人</button>
+                <button class="suggest-btn" onclick="pickSuggestion(this)">星云旅者</button>
+                <button class="suggest-btn" onclick="pickSuggestion(this)">霓虹刺客</button>
+                <button class="suggest-btn" onclick="pickSuggestion(this)">极客迷</button>
+                <button class="suggest-btn" onclick="pickSuggestion(this)">游戏达人</button>
+            </div>
+            <button class="login-btn" onclick="doLogin()">进入游戏厅</button>
+        </div>
+    </div>
+
+    <!-- 排行榜 -->
+    <div id="leaderboard-overlay">
+        <div class="lb-card">
+            <div class="lb-header">
+                <h2>🏆 成就排行榜</h2>
+                <button class="lb-close" onclick="hideLeaderboard()">✕</button>
+            </div>
+            <div class="lb-body" id="lbBody">
+                <div class="lb-loading">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo">⚡ Web Arcade OS</div>
+        <div class="header-right">
+            <div style="position:relative;">
+                <button class="hdr-icon-btn" id="themeBtn" onclick="toggleThemePanel()" title="换肤">🎨</button>
+                <div class="theme-panel" id="themePanel">
+                    <button class="theme-opt active" data-theme-val="neon" onclick="setTheme('neon')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#0ff,#f0f);"></span>
+                        赛博霓虹
+                    </button>
+                    <button class="theme-opt" data-theme-val="flame" onclick="setTheme('flame')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#ff7800,#ff3300);"></span>
+                        暗夜烈焰
+                    </button>
+                    <button class="theme-opt" data-theme-val="frost" onclick="setTheme('frost')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#78dcff,#b4c8ff);"></span>
+                        极地冰霜
+                    </button>
+                    <button class="theme-opt" data-theme-val="purple" onclick="setTheme('purple')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#b464ff,#ff50c8);"></span>
+                        迷幻紫
+                    </button>
+                    <button class="theme-opt" data-theme-val="green" onclick="setTheme('green')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#50ff80,#00c8c8);"></span>
+                        翡翠丛林
+                    </button>
+                    <button class="theme-opt" data-theme-val="light" onclick="setTheme('light')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#e2e8f0,#ffffff);border-color:#94a3b8;"></span>
+                        纯净白昼 ☀️
+                    </button>
+                    <button class="theme-opt" data-theme-val="cybergold" onclick="setTheme('cybergold')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#ffbf00,#ff5000);"></span>
+                        赛博黄金
+                    </button>
+                    <button class="theme-opt" data-theme-val="synthwave" onclick="setTheme('synthwave')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#ff3296,#00ffc8);"></span>
+                        合成波浪潮
+                    </button>
+                    <button class="theme-opt" data-theme-val="matrix" onclick="setTheme('matrix')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#00ff41,#008a20);"></span>
+                        黑客帝国
+                    </button>
+                    <button class="theme-opt" data-theme-val="crimson" onclick="setTheme('crimson')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#ff3030,#b00050);"></span>
+                        绯红风暴
+                    </button>
+                    <button class="theme-opt" data-theme-val="aurora" onclick="setTheme('aurora')">
+                        <span class="theme-swatch" style="background:linear-gradient(135deg,#00ffb4,#9650ff);"></span>
+                        极光幻境
+                    </button>
+                </div>
+            </div>
+            <button class="hdr-icon-btn" id="leaderboardBtn" onclick="showLeaderboard()" title="排行榜">🏆</button>
+            <a href="profile.html" class="hdr-icon-btn" title="个人中心">👤</a>
+            <a href="admin.html" class="hdr-icon-btn" title="后台管理" style="opacity:0.55;">⚙️</a>
+            <div class="user-pill" id="userPill">
+                <div class="avatar">👾</div>
+                <span class="user-name" id="userNameDisplay">游客</span>
+                <span class="pill-score" id="global-score">0</span>
+                <button class="pill-logout" id="logoutBtn" onclick="logoutUser()" style="display:none" title="退出登录">✕</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 3D 全息轮播 -->
+        <div class="carousel-container">
+            <canvas id="carouselParticles"></canvas>
+            <div class="carousel-slide slide-sky active">
+                <div class="slide-overlay"></div>
+                <div class="slide-icon">✈️</div>
+                <span class="slide-badge">🎯 射击 · 生存</span>
+                <h2 class="slide-title">天空防卫局</h2>
+                <p class="slide-desc">偏导护盾 + 电磁脉冲，在无尽的陨石雨与敌机中守卫最后防线</p>
+                <a href="games/sky-defense/index.html" class="slide-btn">立即启动 ▶</a>
+            </div>
+
+            <div class="carousel-slide slide-match">
+                <div class="slide-overlay"></div>
+                <div class="slide-icon">🐙</div>
+                <span class="slide-badge">🧩 记忆 · 休闲</span>
+                <h2 class="slide-title">深海寻宝</h2>
+                <p class="slide-desc">翻开神秘卡片，在限定步数内找出所有配对的海底生物</p>
+                <a href="games/match/index.html" class="slide-btn">开始探险 ▶</a>
+            </div>
+
+            <div class="carousel-slide slide-tower">
+                <div class="slide-overlay"></div>
+                <div class="slide-icon">🏗️</div>
+                <span class="slide-badge">⚡ 反应 · 物理</span>
+                <h2 class="slide-title">云端筑梦师</h2>
+                <p class="slide-desc">抓准时机堆叠建筑模块，挑战人类物理学的极限高度</p>
+                <a href="games/tower/index.html" class="slide-btn">开始搭建 ▶</a>
+            </div>
+
+            <div class="carousel-slide slide-typist">
+                <div class="slide-overlay"></div>
+                <div class="slide-icon">💻</div>
+                <span class="slide-badge">⌨️ 打字 · 硬核</span>
+                <h2 class="slide-title">极客骇客</h2>
+                <p class="slide-desc">化身顶级黑客，快速敲击键盘拦截落下的代码病毒</p>
+                <a href="games/typist/index.html" class="slide-btn">入侵系统 ▶</a>
+            </div>
+
+            <div class="carousel-slide slide-beats">
+                <div class="slide-overlay"></div>
+                <div class="slide-icon">🎵</div>
+                <span class="slide-badge">🧠 记忆 · 音乐</span>
+                <h2 class="slide-title">光音记忆</h2>
+                <p class="slide-desc">记住光色与音符的序列，重现完美旋律，挑战你的记忆极限</p>
+                <a href="games/beats/index.html" class="slide-btn">开始挑战 ▶</a>
+            </div>
+
+            <div class="carousel-slide slide-particle">
+                <div class="slide-overlay"></div>
+                <div class="slide-icon">🌌</div>
+                <span class="slide-badge">✨ 沙盒 · 解压</span>
+                <h2 class="slide-title">星海流沙</h2>
+                <p class="slide-desc">6种粒子交互：引力场、银河旋涡、流光拖尾，解压神器</p>
+                <a href="games/particle/index.html" class="slide-btn">进入星海 ▶</a>
+            </div>
+
+            <div class="carousel-slide slide-coop">
+                <div class="slide-overlay"></div>
+                <div class="slide-icon">👯</div>
+                <span class="slide-badge">👫 双人 · 迷宫</span>
+                <h2 class="slide-title">双子星探险</h2>
+                <p class="slide-desc">双人配合穿越随机迷宫，同时抵达传送门才能过关</p>
+                <a href="games/coop/index.html" class="slide-btn">组队出发 ▶</a>
+            </div>
+
+            <div class="carousel-slide slide-snake">
+                <div class="slide-overlay"></div>
+                <div class="slide-icon">🐍</div>
+                <span class="slide-badge">🕹 经典 · 贪吃蛇</span>
+                <h2 class="slide-title">贪吃蛇</h2>
+                <p class="slide-desc">经典贪吃蛇玩法，全屏网格战场。吃果实越长越大，挑战最高分！</p>
+                <a href="games/snake/index.html" class="slide-btn">开始游戏 ▶</a>
+            </div>
+
+            <div class="carousel-slide slide-breakout">
+                <div class="slide-overlay"></div>
+                <div class="slide-icon">💎</div>
+                <span class="slide-badge">🔄 消除 · 益智</span>
+                <h2 class="slide-title">宝石消消乐</h2>
+                <p class="slide-desc">交换相邻宝石凑成三个以上消除，触发华丽级联连消</p>
+                <a href="games/breakout/index.html" class="slide-btn">开始消除 ▶</a>
+            </div>
+
+            <div class="carousel-nav">
+                <div class="nav-dot active" onclick="setSlide(0)"></div>
+                <div class="nav-dot" onclick="setSlide(1)"></div>
+                <div class="nav-dot" onclick="setSlide(2)"></div>
+                <div class="nav-dot" onclick="setSlide(3)"></div>
+                <div class="nav-dot" onclick="setSlide(4)"></div>
+                <div class="nav-dot" onclick="setSlide(5)"></div>
+                <div class="nav-dot" onclick="setSlide(6)"></div>
+                <div class="nav-dot" onclick="setSlide(7)"></div>
+                <div class="nav-dot" onclick="setSlide(8)"></div>
+            </div>
+
+            <button class="carousel-arrow carousel-arrow-left" onclick="prevSlide()" aria-label="上一页">‹</button>
+            <button class="carousel-arrow carousel-arrow-right" onclick="nextSlide()" aria-label="下一页">›</button>
+        </div>
+
+
+        <h2 class="section-title">游戏大厅列表</h2>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" data-filter="all">全部展示</button>
+            <button class="filter-btn" data-filter="action">射击/动作</button>
+            <button class="filter-btn" data-filter="puzzle">休闲/解谜</button>
+            <button class="filter-btn" data-filter="coop">双人/合作</button>
+            <button class="filter-btn" data-filter="hardcore">硬核/反应</button>
+            <button class="filter-btn fav-filter" data-filter="favorites" id="favFilterBtn">❤️ 收藏</button>
+        </div>
+
+        <!-- 炫酷检索 -->
+        <div class="search-bar" id="searchBar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="搜索游戏名称、标签..." autocomplete="off">
+            <span class="search-count" id="searchCount"></span>
+            <button class="search-clear" id="searchClear">✕</button>
+        </div>
+
+        <div class="game-grid" id="game-grid">
+
+            <article class="game-card" data-category="action" onclick="location.href='games/sky-defense/index.html'">
+                <div class="card-cover cover-sky">✈️</div>
+                <div class="card-info">
+                    <h2>天空防卫局</h2>
+                    <p>利用偏导护盾和电磁脉冲大招抵御不断袭来的外星陨石群。</p>
+                    <div class="card-footer"><div class="tags"><span>动作</span> <span>射击</span></div><span class="btn-play">启动</span></div>
+                </div>
+            </article>
+
+            <article class="game-card" data-category="puzzle" onclick="location.href='games/match/index.html'">
+                <div class="card-cover cover-match">🐙</div>
+                <div class="card-info">
+                    <h2>深海寻宝</h2>
+                    <p>翻开神秘的深海卡片，在限定步数内找出所有配对的海底生物。</p>
+                    <div class="card-footer"><div class="tags"><span>记忆</span> <span>休闲</span></div><span class="btn-play">启动</span></div>
+                </div>
+            </article>
+
+            <article class="game-card" data-category="hardcore puzzle" onclick="location.href='games/tower/index.html'">
+                <div class="card-cover cover-tower">🏗️</div>
+                <div class="card-info">
+                    <h2>云端筑梦师</h2>
+                    <p>抓准时机将建筑模块层层堆叠，挑战人类物理学的极限高度。</p>
+                    <div class="card-footer"><div class="tags"><span>反应</span> <span>物理</span></div><span class="btn-play">启动</span></div>
+                </div>
+            </article>
+
+            <article class="game-card" data-category="hardcore action" onclick="location.href='games/typist/index.html'">
+                <div class="card-cover cover-type">💻</div>
+                <div class="card-info">
+                    <h2>极客骇客</h2>
+                    <p>化身顶级黑客，快速敲击键盘拦截落下的代码病毒。</p>
+                    <div class="card-footer"><div class="tags"><span>打字</span> <span>硬核</span></div><span class="btn-play">启动</span></div>
+                </div>
+            </article>
+
+            <article class="game-card" data-category="hardcore action" onclick="location.href='games/beats/index.html'">
+                <div class="card-cover cover-beat">🎵</div>
+                <div class="card-info">
+                    <h2>光音记忆</h2>
+                    <p>经典 Simon Says 记忆挑战，记住光色与音符序列，重现完美旋律。</p>
+                    <div class="card-footer"><div class="tags"><span>记忆</span> <span>音乐</span></div><span class="btn-play">启动</span></div>
+                </div>
+            </article>
+
+            <article class="game-card" data-category="puzzle" onclick="location.href='games/particle/index.html'">
+                <div class="card-cover cover-sand">🌌</div>
+                <div class="card-info">
+                    <h2>星海流沙</h2>
+                    <p>6种粒子交互：引力场、银河旋涡、粒子烟花、流光拖尾、星空连线、粒子风暴，解压神器。</p>
+                    <div class="card-footer"><div class="tags"><span>沙盒</span> <span>6模式</span></div><span class="btn-play">启动</span></div>
+                </div>
+            </article>
+
+            <article class="game-card" data-category="coop puzzle" onclick="location.href='games/coop/index.html'">
+                <div class="card-cover" style="background: linear-gradient(135deg, #ef4444, #3b82f6);">👯</div>
+                <div class="card-info">
+                    <h2>双子星探险</h2>
+                    <p>双人配合穿越随机迷宫，蓝星和红星必须同时抵达专属传送门才能过关！支持联机远程合作。</p>
+                    <div class="card-footer"><div class="tags"><span>联机</span> <span>双人</span> <span>迷宫</span></div><span class="btn-play">启动</span></div>
+                </div>
+            </article>
+
+            <article class="game-card" data-category="classic casual" onclick="location.href='games/snake/index.html'">
+                <div class="card-cover" style="background: linear-gradient(135deg, #22c55e, #15803d);">🐍</div>
+                <div class="card-info">
+                    <h2>贪吃蛇</h2>
+                    <p>经典贪吃蛇玩法，全屏网格战场。吃果实越长越大，挑战最高分！</p>
+                    <div class="card-footer"><div class="tags"><span>经典</span> <span>贪吃蛇</span></div><span class="btn-play">进入</span></div>
+                </div>
+            </article>
+
+            <article class="game-card" data-category="puzzle" onclick="location.href='games/breakout/index.html'">
+                <div class="card-cover" style="background: linear-gradient(135deg, #ec4899, #a855f7);">💎</div>
+                <div class="card-info">
+                    <h2>宝石消消乐</h2>
+                    <p>交换相邻宝石凑成三个以上消除，巧妙布局触发华丽级联连消！</p>
+                    <div class="card-footer"><div class="tags"><span>消除</span> <span>益智</span></div><span class="btn-play">启动</span></div>
+                </div>
+            </article>
+
+        </div>
+        <!-- 嵌入跑酷迷你游戏 -->
+        <div class="mini-runner">
+            <canvas id="homeRunner" width="1200" height="120"></canvas>
+        </div>
+    </main>
+
+    <script>
+        // 一键重置：清除所有旧用户分数数据，每人从0开始
+        if (!localStorage.getItem('arcadeDataReset_v2')) {
+            localStorage.removeItem('arcadeProfiles');
+            ['skyDefenseHighScore','matchHighScore','towerHighScore','typistHighScore','beatsHighScore','coopHighScore','breakoutHighScore','drawGuessBest','arcadeUser','arcadeRatings','arcadeFavorites'].forEach(k => localStorage.removeItem(k));
+            localStorage.setItem('arcadeDataReset_v2', '1');
+        }
+
+        // ========== 1. 开机启动动画 + 登录 ==========
+        document.addEventListener("DOMContentLoaded", () => {
+            const user = localStorage.getItem('arcadeUser');
+            const bootScreen = document.getElementById('boot-screen');
+            const loginOverlay = document.getElementById('login-overlay');
+            const nameDisplay = document.getElementById('userNameDisplay');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (user) {
+                bootScreen.remove();
+                nameDisplay.textContent = user;
+                logoutBtn.style.display = '';
+                loadUserScores();
+                return;
+            }
+
+            // 炫酷开机动画
+            const lines = document.querySelectorAll('.boot-line');
+            const progressBar = document.getElementById('bootProgress');
+            const bootTitle = document.getElementById('bootTitle');
+            let delay = 80;
+            const step = 280;
+
+            lines.forEach((line, i) => {
+                setTimeout(() => {
+                    line.style.opacity = '1';
+                    line.style.transition = 'opacity 0.2s';
+                    const pct = Math.min(Math.round(((i + 1) / lines.length) * 95), 95);
+                    if (progressBar) progressBar.style.width = pct + '%';
+                }, delay + i * step);
+            });
+
+            const totalDur = delay + lines.length * step;
+            setTimeout(() => {
+                if (progressBar) progressBar.style.width = '100%';
+                if (bootTitle) bootTitle.style.opacity = '1';
+                bootTitle.style.transition = 'opacity 0.6s';
+            }, totalDur);
+
+            setTimeout(() => {
+                bootScreen.style.opacity = '0';
+                setTimeout(() => {
+                    bootScreen.remove();
+                    loginOverlay.classList.add('show');
+                    document.getElementById('loginInput').focus();
+                }, 800);
+            }, totalDur + 900);
+        });
+
+        function pickSuggestion(btn) {
+            document.getElementById('loginInput').value = btn.textContent;
+        }
+
+        function doLogin() {
+            const input = document.getElementById('loginInput');
+            const name = input.value.trim();
+            if (!name || name.length < 1) { input.focus(); return; }
+            if (name.length > 12) return;
+
+            localStorage.setItem('arcadeUser', name);
+
+            // 迁移旧分数到用户档案
+            const profile = getUserProfile(name);
+            const gamesKeys = ['skyDefense','match','tower','typist','beats','particle','coop','drawGuess','breakout'];
+            let changed = false;
+            gamesKeys.forEach(game => {
+                const key = game === 'drawGuess' ? 'drawGuessBest' : game + 'HighScore';
+                const val = parseInt(localStorage.getItem(key)) || 0;
+                if (val > 0 && (!profile[game] || val > profile[game])) {
+                    profile[game] = val;
+                    changed = true;
+                }
+            });
+            if (changed) saveUserProfile(name, profile);
+
+            // 迁移后清除旧全局键，防止下个用户重复迁移
+            const oldKeys = ['skyDefenseHighScore','matchHighScore','towerHighScore','typistHighScore','beatsHighScore','coopHighScore','breakoutHighScore','drawGuessBest'];
+            oldKeys.forEach(k => localStorage.removeItem(k));
+
+            document.getElementById('login-overlay').classList.remove('show');
+            document.getElementById('userNameDisplay').textContent = name;
+            document.getElementById('logoutBtn').style.display = '';
+            loadUserScores();
+            updateGlobalScore();
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('arcadeUser');
+            location.reload();
+        }
+
+        // 用户档案管理
+        function getUserProfile(name) {
+            try {
+                const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
+                return all[name] || {};
+            } catch(e) { return {}; }
+        }
+
+        function saveUserProfile(name, data) {
+            try {
+                const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
+                all[name] = data;
+                localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                // 异步同步到云端
+                const favs = JSON.parse(localStorage.getItem('arcadeFavorites') || '[]');
+                const theme = localStorage.getItem('arcadeTheme') || 'neon';
+                if (typeof CloudSync !== 'undefined') CloudSync.saveProfile(name, data, favs, theme);
+            } catch(e) {}
+        }
+
+        function saveUserScore(game, score) {
+            const user = localStorage.getItem('arcadeUser');
+            if (!user) return;
+            const profile = getUserProfile(user);
+            if (!profile[game] || score > profile[game]) {
+                profile[game] = score;
+                saveUserProfile(user, profile);
+            }
+        }
+
+        // 从用户档案读取分数
+        function readUserScore(game) {
+            const user = localStorage.getItem('arcadeUser');
+            if (!user) {
+                const key = game === 'drawGuess' ? 'drawGuessBest' : game + 'HighScore';
+                return parseInt(localStorage.getItem(key)) || 0;
+            }
+            const profile = getUserProfile(user);
+            return profile[game] || 0;
+        }
+
+        function loadUserScores() {
+            const user = localStorage.getItem('arcadeUser');
+            if (!user) return;
+            const nameDisplay = document.getElementById('userNameDisplay');
+            if (nameDisplay) nameDisplay.textContent = user;
+        }
+
+        // 回车登录
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('loginInput');
+            if (input) {
+                input.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') doLogin();
+                });
+            }
+        });
+
+        // 给子页面暴露 saveUserScore
+        window.saveUserScore = saveUserScore;
+
+        // ========== 排行榜 ==========
+        function showLeaderboard() {
+            const overlay = document.getElementById('leaderboard-overlay');
+            overlay.classList.add('show');
+            renderLeaderboard();
+        }
+        function hideLeaderboard() {
+            document.getElementById('leaderboard-overlay').classList.remove('show');
+        }
+
+        function renderLeaderboard() {
+            const body = document.getElementById('lbBody');
+            const currentUser = localStorage.getItem('arcadeUser');
+            const gamesKeys = ['skyDefense','match','tower','typist','beats','particle','coop','drawGuess','breakout'];
+
+            try {
+                const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
+                const entries = Object.entries(all).map(([name, scores]) => {
+                    let total = 0;
+                    gamesKeys.forEach(game => {
+                        total += scores[game] || 0;
+                    });
+                    return { name, total };
+                }).filter(e => e.total > 0);
+
+                // 加上未登录的游客分数（从旧键读取）
+                if (!currentUser) {
+                    let guestTotal = 0;
+                    gamesKeys.forEach(game => {
+                        const key = game === 'drawGuess' ? 'drawGuessBest' : game + 'HighScore';
+                        guestTotal += parseInt(localStorage.getItem(key)) || 0;
+                    });
+                    if (guestTotal > 0) entries.push({ name: '游客', total: guestTotal });
+                }
+
+                entries.sort((a, b) => b.total - a.total);
+
+                if (entries.length === 0) {
+                    body.innerHTML = '<div class="lb-loading">暂无数据，快去玩游戏吧！</div>';
+                    return;
+                }
+
+                const medals = ['🥇', '🥈', '🥉'];
+                let html = '';
+                entries.forEach((e, i) => {
+                    const rank = i < 3 ? medals[i] : `<span class="lb-rank">${i + 1}</span>`;
+                    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+                    const isMe = e.name === currentUser;
+                    html += `<div class="lb-row${isMe ? ' is-me' : ''}">
+                        <span class="lb-rank ${rankClass}">${rank}</span>
+                        <span class="lb-name">${e.name}${isMe ? ' (你)' : ''}</span>
+                        <span class="lb-score">${e.total}</span>
+                    </div>`;
+                });
+                body.innerHTML = html;
+            } catch(e) {
+                body.innerHTML = '<div class="lb-loading">加载失败</div>';
+            }
+        }
+
+        // 点击排行榜外部关闭
+        document.getElementById('leaderboard-overlay').addEventListener('click', e => {
+            if (e.target === e.currentTarget) hideLeaderboard();
+        });
+
+        // ========== 2. 3D 全息轮播 (Win+Tab 风格) ==========
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dots = document.querySelectorAll('.nav-dot');
+        const totalSlides = slides.length;
+        let autoPlayInterval;
+        let isTransitioning = false;
+
+        function getOffset(i) {
+            let d = i - currentSlide;
+            if (d > totalSlides / 2) d -= totalSlides;
+            if (d < -totalSlides / 2) d += totalSlides;
+            return d;
+        }
+
+        function posClass(offset) {
+            if (offset === 0) return 'pos-current';
+            if (offset === -1) return 'pos-prev';
+            if (offset === 1) return 'pos-next';
+            if (offset === -2) return 'pos-far-prev';
+            if (offset === 2) return 'pos-far-next';
+            return 'pos-hidden';
+        }
+
+        function updateCarousel() {
+            for (let i = 0; i < slides.length; i++) {
+                const off = getOffset(i);
+                slides[i].classList.remove('pos-current', 'pos-prev', 'pos-next', 'pos-far-prev', 'pos-far-next', 'pos-hidden');
+                slides[i].classList.add(posClass(off));
+            }
+            dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+        }
+
+        function setSlide(index) {
+            if (isTransitioning || index === currentSlide) return;
+            isTransitioning = true;
+            const dir = getOffset(index) > 0 ? 1 : -1;
+            // 粒子爆散
+            spawnTransitionParticles(dir);
+            slides[currentSlide].classList.remove('pos-current');
+            currentSlide = index;
+            updateCarousel();
+            resetAutoPlay();
+            setTimeout(() => { isTransitioning = false; }, 750);
+        }
+
+        function nextSlide() { setSlide((currentSlide + 1) % totalSlides); }
+        function prevSlide() { setSlide((currentSlide - 1 + totalSlides) % totalSlides); }
+
+        function resetAutoPlay() {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = setInterval(nextSlide, 5000);
+        }
+
+        // ---- 粒子特效 (Canvas 2D) ----
+        const particleCanvas = document.getElementById('carouselParticles');
+        const pctx = particleCanvas.getContext('2d');
+        let particles = [];
+        let particleRAF = null;
+
+        function resizeParticleCanvas() {
+            const rect = particleCanvas.parentElement.getBoundingClientRect();
+            particleCanvas.width = rect.width;
+            particleCanvas.height = rect.height;
+        }
+        resizeParticleCanvas();
+        window.addEventListener('resize', resizeParticleCanvas);
+
+        function spawnTransitionParticles(dir) {
+            const cx = particleCanvas.width / 2;
+            const cy = particleCanvas.height / 2;
+            for (let i = 0; i < 60; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 2 + Math.random() * 8;
+                const hue = (currentSlide * 40 + Math.random() * 60) % 360;
+                particles.push({
+                    x: cx + dir * 100 + (Math.random() - 0.5) * 200,
+                    y: cy + (Math.random() - 0.5) * 150,
+                    vx: dir * speed * Math.cos(angle) * 1.5,
+                    vy: speed * Math.sin(angle),
+                    life: 1,
+                    decay: 0.01 + Math.random() * 0.025,
+                    size: 1.5 + Math.random() * 3.5,
+                    hue
+                });
+            }
+            if (!particleRAF) {
+                particleRAF = requestAnimationFrame(animateParticles);
+            }
+        }
+
+        function animateParticles() {
+            pctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.05;
+                p.life -= p.decay;
+                if (p.life <= 0) { particles.splice(i, 1); continue; }
+                pctx.save();
+                pctx.globalAlpha = p.life * 0.8;
+                pctx.shadowColor = `hsla(${p.hue}, 100%, 65%, ${p.life})`;
+                pctx.shadowBlur = 8;
+                pctx.fillStyle = `hsla(${p.hue}, 90%, 70%, ${p.life})`;
+                pctx.beginPath();
+                pctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                pctx.fill();
+                pctx.restore();
+            }
+            if (particles.length > 0) {
+                particleRAF = requestAnimationFrame(animateParticles);
+            } else {
+                particleRAF = null;
+            }
+        }
+
+        // ---- 触摸/拖拽支持 ----
+        let touchStartX = 0, touchStartY = 0;
+        const carouselEl = document.querySelector('.carousel-container');
+        carouselEl.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        carouselEl.addEventListener('touchend', e => {
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+                dx > 0 ? prevSlide() : nextSlide();
+            }
+        });
+
+        // 初始化轮播
+        updateCarousel();
+        dots[currentSlide].classList.add('active');
+        resetAutoPlay();
+
+        // ========== 3. 换肤系统 ==========
+        const THEMES = {
+            neon: { r: 0, g: 255, b: 255, r2: 255, g2: 0, b2: 255, bg1: '#0a0f2e', bg2: '#03050b', l1: '#ffffff', l2: '#0ff', l3: '#a0f', sr: 10, sg: 15, sb: 46, sr2: 5, sg2: 8, sb2: 30, tr: 238, tg: 245, tb: 255, mr: 148, mg: 163, mb: 184, ca: 0.3 },
+            flame: { r: 255, g: 120, b: 0, r2: 255, g2: 50, b2: 0, bg1: '#2e1208', bg2: '#140603', l1: '#ffffff', l2: '#ff7800', l3: '#ff3300', sr: 46, sg: 18, sb: 10, sr2: 30, sg2: 10, sb2: 5, tr: 238, tg: 245, tb: 255, mr: 200, mg: 170, mb: 150, ca: 0.3 },
+            frost: { r: 120, g: 220, b: 255, r2: 180, g2: 200, b2: 255, bg1: '#082438', bg2: '#030d18', l1: '#ffffff', l2: '#78dcff', l3: '#b4c8ff', sr: 10, sg: 24, sb: 42, sr2: 6, sg2: 12, sb2: 26, tr: 238, tg: 245, tb: 255, mr: 148, mg: 200, mb: 220, ca: 0.3 },
+            purple: { r: 180, g: 100, b: 255, r2: 255, g2: 80, b2: 200, bg1: '#1e0838', bg2: '#0c0318', l1: '#ffffff', l2: '#b464ff', l3: '#ff50c8', sr: 20, sg: 10, sb: 44, sr2: 12, sg2: 5, sb2: 26, tr: 238, tg: 245, tb: 255, mr: 190, mg: 170, mb: 210, ca: 0.3 },
+            green: { r: 50, g: 255, b: 80, r2: 0, g2: 200, b2: 200, bg1: '#0a1e0a', bg2: '#030b03', l1: '#ffffff', l2: '#50ff80', l3: '#00c8c8', sr: 12, sg: 30, sb: 15, sr2: 6, sg2: 16, sb2: 8, tr: 238, tg: 245, tb: 255, mr: 150, mg: 200, mb: 160, ca: 0.3 },
+            light: { r: 50, g: 120, b: 255, r2: 255, g2: 80, b2: 180, bg1: '#f0f4f8', bg2: '#e2e8f0', l1: '#1a202c', l2: '#3278ff', l3: '#e050a0', sr: 255, sg: 255, sb: 255, sr2: 240, sg2: 244, sb2: 248, tr: 26, tg: 32, tb: 44, mr: 100, mg: 116, mb: 139, ca: 0.15 },
+            cybergold: { r: 255, g: 191, b: 0, r2: 255, g2: 80, b2: 0, bg1: '#1a1200', bg2: '#0a0800', l1: '#ffffff', l2: '#ffbf00', l3: '#ff5000', sr: 26, sg: 18, sb: 0, sr2: 16, sg2: 10, sb2: 0, tr: 255, tg: 248, tb: 230, mr: 180, mg: 160, mb: 120, ca: 0.3 },
+            synthwave: { r: 255, g: 50, b: 150, r2: 0, g2: 255, b2: 200, bg1: '#1a0520', bg2: '#0d0210', l1: '#ffffff', l2: '#ff3296', l3: '#00ffc8', sr: 30, sg: 8, sb: 36, sr2: 18, sg2: 4, sb2: 22, tr: 250, tg: 240, tb: 255, mr: 200, mg: 150, mb: 200, ca: 0.3 },
+            matrix: { r: 0, g: 255, b: 65, r2: 0, g2: 200, b2: 100, bg1: '#001000', bg2: '#000500', l1: '#00ff41', l2: '#00cc32', l3: '#008a20', sr: 0, sg: 18, sb: 0, sr2: 0, sg2: 10, sb2: 0, tr: 180, tg: 255, tb: 180, mr: 0, mg: 180, mb: 60, ca: 0.25 },
+            crimson: { r: 220, g: 30, b: 30, r2: 180, g2: 0, b2: 80, bg1: '#1a0505', bg2: '#0d0202', l1: '#ffffff', l2: '#ff3030', l3: '#b00050', sr: 30, sg: 8, sb: 8, sr2: 18, sg2: 4, sb2: 4, tr: 255, tg: 220, tb: 220, mr: 180, mg: 120, mb: 120, ca: 0.3 },
+            aurora: { r: 0, g: 255, b: 180, r2: 150, g2: 80, b2: 255, bg1: '#061a1a', bg2: '#020a0a', l1: '#ffffff', l2: '#00ffb4', l3: '#9650ff', sr: 8, sg: 26, sb: 26, sr2: 4, sg2: 16, sb2: 16, tr: 220, tg: 255, tb: 250, mr: 120, mg: 200, mb: 190, ca: 0.3 }
+        };
+
+        function toggleThemePanel() {
+            document.getElementById('themePanel').classList.toggle('open');
+        }
+        document.addEventListener('click', e => {
+            const panel = document.getElementById('themePanel');
+            const btn = document.getElementById('themeBtn');
+            if (!btn.contains(e.target) && !panel.contains(e.target)) {
+                panel.classList.remove('open');
+            }
+        });
+
+        function setTheme(name) {
+            const t = THEMES[name];
+            if (!t) return;
+            const root = document.documentElement;
+            root.style.setProperty('--accent-r', t.r);
+            root.style.setProperty('--accent-g', t.g);
+            root.style.setProperty('--accent-b', t.b);
+            root.style.setProperty('--accent2-r', t.r2);
+            root.style.setProperty('--accent2-g', t.g2);
+            root.style.setProperty('--accent2-b', t.b2);
+            root.style.setProperty('--bg1', t.bg1);
+            root.style.setProperty('--bg2', t.bg2);
+            root.style.setProperty('--logo-1', t.l1);
+            root.style.setProperty('--logo-2', t.l2);
+            root.style.setProperty('--logo-3', t.l3);
+            root.style.setProperty('--surface-r', t.sr);
+            root.style.setProperty('--surface-g', t.sg);
+            root.style.setProperty('--surface-b', t.sb);
+            root.style.setProperty('--surface2-r', t.sr2);
+            root.style.setProperty('--surface2-g', t.sg2);
+            root.style.setProperty('--surface2-b', t.sb2);
+            root.style.setProperty('--text-r', t.tr);
+            root.style.setProperty('--text-g', t.tg);
+            root.style.setProperty('--text-b', t.tb);
+            root.style.setProperty('--muted-r', t.mr);
+            root.style.setProperty('--muted-g', t.mg);
+            root.style.setProperty('--muted-b', t.mb);
+            root.style.setProperty('--card-border-alpha', t.ca);
+            root.setAttribute('data-theme', name);
+
+            document.querySelectorAll('.theme-opt').forEach(el => {
+                el.classList.toggle('active', el.dataset.themeVal === name);
+            });
+
+            document.getElementById('themePanel').classList.remove('open');
+            localStorage.setItem('arcadeTheme', name);
+            // 异步同步到云端
+            const user = localStorage.getItem('arcadeUser');
+            if (user && typeof CloudSync !== 'undefined') {
+              const profile = getUserProfile(user);
+              const favs = JSON.parse(localStorage.getItem('arcadeFavorites') || '[]');
+              CloudSync.saveProfile(user, profile, favs, name);
+            }
+        }
+
+        // 恢复上次的皮肤
+        (function loadTheme() {
+            const saved = localStorage.getItem('arcadeTheme');
+            if (saved && THEMES[saved]) setTheme(saved);
+        })();
+
+        // ========== 4. OS 过滤器 + 搜索 + 收藏 ==========
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const gameCards = document.querySelectorAll('.game-card');
+        const searchInput = document.getElementById('searchInput');
+        const searchClear = document.getElementById('searchClear');
+        const searchCount = document.getElementById('searchCount');
+
+        // 为每个游戏卡添加收藏按钮 + data-game 属性
+        const gameNames = ['天空防卫局','深海寻宝','云端筑梦师','极客骇客','光音记忆','星海流沙','双子星探险','贪吃蛇','宝石消消乐'];
+        gameCards.forEach((card, i) => {
+            const name = gameNames[i] || 'game' + i;
+            card.dataset.game = name;
+
+            // 收藏按钮
+            const favBtn = document.createElement('button');
+            favBtn.className = 'card-fav';
+            favBtn.innerHTML = '<span class="heart-filled">♥</span><span class="heart-empty">♡</span>';
+            favBtn.title = '收藏';
+            favBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                favBtn.classList.toggle('favorited');
+                saveFavorites();
+            });
+            card.appendChild(favBtn);
+
+            // 加载收藏状态
+            if (isFavorited(name)) favBtn.classList.add('favorited');
+
+            // 游玩次数显示
+            const footer = card.querySelector('.card-footer');
+            if (footer) {
+                const pc = document.createElement('span');
+                pc.className = 'card-playcount';
+                const count = getPlayCount(name);
+                pc.textContent = count > 0 ? `🕹️ ${count}` : '';
+                footer.appendChild(pc);
+            }
+
+            // 拦截原有 onclick 来记录游玩次数
+            const origClick = card.onclick;
+            card.onclick = function(e) {
+                if (e.target.closest('.card-fav')) return;
+                incrementPlayCount(name);
+                if (origClick) origClick.call(card, e);
+            };
+        });
+
+        // 收藏管理
+        function getFavorites() {
+            try { return JSON.parse(localStorage.getItem('arcadeFavorites') || '[]'); } catch(e) { return []; }
+        }
+        function saveFavorites() {
+            const favs = [];
+            document.querySelectorAll('.card-fav.favorited').forEach(btn => {
+                const card = btn.closest('.game-card');
+                if (card) favs.push(card.dataset.game);
+            });
+            localStorage.setItem('arcadeFavorites', JSON.stringify(favs));
+            const user = localStorage.getItem('arcadeUser');
+            if (user && typeof CloudSync !== 'undefined') {
+              const profile = getUserProfile(user);
+              const theme = localStorage.getItem('arcadeTheme') || 'neon';
+              CloudSync.saveProfile(user, profile, favs, theme);
+            }
+        }
+        function isFavorited(name) {
+            return getFavorites().includes(name);
+        }
+
+        // 游玩次数管理
+        function getPlayCounts() {
+            try { return JSON.parse(localStorage.getItem('arcadePlayCounts') || '{}'); } catch(e) { return {}; }
+        }
+        function getPlayCount(name) {
+            const counts = getPlayCounts();
+            return counts[name] || 0;
+        }
+        function incrementPlayCount(name) {
+            const counts = getPlayCounts();
+            counts[name] = (counts[name] || 0) + 1;
+            localStorage.setItem('arcadePlayCounts', JSON.stringify(counts));
+            if (typeof CloudSync !== 'undefined') CloudSync.incrementPlayCount(name);
+        }
+
+        // 联合过滤（分类 + 搜索 + 收藏）
+        function applyFilters() {
+            const activeFilter = document.querySelector('.filter-btn.active');
+            const filterValue = activeFilter ? activeFilter.getAttribute('data-filter') : 'all';
+            const query = searchInput.value.trim().toLowerCase();
+            const isFavMode = filterValue === 'favorites';
+            const favorites = getFavorites();
+
+            let visibleCount = 0;
+            gameCards.forEach(card => {
+                let show = true;
+
+                if (filterValue !== 'all' && !isFavMode) {
+                    show = card.getAttribute('data-category').includes(filterValue);
+                }
+
+                if (isFavMode) {
+                    show = favorites.includes(card.dataset.game);
+                }
+
+                if (show && query) {
+                    const cardText = (card.dataset.game + ' ' + card.querySelector('p')?.textContent + ' ' + card.querySelector('h2')?.textContent).toLowerCase();
+                    show = cardText.includes(query);
+                }
+
+                card.style.display = show ? 'flex' : 'none';
+                if (show) visibleCount++;
+            });
+
+            searchCount.textContent = query ? `找到 ${visibleCount} 个` : '';
+            searchClear.classList.toggle('show', query.length > 0);
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                applyFilters();
+            });
+        });
+
+        searchInput.addEventListener('input', applyFilters);
+        searchClear.addEventListener('click', () => {
+            searchInput.value = '';
+            applyFilters();
+            searchInput.focus();
+        });
+
+        // ========== 5. 全局得分（用户感知） ==========
+        const scoreSpan = document.getElementById('global-score');
+
+        function fetchAllScores() {
+            const gamesKeys = ['skyDefense','match','tower','typist','beats','particle','coop','drawGuess','breakout'];
+            let total = 0;
+            gamesKeys.forEach(game => {
+                total += readUserScore(game);
+            });
+            return total;
+        }
+
+        let lastScore = 0;
+        function updateGlobalScore() {
+            let newTotal = fetchAllScores();
+            if (scoreSpan) {
+                scoreSpan.innerText = `${newTotal}`;
+                if (newTotal !== lastScore) {
+                    scoreSpan.classList.add('score-pop');
+                    setTimeout(() => scoreSpan.classList.remove('score-pop'), 400);
+                }
+                lastScore = newTotal;
+            }
+        }
+
+        window.addEventListener('storage', updateGlobalScore);
+        setInterval(() => { if (fetchAllScores() !== lastScore) updateGlobalScore(); }, 2000);
+        updateGlobalScore();
+
+        // 赛博光标 - 环绕光环 + 拖尾粒子 + 爆裂特效
+        const neonCursor = document.getElementById('cursor-neon');
+        const cursorArrow = document.getElementById('cursorArrow');
+        const cursorTip = document.getElementById('cursorTip');
+        let mx = 0, my = 0, cx = 0, cy = 0, rx = 0, ry = 0, dx = 0, dy = 0;
+        const trail = [];
+        const TRAIL_COUNT = 12;
+
+        for (let i = 0; i < TRAIL_COUNT; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'cursor-trail';
+            const size = 3 + Math.random() * 5;
+            dot.style.width = size + 'px';
+            dot.style.height = size + 'px';
+            document.body.appendChild(dot);
+            trail.push({ el: dot, x: 0, y: 0, size, life: 0 });
+        }
+
+        document.addEventListener('mousemove', e => {
+            mx = e.clientX;
+            my = e.clientY;
+        });
+
+        document.addEventListener('mousedown', e => {
+            const count = 6 + Math.floor(Math.random() * 6);
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'click-particle';
+                const s = 2 + Math.random() * 6;
+                p.style.width = s + 'px';
+                p.style.height = s + 'px';
+                p.style.background = 'rgb(var(--accent-r),var(--accent-g),var(--accent-b))';
+                p.style.left = e.clientX + 'px';
+                p.style.top = e.clientY + 'px';
+                p.style.boxShadow = '0 0 6px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.8)';
+                document.body.appendChild(p);
+                const angle = Math.random() * Math.PI * 2;
+                const vel = 40 + Math.random() * 80;
+                const vx = Math.cos(angle) * vel;
+                const vy = Math.sin(angle) * vel;
+                let life = 1;
+                const animP = () => {
+                    life -= 0.025;
+                    if (life <= 0) { p.remove(); return; }
+                    const x = parseFloat(p.style.left) + vx * 0.016;
+                    const y = parseFloat(p.style.top) + vy * 0.016;
+                    p.style.left = x + 'px';
+                    p.style.top = y + 'px';
+                    p.style.opacity = life;
+                    p.style.transform = 'translate(-50%,-50%) scale(' + life + ')';
+                    requestAnimationFrame(animP);
+                };
+                requestAnimationFrame(animP);
+            }
+            cursorArrow.style.transition = 'transform 0.06s';
+            cursorArrow.style.transform = 'translate(-2px,-2px) scale(0.85)';
+            setTimeout(() => {
+                cursorArrow.style.transform = '';
+            }, 80);
+        });
+
+        function smoothFollow() {
+            cx += (mx - cx) * 0.12;
+            cy += (my - cy) * 0.12;
+            rx += (mx - rx) * 0.25;
+            ry += (my - ry) * 0.25;
+            dx += (mx - dx) * 0.5;
+            dy += (my - dy) * 0.5;
+
+            if (neonCursor) {
+                neonCursor.style.left = cx + 'px';
+                neonCursor.style.top = cy + 'px';
+            }
+            if (cursorArrow) {
+                cursorArrow.style.left = (rx - 2) + 'px';
+                cursorArrow.style.top = (ry - 2) + 'px';
+            }
+            if (cursorTip) {
+                cursorTip.style.left = dx + 'px';
+                cursorTip.style.top = dy + 'px';
+            }
+
+            trail.unshift({ x: mx, y: my, life: 1 });
+            if (trail.length > TRAIL_COUNT) trail.pop();
+            trail.forEach((t, i) => {
+                if (t.el) {
+                    t.el.style.left = t.x + 'px';
+                    t.el.style.top = t.y + 'px';
+                    const alpha = Math.max(0, 1 - i / TRAIL_COUNT) * 0.7;
+                    const s = Math.max(0, 1 - i / TRAIL_COUNT);
+                    t.el.style.opacity = alpha;
+                    t.el.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+                    t.el.style.background = 'rgb(var(--accent-r),var(--accent-g),var(--accent-b))';
+                    t.el.style.boxShadow = '0 0 ' + (4 + i * 2) + 'px rgba(var(--accent-r),var(--accent-g),var(--accent-b),' + (0.5 * (1 - i / TRAIL_COUNT)) + ')';
+                }
+            });
+
+            requestAnimationFrame(smoothFollow);
+        }
+        smoothFollow();
+
+        // ========== 混沌流星背景 ==========
+        const starCanvas = document.getElementById('starfieldCanvas');
+        const starCtx = starCanvas.getContext('2d');
+        let meteors = [];
+        let sparkParticles = [];
+        let bgStars = [];
+        let starW, starH;
+
+        function resizeStarfield() {
+            starW = starCanvas.width = window.innerWidth;
+            starH = starCanvas.height = window.innerHeight;
+        }
+        resizeStarfield();
+        window.addEventListener('resize', () => {
+            resizeStarfield();
+            initStars();
+            initFloatParticles();
+            meteors = [];
+            sparkParticles = [];
+        });
+
+        function initStars() {
+            bgStars = [];
+            const count = Math.floor((starW * starH) / 2000);
+            for (let i = 0; i < count; i++) {
+                bgStars.push({
+                    x: Math.random() * starW,
+                    y: Math.random() * starH,
+                    r: Math.random() * 1.5 + 0.2,
+                    twinkleSpeed: 0.002 + Math.random() * 0.025,
+                    twinkleOffset: Math.random() * Math.PI * 2,
+                    hue: Math.random() < 0.25 ? 'accent' : (Math.random() < 0.12 ? 'accent2' : 'white')
+                });
+            }
+        }
+
+        function spawnMeteor(forceAngle) {
+            // 从屏幕边缘随机位置生成，方向更混沌
+            const edge = Math.floor(Math.random() * 4); // 0:top 1:right 2:bottom 3:left
+            let x, y, baseAngle;
+            const margin = 30;
+            switch (edge) {
+                case 0: x = Math.random() * starW; y = -margin; baseAngle = Math.PI * 0.35 + Math.random() * Math.PI * 0.3; break;
+                case 1: x = starW + margin; y = Math.random() * starH; baseAngle = Math.PI * 0.55 + Math.random() * Math.PI * 0.4; break;
+                case 2: x = Math.random() * starW; y = starH + margin; baseAngle = Math.PI * 1.35 + Math.random() * Math.PI * 0.3; break;
+                default: x = -margin; y = Math.random() * starH; baseAngle = Math.PI * 1.65 + Math.random() * Math.PI * 0.4; break;
+            }
+            const angleVariation = (Math.random() - 0.5) * Math.PI * 0.5;
+            const angle = baseAngle + angleVariation;
+            const speed = 3 + Math.random() * 14;
+            const vx = Math.cos(angle) * speed;
+            const vy = Math.sin(angle) * speed;
+            const len = 40 + Math.random() * 200;
+            const hueRoll = Math.random();
+            const hue = hueRoll < 0.35 ? 'accent' : (hueRoll < 0.55 ? 'accent2' : 'white');
+            return {
+                x, y, vx, vy, life: 1, decay: 0.002 + Math.random() * 0.012,
+                len, hue, headR: 1 + Math.random() * 3.5,
+                sparkTimer: 0, sparkInterval: 0.3 + Math.random() * 0.6,
+                curve: (Math.random() - 0.5) * 0.04
+            };
+        }
+
+        function spawnSparks(mx, my, vx, vy, hue) {
+            const count = 1 + Math.floor(Math.random() * 4);
+            for (let i = 0; i < count; i++) {
+                sparkParticles.push({
+                    x: mx, y: my,
+                    vx: vx * 0.3 + (Math.random() - 0.5) * 2,
+                    vy: vy * 0.3 + (Math.random() - 0.5) * 2,
+                    life: 0.15 + Math.random() * 0.35,
+                    decay: 0.015 + Math.random() * 0.04,
+                    r: 0.3 + Math.random() * 1.2,
+                    hue
+                });
+            }
+        }
+
+        initStars();
+
+        // 漂浮粒子 + 鼠标跟踪
+        let floatParticles = [];
+        let mouseX = -1000, mouseY = -1000;
+        function initFloatParticles() {
+            floatParticles = [];
+            const count = Math.floor((starW * starH) / 14000);
+            for (let i = 0; i < count; i++) {
+                floatParticles.push({
+                    x: Math.random() * starW,
+                    y: Math.random() * starH,
+                    vx: (Math.random() - 0.5) * 0.25,
+                    vy: (Math.random() - 0.5) * 0.25 - 0.1,
+                    r: 0.4 + Math.random() * 1.6,
+                    phase: Math.random() * Math.PI * 2,
+                    speed: 0.003 + Math.random() * 0.01,
+                    hue: Math.random() < 0.2 ? 'accent' : (Math.random() < 0.1 ? 'accent2' : 'white')
+                });
+            }
+        }
+        initFloatParticles();
+        document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+        document.addEventListener('mouseleave', () => { mouseX = -1000; mouseY = -1000; });
+
+        function drawStarfield(time) {
+            starCtx.clearRect(0, 0, starW, starH);
+            const style = getComputedStyle(document.documentElement);
+            const ar = style.getPropertyValue('--accent-r').trim();
+            const ag = style.getPropertyValue('--accent-g').trim();
+            const ab = style.getPropertyValue('--accent-b').trim();
+            const a2r = style.getPropertyValue('--accent2-r').trim();
+            const a2g = style.getPropertyValue('--accent2-g').trim();
+            const a2b = style.getPropertyValue('--accent2-b').trim();
+
+            // 背景星点
+            bgStars.forEach(s => {
+                const alpha = 0.12 + Math.sin(time * s.twinkleSpeed + s.twinkleOffset) * 0.25;
+                if (s.hue === 'accent') starCtx.fillStyle = `rgba(${ar},${ag},${ab},${Math.max(0.03,alpha)})`;
+                else if (s.hue === 'accent2') starCtx.fillStyle = `rgba(${a2r},${a2g},${a2b},${Math.max(0.03,alpha)})`;
+                else starCtx.fillStyle = `rgba(255,255,255,${Math.max(0.03,alpha)})`;
+                starCtx.beginPath();
+                starCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                starCtx.fill();
+            });
+
+            // 生成新流星 - 高频混沌
+            const spawnChance = 0.025 + Math.sin(time * 0.0003) * 0.01;
+            if (Math.random() < spawnChance) meteors.push(spawnMeteor());
+            if (meteors.length > 12) meteors.splice(0, meteors.length - 12);
+
+            // 绘制火屑粒子
+            for (let i = sparkParticles.length - 1; i >= 0; i--) {
+                const sp = sparkParticles[i];
+                sp.x += sp.vx;
+                sp.y += sp.vy;
+                sp.vy += 0.01;
+                sp.life -= sp.decay;
+                if (sp.life <= 0) { sparkParticles.splice(i, 1); continue; }
+                let sr, sg, sb;
+                if (sp.hue === 'accent') { sr = ar; sg = ag; sb = ab; }
+                else if (sp.hue === 'accent2') { sr = a2r; sg = a2g; sb = a2b; }
+                else { sr = 255; sg = 255; sb = 255; }
+                starCtx.fillStyle = `rgba(${sr},${sg},${sb},${sp.life})`;
+                starCtx.shadowColor = `rgba(${sr},${sg},${sb},${sp.life * 0.5})`;
+                starCtx.shadowBlur = 3;
+                starCtx.beginPath();
+                starCtx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2);
+                starCtx.fill();
+            }
+            starCtx.shadowBlur = 0;
+
+            // 绘制流星
+            for (let i = meteors.length - 1; i >= 0; i--) {
+                const m = meteors[i];
+                m.x += m.vx;
+                m.y += m.vy;
+                // 轻微弯曲
+                m.vx += m.curve;
+                m.life -= m.decay;
+                if (m.life <= 0 || m.x < -300 || m.x > starW + 300 || m.y < -300 || m.y > starH + 300) {
+                    meteors.splice(i, 1);
+                    continue;
+                }
+
+                // 火屑生成
+                m.sparkTimer += 1;
+                if (m.sparkTimer >= m.sparkInterval * 60) {
+                    m.sparkTimer = 0;
+                    spawnSparks(m.x, m.y, m.vx, m.vy, m.hue);
+                }
+
+                const alpha = Math.min(1, m.life * 1.5);
+                const tailLen = m.len * (0.5 + m.life * 0.5);
+                const tailX = m.x - m.vx * tailLen * 0.05;
+                const tailY = m.y - m.vy * tailLen * 0.05;
+
+                let r, g, b;
+                if (m.hue === 'accent') { r = ar; g = ag; b = ab; }
+                else if (m.hue === 'accent2') { r = a2r; g = a2g; b = a2b; }
+                else { r = 255; g = 255; b = 255; }
+
+                // 拖尾渐变 - 两层叠加更有质感
+                const grad = starCtx.createLinearGradient(m.x, m.y, tailX, tailY);
+                grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+                grad.addColorStop(0.15, `rgba(${r},${g},${b},${alpha})`);
+                grad.addColorStop(0.6, `rgba(${r},${g},${b},${alpha * 0.4})`);
+                grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+
+                starCtx.strokeStyle = grad;
+                starCtx.lineWidth = m.headR * 2.5;
+                starCtx.lineCap = 'round';
+                starCtx.shadowColor = `rgba(${r},${g},${b},${alpha * 0.5})`;
+                starCtx.shadowBlur = 14;
+                starCtx.beginPath();
+                starCtx.moveTo(m.x, m.y);
+                starCtx.lineTo(tailX, tailY);
+                starCtx.stroke();
+
+                // 内层细亮拖尾
+                const innerGrad = starCtx.createLinearGradient(m.x, m.y, tailX, tailY);
+                innerGrad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+                innerGrad.addColorStop(1, `rgba(255,255,255,0)`);
+                starCtx.strokeStyle = innerGrad;
+                starCtx.lineWidth = m.headR * 0.7;
+                starCtx.shadowBlur = 0;
+                starCtx.beginPath();
+                starCtx.moveTo(m.x, m.y);
+                starCtx.lineTo(tailX, tailY);
+                starCtx.stroke();
+
+                // 头部光晕
+                starCtx.shadowColor = `rgba(${r},${g},${b},${alpha})`;
+                starCtx.shadowBlur = 18;
+                starCtx.fillStyle = `rgba(255,255,255,${alpha})`;
+                starCtx.beginPath();
+                starCtx.arc(m.x, m.y, m.headR * 1.5, 0, Math.PI * 2);
+                starCtx.fill();
+
+                // 外层光晕
+                starCtx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.5})`;
+                starCtx.beginPath();
+                starCtx.arc(m.x, m.y, m.headR * 3, 0, Math.PI * 2);
+                starCtx.fill();
+            }
+
+            starCtx.globalAlpha = 1;
+            starCtx.shadowBlur = 0;
+
+            // 漂浮粒子 + 连线
+            for (let i = 0; i < floatParticles.length; i++) {
+                const fp = floatParticles[i];
+                fp.x += fp.vx + Math.sin(time * fp.speed + fp.phase) * 0.18;
+                fp.y += fp.vy + Math.cos(time * fp.speed + fp.phase + 1) * 0.15;
+                // 鼠标轻微吸引
+                const dx = mouseX - fp.x;
+                const dy = mouseY - fp.y;
+                const distToMouse = Math.sqrt(dx * dx + dy * dy);
+                if (distToMouse < 250 && distToMouse > 1) {
+                    fp.x += dx / distToMouse * 0.28;
+                    fp.y += dy / distToMouse * 0.28;
+                }
+                // 环绕
+                if (fp.x < -20) fp.x = starW + 20;
+                if (fp.x > starW + 20) fp.x = -20;
+                if (fp.y < -20) fp.y = starH + 20;
+                if (fp.y > starH + 20) fp.y = -20;
+
+                const pulse = 0.5 + Math.sin(time * 0.002 + fp.phase) * 0.5;
+                const alpha = 0.15 + pulse * 0.35;
+                let fr, fg, fb;
+                if (fp.hue === 'accent') { fr = ar; fg = ag; fb = ab; }
+                else if (fp.hue === 'accent2') { fr = a2r; fg = a2g; fb = a2b; }
+                else { fr = 255; fg = 255; fb = 255; }
+
+                // 光晕
+                const glowGrad = starCtx.createRadialGradient(fp.x, fp.y, 0, fp.x, fp.y, fp.r * 3);
+                glowGrad.addColorStop(0, `rgba(${fr},${fg},${fb},${alpha})`);
+                glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                starCtx.fillStyle = glowGrad;
+                starCtx.beginPath();
+                starCtx.arc(fp.x, fp.y, fp.r * 3, 0, Math.PI * 2);
+                starCtx.fill();
+
+                // 核心点
+                starCtx.fillStyle = `rgba(${fr},${fg},${fb},${alpha * 1.4})`;
+                starCtx.beginPath();
+                starCtx.arc(fp.x, fp.y, fp.r * 0.7, 0, Math.PI * 2);
+                starCtx.fill();
+
+                // 连线
+                for (let j = i + 1; j < floatParticles.length; j++) {
+                    const fp2 = floatParticles[j];
+                    const ldx = fp.x - fp2.x;
+                    const ldy = fp.y - fp2.y;
+                    const dist = Math.sqrt(ldx * ldx + ldy * ldy);
+                    const maxDist = 150;
+                    if (dist < maxDist) {
+                        const lineAlpha = (1 - dist / maxDist) * 0.12 * Math.min(alpha, 0.18 + Math.sin(time * 0.002 + fp2.phase) * 0.5 + 0.5);
+                        starCtx.strokeStyle = `rgba(${fr},${fg},${fb},${lineAlpha})`;
+                        starCtx.lineWidth = 0.3;
+                        starCtx.beginPath();
+                        starCtx.moveTo(fp.x, fp.y);
+                        starCtx.lineTo(fp2.x, fp2.y);
+                        starCtx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(drawStarfield);
+        }
+        requestAnimationFrame(drawStarfield);
+
+        // ========== 组件入场动画系统 ==========
+        function initEntrance() {
+            const targets = ['header', '.carousel-container', '.section-title', '.filter-bar', '.search-bar', '.mini-runner'];
+            targets.forEach(sel => {
+                const el = document.querySelector(sel);
+                if (el) el.classList.add('entrance-waiting');
+            });
+            document.querySelectorAll('.game-card').forEach(c => c.classList.add('entrance-waiting'));
+            document.querySelectorAll('.carousel-nav .nav-dot').forEach(d => d.classList.add('entrance-waiting'));
+        }
+
+        function playEntrance() {
+            const reveal = (sel, d) => {
+                const el = typeof sel === 'string' ? document.querySelector(sel) : sel;
+                if (!el) return;
+                el.style.setProperty('--entrance-delay', d + 's');
+                el.classList.replace('entrance-waiting', 'entrance-done');
+            };
+
+            reveal('header', 0);
+            reveal('.carousel-container', 0.1);
+            reveal('.section-title', 0.24);
+            reveal('.filter-bar', 0.38);
+            reveal('.search-bar', 0.5);
+
+            document.querySelectorAll('.game-card').forEach((c, i) => {
+                reveal(c, 0.6 + i * 0.1);
+            });
+            document.querySelectorAll('.carousel-nav .nav-dot').forEach((d, i) => {
+                reveal(d, 0.8 + i * 0.06);
+            });
+
+            reveal('.mini-runner', 0.9);
+        }
+
+        initEntrance();
+        setTimeout(playEntrance, 250);
+
+        // ========== 6. 实时互动 · 光速反应 ==========
+        (() => {
+            const c = document.getElementById('rtCanvas');
+            if (!c) return;
+            const ctx = c.getContext('2d');
+            const W = c.width, H = c.height;
+
+            const el = {
+                cur: document.getElementById('rtCur'),
+                best: document.getElementById('rtBest'),
+                prog: document.getElementById('rtProg'),
+                avg: document.getElementById('rtAvg'),
+                reset: document.getElementById('rtReset'),
+            };
+
+            let state = 'idle'; // idle | active | result
+            let target = { x: W / 2, y: H / 2, r: 24 };
+            let round = 0, maxRounds = 10, times = [];
+            let best = parseInt(localStorage.getItem('reactionBest') || '0');
+            let frame = 0, canClick = false, particles = [];
+            let roundStart = 0, missMark = null;
+            let resultD = null;
+
+            if (best > 0 && el.best) el.best.textContent = best + 'ms';
+
+            function accent() {
+                const s = getComputedStyle(document.documentElement);
+                return `rgb(${s.getPropertyValue('--accent-r').trim()},${s.getPropertyValue('--accent-g').trim()},${s.getPropertyValue('--accent-b').trim()})`;
+            }
+
+            function spawn() {
+                const pad = 55;
+                target.x = pad + Math.random() * (W - pad * 2);
+                target.y = pad + Math.random() * (H - pad * 2);
+                target.r = 24;
+                canClick = true;
+                roundStart = performance.now();
+                if (el.cur) el.cur.textContent = '···';
+            }
+
+            function burst(x, y, n, color) {
+                for (let i = 0; i < n; i++) {
+                    const a = Math.random() * 6.28, s = 1 + Math.random() * 3.5;
+                    particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.3, life: 20 + Math.random() * 20, maxLife: 40, size: 1.5 + Math.random() * 3, color });
+                }
+            }
+
+            function start() {
+                state = 'active'; round = 0; times = []; particles = []; missMark = null; resultD = null;
+                ui();
+                setTimeout(() => { round = 1; spawn(); }, 400);
+            }
+
+            function reset() {
+                state = 'idle'; round = 0; times = []; particles = []; missMark = null; resultD = null; canClick = false;
+                target.x = W / 2; target.y = H / 2;
+                ui();
+                if (el.cur) el.cur.textContent = '—';
+                if (el.avg) el.avg.textContent = '';
+                if (el.prog) el.prog.textContent = '0/10';
+            }
+
+            function ui() {
+                if (el.prog) el.prog.textContent = `${Math.min(round, maxRounds)}/${maxRounds}`;
+                if (el.avg && times.length > 0) {
+                    const a = times.reduce((x, y) => x + y, 0) / times.length;
+                    el.avg.textContent = `平均 ${Math.round(a)}ms`;
+                }
+            }
+
+            function hit(e) {
+                if (state === 'result') { reset(); return; }
+                if (state === 'idle') { start(); return; }
+                if (!canClick) return;
+
+                const rect = c.getBoundingClientRect();
+                const sx = W / rect.width, sy = H / rect.height;
+                const cx = (e.clientX - rect.left) * sx, cy = (e.clientY - rect.top) * sy;
+                const dx = cx - target.x, dy = cy - target.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist <= target.r + 10) {
+                    canClick = false;
+                    const t = performance.now() - roundStart;
+                    times.push(t);
+                    if (el.cur) el.cur.textContent = Math.round(t) + 'ms';
+                    burst(target.x, target.y, 16, accent());
+                    burst(target.x, target.y, 6, '#fff');
+
+                    round++;
+                    ui();
+                    if (round > maxRounds) {
+                        state = 'result';
+                        const avg = times.reduce((x, y) => x + y, 0) / times.length;
+                        const bestT = Math.round(Math.min(...times));
+                        const isNew = best === 0 || bestT < best;
+                        if (isNew) { best = bestT; localStorage.setItem('reactionBest', String(best)); if (el.best) el.best.textContent = best + 'ms'; }
+                        resultD = { avg, best: bestT, isNew };
+                        if (el.cur) el.cur.textContent = '—';
+                        return;
+                    }
+                    setTimeout(spawn, 200 + Math.random() * 150);
+                } else {
+                    missMark = { x: cx, y: cy, life: 18 };
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, W, H);
+                const ac = accent();
+
+                // bg
+                ctx.fillStyle = '#0b0e17';
+                ctx.fillRect(0, 0, W, H);
+
+                // grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+                ctx.lineWidth = 1;
+                for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+                for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+                // particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.x += p.vx; p.y += p.vy; p.vy += 0.04; p.life--;
+                    ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+                    if (p.life <= 0) particles.splice(i, 1);
+                }
+                ctx.globalAlpha = 1;
+
+                if (state === 'idle') {
+                    // pulsing ring
+                    const pulse = 1 + Math.sin(frame * 0.04) * 0.06;
+                    ctx.save();
+                    ctx.translate(W / 2, H / 2);
+                    ctx.scale(pulse, pulse);
+                    ctx.beginPath(); ctx.arc(0, 0, 30, 0, 6.28);
+                    ctx.strokeStyle = ac; ctx.lineWidth = 2;
+                    ctx.shadowColor = ac; ctx.shadowBlur = 25;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath(); ctx.arc(0, 0, 6, 0, 6.28);
+                    ctx.fillStyle = ac; ctx.shadowBlur = 15; ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                    ctx.font = '500 13px "Segoe UI",sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('点击任意位置开始', W / 2, H / 2 + 48);
+                    ctx.textAlign = 'left';
+                } else if (state === 'active') {
+                    // progress dots
+                    for (let i = 0; i < maxRounds; i++) {
+                        const dx = W / 2 - (maxRounds * 11) / 2 + i * 11 + 5.5;
+                        ctx.beginPath(); ctx.arc(dx, H - 14, 3.5, 0, 6.28);
+                        if (i < round - 1) {
+                            ctx.fillStyle = ac; ctx.shadowColor = ac; ctx.shadowBlur = 8;
+                        } else {
+                            ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.shadowBlur = 0;
+                        }
+                        ctx.fill(); ctx.shadowBlur = 0;
+                    }
+
+                    // miss marker
+                    if (missMark) {
+                        const a = missMark.life / 18;
+                        ctx.strokeStyle = `rgba(239,68,68,${a})`; ctx.lineWidth = 2;
+                        const s = 8 + (18 - missMark.life) * 0.3;
+                        ctx.beginPath(); ctx.moveTo(missMark.x - s, missMark.y - s); ctx.lineTo(missMark.x + s, missMark.y + s);
+                        ctx.moveTo(missMark.x + s, missMark.y - s); ctx.lineTo(missMark.x - s, missMark.y + s);
+                        ctx.stroke();
+                        missMark.life--;
+                        if (missMark.life <= 0) missMark = null;
+                    }
+
+                    // target
+                    if (canClick) {
+                        const pulse = 1 + Math.sin(frame * 0.06) * 0.035;
+                        ctx.save();
+                        ctx.translate(target.x, target.y);
+                        ctx.scale(pulse, pulse);
+
+                        ctx.beginPath(); ctx.arc(0, 0, target.r + 10, 0, 6.28);
+                        ctx.fillStyle = ac + '12'; ctx.fill();
+                        ctx.beginPath(); ctx.arc(0, 0, target.r, 0, 6.28);
+                        ctx.fillStyle = ac + '25';
+                        ctx.shadowColor = ac; ctx.shadowBlur = 25;
+                        ctx.fill();
+                        ctx.beginPath(); ctx.arc(0, 0, target.r * 0.45, 0, 6.28);
+                        ctx.fillStyle = ac; ctx.shadowBlur = 15;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = '#fff';
+                        ctx.beginPath(); ctx.arc(0, 0, 2.5, 0, 6.28); ctx.fill();
+                        ctx.restore();
+                    }
+
+                    // round indicator
+                    ctx.fillStyle = 'rgba(255,255,255,0.04)';
+                    ctx.font = '700 44px "Segoe UI",sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${round}/${maxRounds}`, W / 2, H / 2 + 8);
+                    ctx.textAlign = 'left';
+                } else if (state === 'result' && resultD) {
+                    ctx.fillStyle = 'rgba(11,14,23,0.88)'; ctx.fillRect(0, 0, W, H);
+                    ctx.textAlign = 'center';
+
+                    ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 16;
+                    ctx.font = '700 22px "Segoe UI",sans-serif';
+                    ctx.fillText('完成！', W / 2, 78);
+                    ctx.shadowBlur = 0;
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+                    ctx.font = '400 12px "Segoe UI",sans-serif';
+                    ctx.fillText('平均反应', W / 2, 112);
+
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.font = '800 42px "Segoe UI",sans-serif';
+                    ctx.fillText(`${Math.round(resultD.avg)}ms`, W / 2, 162);
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                    ctx.font = '400 12px "Segoe UI",sans-serif';
+                    ctx.fillText(`最快 ${resultD.best}ms`, W / 2, 190);
+
+                    if (resultD.isNew) {
+                        ctx.fillStyle = '#fbbf24';
+                        ctx.font = '600 11px "Segoe UI",sans-serif';
+                        ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 10;
+                        ctx.fillText('✦ 新纪录！', W / 2, 217);
+                        ctx.shadowBlur = 0;
+                    }
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                    ctx.font = '400 12px "Segoe UI",sans-serif';
+                    ctx.fillText('点击任意位置重新开始', W / 2, 263);
+                    ctx.textAlign = 'left';
+                }
+            }
+
+            function loop() { frame++; draw(); requestAnimationFrame(loop); }
+
+            c.addEventListener('click', hit);
+            c.addEventListener('touchstart', e => { e.preventDefault(); const t = e.touches[0]; hit({ clientX: t.clientX, clientY: t.clientY }); });
+            if (el.reset) el.reset.addEventListener('click', e => { e.stopPropagation(); reset(); });
+
+            loop();
+        })();
+        // ========== 6. 嵌入跑酷迷你游戏 ==========
+        (function() {
+            const c = document.getElementById('homeRunner');
+            if (!c) return;
+            const ctx = c.getContext('2d');
+            const W = 1200, H = 120;
+            const GROUND = 100;
+            const GRAVITY = 0.55;
+            const JUMP_F = -8.5;
+            const PW = 18, PH = 26;
+
+            function ac(a) {
+                const s = getComputedStyle(document.documentElement);
+                return `rgba(${s.getPropertyValue('--accent-r').trim()},${s.getPropertyValue('--accent-g').trim()},${s.getPropertyValue('--accent-b').trim()},${a??1})`;
+            }
+            function mc() {
+                const s = getComputedStyle(document.documentElement);
+                return `rgb(${s.getPropertyValue('--muted-r').trim()},${s.getPropertyValue('--muted-g').trim()},${s.getPropertyValue('--muted-b').trim()})`;
+            }
+
+            let state = 'idle';
+            let score = 0, hs = parseInt(localStorage.getItem('homeSprintHigh')||'0');
+            let speed = 2, frame = 0;
+            let obs = [], spawnT = 0;
+            let p = { x: 50, y: GROUND-PH, vy: 0, vx: 0, j: false, rf: 0 };
+
+            function start() {
+                state='playing'; score=0; frame=0; speed=2;
+                obs=[]; spawnT=90;
+                p.y=GROUND-PH; p.vy=0; p.vx=0; p.j=false; p.rf=0;
+            }
+
+            function spawn() {
+                const types = [{w:14,h:22},{w:18,h:30},{w:12,h:26},{w:28,h:20}];
+                const t = types[Math.random()*4|0];
+                obs.push({x:W+10, w:t.w, h:t.h, y:GROUND-t.h});
+            }
+
+            function update() {
+                frame++;
+                p.rf += speed*0.06;
+                if (p.j) {
+                    p.vy+=GRAVITY; p.y+=p.vy;
+                    p.x += p.vx; p.vx *= 0.96;
+                    if (p.y+PH>=GROUND) { p.y=GROUND-PH; p.vy=0; p.vx=0; p.j=false; }
+                } else {
+                    p.x += (50 - p.x) * 0.03;
+                }
+                if (frame%3===0) score++;
+                speed = Math.min(5, 2+score*0.001);
+                spawnT -= speed*0.3;
+                if (spawnT<=0) { spawn(); spawnT = Math.max(50,90-score*0.03)+Math.random()*40; }
+                for (let i=obs.length-1;i>=0;i--) {
+                    const o=obs[i]; o.x-=speed;
+                    if (o.x+o.w<-20) { obs.splice(i,1); continue; }
+                    if (p.x+2<o.x+o.w-2 && p.x+PW-4>o.x+2 && p.y+2<o.y+o.h-2 && p.y+PH-4>o.y+2) {
+                        if (score>hs) { hs=score; localStorage.setItem('homeSprintHigh',String(hs)); }
+                        obs=[]; p.y=GROUND-PH; p.vy=0; p.j=false; state='idle'; return;
+                    }
+                }
+            }
+
+            function draw() {
+                const accent=ac(), muted=mc();
+                ctx.clearRect(0,0,W,H);
+                ctx.strokeStyle='rgba(128,128,128,0.04)'; ctx.lineWidth=1;
+                for (let x=0;x<W;x+=40) { ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
+                for (let y=0;y<H;y+=40) { ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+                ctx.strokeStyle=ac(0.15); ctx.lineWidth=2;
+                ctx.beginPath();ctx.moveTo(0,GROUND);ctx.lineTo(W,GROUND);ctx.stroke();
+                const cols=['#ff4444','#ff00ff','#00ffff','#ff8800'];
+                for (const o of obs) {
+                    const ci=Math.floor(o.x/80)%4;
+                    ctx.shadowColor=cols[ci];ctx.shadowBlur=8;ctx.fillStyle=cols[ci];
+                    ctx.fillRect(o.x,o.y,o.w,o.h);
+                    ctx.fillStyle='rgba(255,255,255,0.2)';ctx.fillRect(o.x+2,o.y+3,o.w-4,2);
+                }
+                ctx.shadowBlur=0;
+                const bob=p.j?0:Math.sin(p.rf)*1.2, by=p.y+bob;
+                ctx.shadowColor=accent;ctx.shadowBlur=10;ctx.fillStyle=accent;
+                ctx.fillRect(p.x,by,PW,PH-6);
+                ctx.beginPath();ctx.arc(p.x+PW/2,by-2,7,0,6.28);ctx.fill();
+                ctx.shadowBlur=0;ctx.fillStyle='#fff';
+                ctx.beginPath();ctx.arc(p.x+PW/2+3,by-4,2,0,6.28);ctx.fill();
+                ctx.fillStyle='#111';ctx.beginPath();ctx.arc(p.x+PW/2+4,by-4,1,0,6.28);ctx.fill();
+                if (!p.j) {
+                    const leg=Math.floor(p.rf*0.5)%2;
+                    ctx.fillStyle=accent;ctx.fillRect(p.x+3,by+PH-6,5,leg?6:3);ctx.fillRect(p.x+10,by+PH-6,5,leg?3:6);
+                }
+                ctx.shadowBlur=0;
+                ctx.font='600 13px "Segoe UI",sans-serif';ctx.textAlign='right';
+                ctx.fillStyle='rgb(var(--text-r),var(--text-g),var(--text-b))';
+                ctx.fillText(`🏃 ${score}`,W-16,22);
+                ctx.font='400 10px "Segoe UI",sans-serif';ctx.fillStyle=muted;
+                ctx.fillText(`最高 ${hs}`,W-16,38);ctx.textAlign='left';
+                if (state==='idle') {
+                    ctx.fillStyle='rgba(255,255,255,0.12)';ctx.font='500 13px "Segoe UI",sans-serif';ctx.textAlign='center';
+                    ctx.fillText('点击奔跑 →',W/2,GROUND-40);ctx.textAlign='left';
+                }
+            }
+
+            function click() {
+                if (state==='idle') { start(); return; }
+                if (p.j) return;
+                p.vy=JUMP_F; p.y+=p.vy; p.j=true; p.rf=0; p.vx=3.5;
+            }
+
+            c.addEventListener('click', click);
+            c.addEventListener('touchstart', e=>{e.preventDefault();click();});
+
+            (function loop() {
+                if (state==='playing') update();
+                draw();
+                requestAnimationFrame(loop);
+            })();
+        })();
+    </script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/4.0.0/cloudbase.full.js"></script>
+<script src="shared/cloudSync.js"></script>
+</body>
+</html>
