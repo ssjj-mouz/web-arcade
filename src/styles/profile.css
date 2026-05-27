@@ -12,7 +12,6 @@ body{
   background:linear-gradient(180deg,var(--bg1),var(--bg2));
   font-family:'Segoe UI','Inter',system-ui,sans-serif;
   min-height:100vh;color:rgb(var(--tr),var(--tg),var(--tb));
-  display:flex;flex-direction:column;align-items:center;
   overflow-x:hidden;
 }
 body::before{
@@ -21,12 +20,18 @@ body::before{
              radial-gradient(ellipse at 80% 80%,rgba(var(--accent2-r),var(--accent2-g),var(--accent2-b),0.04),transparent 50%);
   pointer-events:none;z-index:0;
 }
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.06) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.06) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none;z-index:0;
+}
 
 /* Nav */
 .nav{
   position:relative;z-index:1;
   display:flex;justify-content:space-between;align-items:center;
-  width:min(900px,94vw);padding:12px 20px;margin-top:14px;
+  width:min(900px,94vw);padding:12px 20px;margin:14px auto 0;
   background:rgba(var(--sr),var(--sg),var(--sb),0.5);backdrop-filter:blur(14px);
   border:1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--ca));
   border-radius:14px;box-shadow:0 4px 30px rgba(0,0,0,0.5);
@@ -45,7 +50,7 @@ body::before{
 }
 .btn-nav:hover{color:rgb(var(--accent-r),var(--accent-g),var(--accent-b));border-color:rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.35);box-shadow:0 0 20px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08)}
 
-.main{position:relative;z-index:1;width:min(900px,94vw);margin-top:18px}
+.main{position:relative;z-index:1;width:min(900px,94vw);margin:18px auto 40px}
 
 /* User card */
 .user-card{
