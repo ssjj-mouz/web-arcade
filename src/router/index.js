@@ -1,8 +1,9 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { h } from 'vue'
 
 const BASE = import.meta.env.BASE_URL
 
-const GameFrame = { template: '<iframe :src="src" style="position:fixed;inset:0;width:100%;height:100%;border:none;z-index:50" allow="autoplay"></iframe>', props: { src: String } }
+const GameFrame = { props: { src: String }, setup(props) { return () => h('iframe', { src: props.src, style: 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:50', allow: 'autoplay' }) } }
 
 const routes = [
   { path: '/', name: 'home', component: () => import('../views/HomeView.vue') },
