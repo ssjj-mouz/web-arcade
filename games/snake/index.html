@@ -183,7 +183,7 @@ canvas {
 </head>
 <body>
 
-<a class="back-btn" href="../../index.html">← 返回</a>
+<a class="back-btn" href="#" onclick="parent.location.hash='#/';return false">← 返回</a>
 
 <div class="hud">
   <div class="hud-item"><div class="label">分数</div><span id="score">0</span></div>
@@ -487,7 +487,7 @@ canvas.addEventListener('touchend', e => {
 
 document.getElementById('btnStart').addEventListener('click', startGame);
 document.getElementById('btnRestart').addEventListener('click', startGame);
-document.getElementById('btnHome').addEventListener('click', () => location.href = '../../index.html');
+document.getElementById('btnHome').addEventListener('click', () => parent.location.hash = '#/');
 
 // mobile button prevent default touch events
 document.querySelectorAll('.dpad button').forEach(b => {
