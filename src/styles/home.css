@@ -458,26 +458,28 @@
         /* ---- 轮播样式切换按钮 ---- */
         .carousel-mode-toggle {
             position: absolute;
-            top: 8px; right: 8px;
+            top: 10px; right: 10px;
             z-index: 30;
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.15);
-            color: rgba(255,255,255,0.5);
-            font-size: 0.75rem;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.7);
+            font-size: 0.72rem;
+            font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
             transition: 0.25s;
-            display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(6px);
-            padding: 0; line-height: 1;
+            display: flex; align-items: center; gap: 6px;
+            backdrop-filter: blur(8px);
+            white-space: nowrap;
+            letter-spacing: 0.3px;
         }
         .carousel-mode-toggle:hover {
             background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);
-            border-color: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4);
+            border-color: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.45);
             color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
-            box-shadow: 0 0 12px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2);
-            transform: scale(1.1);
+            box-shadow: 0 0 16px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.25);
         }
 
         /* ========== 旧版平行四边形 3D 轮播 ========== */
@@ -486,7 +488,6 @@
             perspective-origin: 50% 45%;
         }
         .legacy-carousel .carousel-swiper { display: none; }
-        .legacy-carousel .carousel-mode-toggle { display: none; }
 
         .carousel-slide-legacy {
             position: absolute;
