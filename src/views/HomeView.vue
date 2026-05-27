@@ -422,11 +422,37 @@ function renderLeaderboard() {
 let currentSlide = 0;
 const totalSlides = 9;
 let carouselInterval;
+let isTransitioning = false;
 
+function getCarouselOffset(i) {
+  let d = i - currentSlide;
+  if (d > totalSlides / 2) d -= totalSlides;
+  if (d < -totalSlides / 2) d += totalSlides;
+  return d;
+}
+function posClass(offset) {
+  if (offset === 0) return 'pos-current';
+  if (offset === -1) return 'pos-prev';
+  if (offset === 1) return 'pos-next';
+  if (offset === -2) return 'pos-far-prev';
+  if (offset === 2) return 'pos-far-next';
+  return 'pos-hidden';
+}
+function updateCarousel() {
+  const slides = document.querySelectorAll('.carousel-slide');
+  slides.forEach((s, i) => {
+    s.classList.remove('pos-current', 'pos-prev', 'pos-next', 'pos-far-prev', 'pos-far-next', 'pos-hidden');
+    s.classList.add(posClass(getCarouselOffset(i)));
+  });
+  document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+}
 function setSlide(i) {
-  document.querySelectorAll('.carousel-slide').forEach((s, idx) => s.classList.toggle('active', idx === i));
-  document.querySelectorAll('.nav-dot').forEach((d, idx) => d.classList.toggle('active', idx === i));
+  if (isTransitioning || i === currentSlide) return;
+  isTransitioning = true;
   currentSlide = i;
+  updateCarousel();
+  if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = setInterval(nextSlide, 5000); }
+  setTimeout(() => { isTransitioning = false; }, 750);
 }
 function nextSlide() { setSlide((currentSlide + 1) % totalSlides); }
 function prevSlide() { setSlide((currentSlide - 1 + totalSlides) % totalSlides); }
@@ -514,6 +540,7 @@ onMounted(() => {
   }
 
   // Carousel auto-rotate
+  updateCarousel();
   carouselInterval = setInterval(nextSlide, 5000);
 
   // Search/filter listeners
