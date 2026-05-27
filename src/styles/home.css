@@ -455,6 +455,149 @@
             );
         }
 
+        /* ---- 轮播样式切换按钮 ---- */
+        .carousel-mode-toggle {
+            position: absolute;
+            top: 8px; right: 8px;
+            z-index: 30;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.25s;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(6px);
+            padding: 0; line-height: 1;
+        }
+        .carousel-mode-toggle:hover {
+            background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15);
+            border-color: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4);
+            color: rgb(var(--accent-r),var(--accent-g),var(--accent-b));
+            box-shadow: 0 0 12px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.2);
+            transform: scale(1.1);
+        }
+
+        /* ========== 旧版平行四边形 3D 轮播 ========== */
+        .legacy-carousel {
+            perspective: 1500px;
+            perspective-origin: 50% 45%;
+        }
+        .legacy-carousel .carousel-swiper { display: none; }
+        .legacy-carousel .carousel-mode-toggle { display: none; }
+
+        .carousel-slide-legacy {
+            position: absolute;
+            top: 28px; bottom: 48px; left: 10%; right: 10%;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 28px 32px;
+            overflow: visible;
+            backface-visibility: hidden;
+            will-change: transform, opacity;
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 25px 70px -25px rgba(0,0,0,0.7);
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .carousel-slide-legacy::before {
+            content: '';
+            position: absolute;
+            inset: -12px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            z-index: -1;
+            pointer-events: none;
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+            transform: skewX(-4deg);
+        }
+        .carousel-slide-legacy::after {
+            content: '';
+            position: absolute;
+            inset: -26px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.015);
+            border: 1px solid rgba(255,255,255,0.03);
+            z-index: -2;
+            pointer-events: none;
+            transition: all 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+            transform: skewX(-5deg);
+        }
+        .carousel-slide-legacy.pos-current {
+            transform: translateX(0) translateZ(0) rotateY(0deg) scale(1) skewX(-3deg);
+            opacity: 1;
+            z-index: 12;
+            filter: brightness(1.08);
+        }
+        .carousel-slide-legacy.pos-current::before {
+            border-color: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 0 60px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.1);
+        }
+        .carousel-slide-legacy.pos-current::after {
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: 0 0 80px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.05);
+        }
+        .carousel-slide-legacy.pos-prev {
+            transform: translateX(-30%) translateZ(-180px) rotateY(18deg) scale(0.8) skewX(-3deg);
+            opacity: 0.7;
+            z-index: 8;
+            filter: brightness(0.5);
+            pointer-events: none;
+        }
+        .carousel-slide-legacy.pos-next {
+            transform: translateX(30%) translateZ(-180px) rotateY(-18deg) scale(0.8) skewX(-3deg);
+            opacity: 0.7;
+            z-index: 8;
+            filter: brightness(0.5);
+            pointer-events: none;
+        }
+        .carousel-slide-legacy.pos-far-prev {
+            transform: translateX(-55%) translateZ(-320px) rotateY(30deg) scale(0.58) skewX(-3deg);
+            opacity: 0.35;
+            z-index: 4;
+            pointer-events: none;
+            filter: brightness(0.35);
+        }
+        .carousel-slide-legacy.pos-far-next {
+            transform: translateX(55%) translateZ(-320px) rotateY(-30deg) scale(0.58) skewX(-3deg);
+            opacity: 0.35;
+            z-index: 4;
+            pointer-events: none;
+            filter: brightness(0.35);
+        }
+        .carousel-slide-legacy.pos-hidden {
+            transform: translateX(0) translateZ(-450px) rotateY(0deg) scale(0.35) skewX(-3deg);
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* 旧版内容反倾斜 */
+        .legacy-carousel .slide-icon,
+        .legacy-carousel .slide-badge,
+        .legacy-carousel .slide-title,
+        .legacy-carousel .slide-desc,
+        .legacy-carousel .slide-btn {
+            transform: skewX(3deg);
+        }
+
+        /* 旧版当前卡片光扫 */
+        .carousel-slide-legacy.pos-current::before {
+            animation: framePulse 2.5s ease-in-out infinite;
+        }
+        @keyframes framePulse {
+            0%, 100% { border-color: rgba(255,255,255,0.18); }
+            50% { border-color: rgba(255,255,255,0.35); }
+        }
+
         .slide-overlay {
             position: absolute;
             inset: 0;
@@ -1171,6 +1314,13 @@
         @media (max-width: 980px) {
             .carousel-container { height: 360px; }
             .carousel-slide { height: 280px; padding: 20px 24px; }
+            .carousel-slide-legacy { top: 22px; bottom: 44px; left: 8%; right: 8%; }
+            .carousel-slide-legacy::before { inset: -9px; }
+            .carousel-slide-legacy::after { inset: -18px; }
+            .carousel-slide-legacy.pos-prev { transform: translateX(-26%) translateZ(-130px) rotateY(12deg) scale(0.8) skewX(-3deg); }
+            .carousel-slide-legacy.pos-next { transform: translateX(26%) translateZ(-130px) rotateY(-12deg) scale(0.8) skewX(-3deg); }
+            .carousel-slide-legacy.pos-far-prev,
+            .carousel-slide-legacy.pos-far-next { opacity: 0; pointer-events: none; }
             .slide-title { font-size: 2.2rem; }
             .slide-icon { font-size: 3.4rem; }
         }
@@ -1178,6 +1328,13 @@
         @media (max-width: 780px) {
             .carousel-container { height: 290px; }
             .carousel-slide { height: 230px; padding: 14px 18px; border-radius: 14px; }
+            .carousel-slide-legacy { top: 16px; bottom: 40px; left: 4%; right: 4%; border-radius: 14px; }
+            .carousel-slide-legacy::before { inset: -6px; border-radius: 16px; }
+            .carousel-slide-legacy::after { inset: -13px; border-radius: 17px; }
+            .carousel-slide-legacy.pos-prev { transform: translateX(-20%) translateZ(-100px) rotateY(8deg) scale(0.82) skewX(-3deg); }
+            .carousel-slide-legacy.pos-next { transform: translateX(20%) translateZ(-100px) rotateY(-8deg) scale(0.82) skewX(-3deg); }
+            .carousel-slide-legacy.pos-far-prev,
+            .carousel-slide-legacy.pos-far-next { opacity: 0; pointer-events: none; }
             .slide-title { font-size: 1.6rem; }
             .slide-desc { font-size: 0.82rem; max-width: 90%; }
             .slide-icon { font-size: 2.6rem; margin-bottom: 6px; }

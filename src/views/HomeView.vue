@@ -131,38 +131,61 @@
     </header>
 
     <main>
-        <!-- 3D 全息轮播 Swiper -->
-        <div class="carousel-container">
+        <!-- 3D 全息轮播 -->
+        <div class="carousel-container" :class="{ 'legacy-carousel': carouselMode === 'legacy' }">
             <canvas id="carouselParticles"></canvas>
-            <swiper
-                :modules="[EffectCoverflow, Navigation, Pagination, Autoplay]"
-                :effect="'coverflow'"
-                :centered-slides="true"
-                :slides-per-view="3"
-                :coverflow-effect="{ rotate: 5, stretch: -20, depth: 280, modifier: 1, slideShadows: false }"
-                :navigation="{ nextEl: '.carousel-arrow-right', prevEl: '.carousel-arrow-left' }"
-                :pagination="{ el: '.carousel-nav', clickable: true }"
-                :autoplay="{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }"
-                :loop="true"
-                :speed="700"
-                :loop-additional-slides="3"
-                :allow-touch-move="true"
-                class="carousel-swiper"
-            >
-                <swiper-slide v-for="s in carouselSlides" :key="s.id" :class="'carousel-slide slide-' + s.id">
+
+            <!-- 轮播样式切换按钮 -->
+            <button class="carousel-mode-toggle" @click="toggleCarouselMode()" :title="carouselMode==='swiper' ? '切换到旧版平行四边形轮播' : '切换到新版Coverflow轮播'">
+                {{ carouselMode === 'swiper' ? '◇' : '◆' }}
+            </button>
+
+            <!-- Swiper Coverflow 新版 -->
+            <template v-if="carouselMode === 'swiper'">
+                <swiper
+                    :modules="[EffectCoverflow, Navigation, Pagination, Autoplay]"
+                    :effect="'coverflow'"
+                    :centered-slides="true"
+                    :slides-per-view="3"
+                    :coverflow-effect="{ rotate: 5, stretch: -20, depth: 280, modifier: 1, slideShadows: false }"
+                    :navigation="{ nextEl: '.carousel-arrow-right', prevEl: '.carousel-arrow-left' }"
+                    :pagination="{ el: '.carousel-nav', clickable: true }"
+                    :autoplay="{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }"
+                    :loop="true"
+                    :speed="700"
+                    :loop-additional-slides="3"
+                    :allow-touch-move="true"
+                    class="carousel-swiper"
+                >
+                    <swiper-slide v-for="s in carouselSlides" :key="s.id" :class="'carousel-slide slide-' + s.id">
+                        <div class="slide-overlay"></div>
+                        <div class="slide-icon">{{ s.icon }}</div>
+                        <span class="slide-badge">{{ s.badge }}</span>
+                        <h2 class="slide-title">{{ s.title }}</h2>
+                        <p class="slide-desc">{{ s.desc }}</p>
+                        <a @click="router.push(s.link)" style="cursor:pointer" class="slide-btn">{{ s.btn }}</a>
+                    </swiper-slide>
+                </swiper>
+                <div class="carousel-nav"></div>
+            </template>
+
+            <!-- 平行四边形 3D 旧版 -->
+            <template v-if="carouselMode === 'legacy'">
+                <div v-for="s in carouselSlides" :key="s.id" :class="'carousel-slide-legacy slide-' + s.id" :data-slide-id="s.id">
                     <div class="slide-overlay"></div>
                     <div class="slide-icon">{{ s.icon }}</div>
                     <span class="slide-badge">{{ s.badge }}</span>
                     <h2 class="slide-title">{{ s.title }}</h2>
                     <p class="slide-desc">{{ s.desc }}</p>
                     <a @click="router.push(s.link)" style="cursor:pointer" class="slide-btn">{{ s.btn }}</a>
-                </swiper-slide>
-            </swiper>
+                </div>
+                <div class="carousel-nav">
+                    <div v-for="(s, i) in carouselSlides" :key="s.id" class="nav-dot" :class="{ active: i === currentSlide }" @click="setSlide(i)"></div>
+                </div>
+            </template>
 
-            <div class="carousel-nav"></div>
-
-            <button class="carousel-arrow carousel-arrow-left" aria-label="上一页">‹</button>
-            <button class="carousel-arrow carousel-arrow-right" aria-label="下一页">›</button>
+            <button class="carousel-arrow carousel-arrow-left" @click="carouselMode==='swiper' ? null : prevSlide()" aria-label="上一页">‹</button>
+            <button class="carousel-arrow carousel-arrow-right" @click="carouselMode==='swiper' ? null : nextSlide()" aria-label="下一页">›</button>
         </div>
 
 
@@ -371,6 +394,59 @@ const carouselSlides = [
   { id:'breakout', icon:'💎', badge:'🔄 消除 · 益智', title:'宝石消消乐', desc:'交换相邻宝石凑成三个以上消除，触发华丽级联连消', link:'/game/breakout', btn:'开始消除 ▶' },
 ]
 
+// Carousel mode
+const carouselMode = ref(localStorage.getItem('carouselMode') || 'swiper')
+function toggleCarouselMode() {
+  carouselMode.value = carouselMode.value === 'swiper' ? 'legacy' : 'swiper'
+  localStorage.setItem('carouselMode', carouselMode.value)
+  if (carouselMode.value === 'legacy') {
+    nextTick(() => { updateCarouselLegacy(); startLegacyAutoplay(); })
+  } else {
+    stopLegacyAutoplay()
+  }
+}
+
+// Legacy carousel
+let currentSlide = 0
+const totalSlides = 9
+let carouselInterval = null
+let isTransitioning = false
+
+function getCarouselOffset(i) {
+  let d = i - currentSlide
+  if (d > totalSlides / 2) d -= totalSlides
+  if (d < -totalSlides / 2) d += totalSlides
+  return d
+}
+function posClass(offset) {
+  if (offset === 0) return 'pos-current'
+  if (offset === -1) return 'pos-prev'
+  if (offset === 1) return 'pos-next'
+  if (offset === -2) return 'pos-far-prev'
+  if (offset === 2) return 'pos-far-next'
+  return 'pos-hidden'
+}
+function updateCarouselLegacy() {
+  const slides = document.querySelectorAll('.carousel-slide-legacy')
+  slides.forEach((s, i) => {
+    s.classList.remove('pos-current', 'pos-prev', 'pos-next', 'pos-far-prev', 'pos-far-next', 'pos-hidden')
+    s.classList.add(posClass(getCarouselOffset(i)))
+  })
+  document.querySelectorAll('.carousel-nav .nav-dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide))
+}
+function setSlide(i) {
+  if (isTransitioning || i === currentSlide) return
+  isTransitioning = true
+  currentSlide = i
+  updateCarouselLegacy()
+  if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = setInterval(nextSlide, 5000) }
+  setTimeout(() => { isTransitioning = false }, 750)
+}
+function nextSlide() { setSlide((currentSlide + 1) % totalSlides) }
+function prevSlide() { setSlide((currentSlide - 1 + totalSlides) % totalSlides) }
+function startLegacyAutoplay() { stopLegacyAutoplay(); carouselInterval = setInterval(nextSlide, 5000) }
+function stopLegacyAutoplay() { if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null } }
+
 // Search & filter
 function applySearchAndFilter() {
   const query = document.getElementById('searchInput')?.value?.toLowerCase() || '';
@@ -404,6 +480,10 @@ window.showLeaderboard = showLeaderboard;
 window.hideLeaderboard = hideLeaderboard;
 window.setTheme = setTheme;
 window.toggleThemePanel = toggleThemePanel;
+window.setSlide = setSlide;
+window.nextSlide = nextSlide;
+window.prevSlide = prevSlide;
+window.toggleCarouselMode = toggleCarouselMode;
 
 // ========== 共享 canvas 变量 ==========
 let starCanvas, starCtx, meteors, sparkParticles, bgStars, floatParticles, starW, starH, mouseX, mouseY;
@@ -483,6 +563,11 @@ onMounted(() => {
   initCursor();
   initHomeRunner();
   initEntrance();
+
+  // Init legacy carousel if mode is legacy
+  if (carouselMode.value === 'legacy') {
+    nextTick(() => { updateCarouselLegacy(); startLegacyAutoplay(); })
+  }
 });
 
 // ========== 混沌流星背景 ==========
@@ -844,6 +929,7 @@ function initEntrance() {
 }
 
 onUnmounted(() => {
+  stopLegacyAutoplay();
   if (starRafId) cancelAnimationFrame(starRafId);
   if (cursorRafId) cancelAnimationFrame(cursorRafId);
   if (runnerRafId) cancelAnimationFrame(runnerRafId);
