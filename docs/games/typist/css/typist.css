@@ -1,0 +1,88 @@
+:root {
+    --bg-dark: #000;
+    --matrix-green: #0f0;
+    --danger: #ff003c;
+    --text-main: #e2e8f0;
+}
+
+* { box-sizing: border-box; }
+body {
+    margin: 0; min-height: 100vh;
+    background: radial-gradient(circle at center, #111, var(--bg-dark));
+    color: var(--text-main); 
+    font-family: 'Courier New', Courier, monospace; /* 黑客代码风字体 */
+    overflow: hidden;
+}
+
+header {
+    padding: 15px 30px;
+    border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(0,0,0,0.8); z-index: 10; position: relative;
+    box-shadow: 0 5px 20px rgba(0, 255, 0, 0.1);
+}
+
+header h1 { color: var(--matrix-green); margin: 0; font-size: 1.5rem; text-shadow: 0 0 10px var(--matrix-green); }
+.stats { display: flex; gap: 20px; font-weight: bold; font-size: 1.2rem; }
+.hp { color: var(--danger); }
+
+/* 主防卫区 */
+main {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 65px);
+    background: url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h20v20H0z" fill="none"/><circle cx="2" cy="2" r="1" fill="%230f0" opacity="0.1"/></svg>');
+}
+
+/* 掉落的单词实体 */
+.word-entity {
+    position: absolute;
+    top: -30px; /* 初始在屏幕上方外 */
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-main);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 4px 10px;
+    border: 1px solid var(--matrix-green);
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    /* 使用 CSS 动画控制掉落，速度由 JS 动态写入 */
+    animation: drop linear forwards; 
+}
+
+/* 目标锁定状态 */
+.word-entity.targeted {
+    border-color: #fcd34d;
+    box-shadow: 0 0 15px #fcd34d;
+}
+
+/* 已经打出的字母高亮绿色 */
+.typed { color: var(--matrix-green); text-shadow: 0 0 5px var(--matrix-green); }
+
+/* 下落动画 */
+@keyframes drop {
+    to { top: 100%; }
+}
+
+/* 防线 */
+.defense-line {
+    position: absolute;
+    bottom: 50px; left: 0; width: 100%; height: 2px;
+    background: rgba(255, 0, 60, 0.5);
+    box-shadow: 0 0 10px var(--danger);
+}
+
+/* 结束画面 */
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    z-index: 100;
+}
+.overlay.hidden { display: none; }
+button {
+    margin-top: 20px; padding: 12px 25px; font-family: inherit; font-size: 1.2rem;
+    background: transparent; color: var(--matrix-green);
+    border: 2px solid var(--matrix-green); cursor: pointer; transition: 0.3s;
+}
+button:hover { background: var(--matrix-green); color: #000; box-shadow: 0 0 20px var(--matrix-green); }

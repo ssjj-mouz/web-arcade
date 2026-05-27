@@ -1,0 +1,93 @@
+:root {
+    --bg: #09090b;
+    --track-bg: rgba(255, 255, 255, 0.03);
+    --primary: #ec4899;
+    --primary-glow: rgba(236, 72, 153, 0.6);
+    --cyan: #06b6d4;
+    --cyan-glow: rgba(6, 182, 212, 0.6);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: var(--bg); color: white; overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    display: flex; flex-direction: column; align-items: center; height: 100vh;
+}
+
+/* 顶部信息栏 */
+header {
+    width: 100%; display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 40px; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--primary);
+    box-shadow: 0 0 20px var(--primary-glow); z-index: 10;
+}
+
+.score-box { font-size: 1.5rem; text-shadow: 0 0 10px var(--cyan); }
+.combo-box { font-size: 2rem; color: var(--primary); font-weight: bold; text-shadow: 0 0 15px var(--primary-glow); }
+
+/* 音游主干：4条轨道 */
+.game-container {
+    display: flex; width: 400px; height: 100%;
+    background: linear-gradient(180deg, transparent 0%, rgba(236,72,153,0.1) 100%);
+    border-left: 2px solid rgba(255,255,255,0.1);
+    border-right: 2px solid rgba(255,255,255,0.1);
+    position: relative; perspective: 500px;
+}
+
+.track {
+    flex: 1; border-right: 1px dashed rgba(255,255,255,0.1);
+    position: relative; display: flex; flex-direction: column; align-items: center;
+}
+.track:last-child { border-right: none; }
+
+/* 底部按键判定区 */
+.hit-zone {
+    position: absolute; bottom: 80px; width: 100%; height: 60px;
+    border-top: 2px solid var(--cyan); border-bottom: 2px solid var(--cyan);
+    background: rgba(6, 182, 212, 0.1);
+}
+
+/* 轨道按键提示 (D, F, J, K) */
+.key-label {
+    position: absolute; bottom: 20px; width: 50px; height: 50px;
+    background: rgba(255,255,255,0.1); border: 2px solid var(--text-muted);
+    border-radius: 8px; display: flex; justify-content: center; align-items: center;
+    font-size: 1.5rem; font-weight: bold; transition: 0.1s;
+}
+/* 键盘按下时的视觉反馈 */
+.key-label.active {
+    background: var(--cyan); border-color: white; transform: scale(0.9);
+    box-shadow: 0 0 20px var(--cyan-glow); color: black;
+}
+
+/* 下落的音符 */
+.note {
+    position: absolute; width: 60px; height: 20px;
+    background: var(--primary); border-radius: 10px;
+    box-shadow: 0 0 15px var(--primary-glow);
+    top: -20px; /* 初始隐藏在上方 */
+    will-change: top; /* 硬件加速 */
+}
+
+/* 判定特效 */
+.judgment {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 3rem; font-weight: 900; z-index: 100;
+    pointer-events: none; opacity: 0;
+}
+.judgement-anim { animation: popFade 0.5s ease-out forwards; }
+@keyframes popFade {
+    0% { opacity: 1; transform: translate(-50%, -30%) scale(0.5); }
+    50% { transform: translate(-50%, -50%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -60%) scale(1.5); }
+}
+
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 200;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+.btn {
+    padding: 12px 30px; font-size: 1.2rem; background: transparent; color: white;
+    border: 2px solid var(--primary); border-radius: 8px; cursor: pointer; transition: 0.3s;
+}
+.btn:hover { background: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
