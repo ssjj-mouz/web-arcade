@@ -42,12 +42,12 @@
                 <input type="text" id="loginInput" placeholder="输入你的昵称..." maxlength="12" autocomplete="off">
             </div>
             <div class="login-suggestions">
-                <button class="suggest-btn" @click="pickSuggestion(this)">赛博玩家</button>
-                <button class="suggest-btn" @click="pickSuggestion(this)">像素猎人</button>
-                <button class="suggest-btn" @click="pickSuggestion(this)">星云旅者</button>
-                <button class="suggest-btn" @click="pickSuggestion(this)">霓虹刺客</button>
-                <button class="suggest-btn" @click="pickSuggestion(this)">极客迷</button>
-                <button class="suggest-btn" @click="pickSuggestion(this)">游戏达人</button>
+                <button class="suggest-btn" @click="pickSuggestion($event.target)">赛博玩家</button>
+                <button class="suggest-btn" @click="pickSuggestion($event.target)">像素猎人</button>
+                <button class="suggest-btn" @click="pickSuggestion($event.target)">星云旅者</button>
+                <button class="suggest-btn" @click="pickSuggestion($event.target)">霓虹刺客</button>
+                <button class="suggest-btn" @click="pickSuggestion($event.target)">极客迷</button>
+                <button class="suggest-btn" @click="pickSuggestion($event.target)">游戏达人</button>
             </div>
             <button class="login-btn" @click="doLogin()">进入游戏厅</button>
         </div>
@@ -253,7 +253,7 @@
 
         <div class="game-grid" id="game-grid">
 
-            <article class="game-card" data-category="action" @click="location.href='#!/game/sky-defense'">
+            <article class="game-card" data-category="action" @click="router.push('/game/sky-defense')">
                 <div class="card-cover cover-sky">✈️</div>
                 <div class="card-info">
                     <h2>天空防卫局</h2>
@@ -262,7 +262,7 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="puzzle" @click="location.href='#!/game/match'">
+            <article class="game-card" data-category="puzzle" @click="router.push('/game/match')">
                 <div class="card-cover cover-match">🐙</div>
                 <div class="card-info">
                     <h2>深海寻宝</h2>
@@ -271,7 +271,7 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="hardcore puzzle" @click="location.href='#!/game/tower'">
+            <article class="game-card" data-category="hardcore puzzle" @click="router.push('/game/tower')">
                 <div class="card-cover cover-tower">🏗️</div>
                 <div class="card-info">
                     <h2>云端筑梦师</h2>
@@ -280,7 +280,7 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="hardcore action" @click="location.href='#!/game/typist'">
+            <article class="game-card" data-category="hardcore action" @click="router.push('/game/typist')">
                 <div class="card-cover cover-type">💻</div>
                 <div class="card-info">
                     <h2>极客骇客</h2>
@@ -289,7 +289,7 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="hardcore action" @click="location.href='#!/game/beats'">
+            <article class="game-card" data-category="hardcore action" @click="router.push('/game/beats')">
                 <div class="card-cover cover-beat">🎵</div>
                 <div class="card-info">
                     <h2>光音记忆</h2>
@@ -298,7 +298,7 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="puzzle" @click="location.href='#!/game/particle'">
+            <article class="game-card" data-category="puzzle" @click="router.push('/game/particle')">
                 <div class="card-cover cover-sand">🌌</div>
                 <div class="card-info">
                     <h2>星海流沙</h2>
@@ -307,7 +307,7 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="coop puzzle" @click="location.href='#!/game/coop'">
+            <article class="game-card" data-category="coop puzzle" @click="router.push('/game/coop')">
                 <div class="card-cover" style="background: linear-gradient(135deg, #ef4444, #3b82f6);">👯</div>
                 <div class="card-info">
                     <h2>双子星探险</h2>
@@ -316,7 +316,7 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="classic casual" @click="location.href='#!/game/snake'">
+            <article class="game-card" data-category="classic casual" @click="router.push('/game/snake')">
                 <div class="card-cover" style="background: linear-gradient(135deg, #22c55e, #15803d);">🐍</div>
                 <div class="card-info">
                     <h2>贪吃蛇</h2>
@@ -325,7 +325,7 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="puzzle" @click="location.href='#!/game/breakout'">
+            <article class="game-card" data-category="puzzle" @click="router.push('/game/breakout')">
                 <div class="card-cover" style="background: linear-gradient(135deg, #ec4899, #a855f7);">💎</div>
                 <div class="card-info">
                     <h2>宝石消消乐</h2>
