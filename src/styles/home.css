@@ -369,6 +369,43 @@
             box-shadow: 0 16px 40px rgba(0,0,0,0.5);
         }
         .theme-panel.open { display: flex; }
+
+        /* ===== 指针样式面板 ===== */
+        .cursor-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: rgba(var(--surface2-r),var(--surface2-g),var(--surface2-b),0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(var(--accent-r),var(--accent-g),var(--accent-b),var(--card-border-alpha));
+            border-radius: 14px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 100;
+            min-width: 150px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+        }
+        .cursor-panel.open { display: flex; }
+        .cursor-opt {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: 0.15s;
+            border: none;
+            background: transparent;
+            color: rgb(var(--muted-r), var(--muted-g), var(--muted-b));
+            text-align: left;
+            width: 100%;
+        }
+        .cursor-opt:hover { background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08); color: rgb(var(--text-r), var(--text-g), var(--text-b)); }
+        .cursor-opt.active { background: rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.15); color: rgb(var(--text-r), var(--text-g), var(--text-b)); }
         .theme-opt {
             display: flex;
             align-items: center;
@@ -1013,6 +1050,54 @@
             opacity: 0.7;
             transition: opacity 0.3s;
         }
+
+        /* === 指针模式：经典箭头 === */
+        [data-cursor="classic"] body { cursor: auto !important; }
+        [data-cursor="classic"] a, [data-cursor="classic"] button,
+        [data-cursor="classic"] .game-card, [data-cursor="classic"] input,
+        [data-cursor="classic"] .hdr-icon-btn, [data-cursor="classic"] .filter-btn,
+        [data-cursor="classic"] .nav-dot { cursor: pointer !important; }
+
+        /* === 指针模式：像素准星 === */
+        [data-cursor="cross"] body { cursor: crosshair; }
+        [data-cursor="cross"] #cursor-tip { opacity: 1 !important; }
+        [data-cursor="cross"] #cursor-tip::before {
+            content: ''; position: fixed;
+            pointer-events: none; z-index: 10001;
+            width: 24px; height: 2px;
+            background: #fff;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 6px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.7);
+        }
+        [data-cursor="cross"] #cursor-tip::after {
+            content: ''; position: fixed;
+            pointer-events: none; z-index: 10001;
+            width: 2px; height: 24px;
+            background: #fff;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 6px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.7);
+        }
+
+        /* === 指针模式：激光瞄准 === */
+        [data-cursor="laser"] body { cursor: none; }
+        [data-cursor="laser"] #cursor-neon {
+            width: 400px !important; height: 400px !important;
+            background: radial-gradient(circle,
+                rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.08) 0%,
+                transparent 50%) !important;
+            filter: blur(15px) !important;
+            opacity: 0.6 !important;
+        }
+        [data-cursor="laser"] #cursorArrow { opacity: 1 !important; }
+        [data-cursor="laser"] #cursor-tip {
+            width: 6px !important; height: 6px !important;
+            background: #ff2020 !important;
+            box-shadow: 0 0 10px #ff2020, 0 0 25px rgba(255,32,32,0.5) !important;
+            opacity: 1 !important;
+        }
+        [data-cursor="laser"] .cursor-trail { opacity: 0 !important; }
         /* 光标箭头 - 赛博朋克风格 */
         .cursor-arrow {
             position: fixed;

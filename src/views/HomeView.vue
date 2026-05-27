@@ -70,6 +70,14 @@
         <div class="logo">⚡ Web Arcade OS</div>
         <div class="header-right">
             <div style="position:relative;">
+                <button class="hdr-icon-btn" id="cursorBtn" @click="toggleCursorPanel()" title="指针样式">🖱️</button>
+                <div class="cursor-panel" id="cursorPanel" :class="{ open: showCursorPanel }">
+                    <button v-for="c in cursor.list" :key="c.key" class="cursor-opt" :class="{ active: c.key === cursor.active }" @click="cursor.set(c.key); showCursorPanel = false">
+                        <span>{{ c.icon }}</span> {{ c.name }}
+                    </button>
+                </div>
+            </div>
+            <div style="position:relative;">
                 <button class="hdr-icon-btn" id="themeBtn" @click="toggleThemePanel()" title="换肤">🎨</button>
                 <div class="theme-panel" id="themePanel">
                     <button class="theme-opt active" data-theme-val="neon" @click="setTheme('neon')">
@@ -307,6 +315,7 @@ import { useRouter } from 'vue-router'
 import { useThemeStore } from '../stores/theme.js'
 import { useUserStore } from '../stores/user.js'
 import { useGamesStore } from '../stores/games.js'
+import { useCursorStore } from '../stores/cursor.js'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { EffectCoverflow, Navigation, Pagination, Autoplay } from 'swiper/modules'
 import 'swiper/css'
@@ -318,6 +327,12 @@ const router = useRouter()
 const theme = useThemeStore()
 const user = useUserStore()
 const games = useGamesStore()
+const cursor = useCursorStore()
+
+const showCursorPanel = ref(false)
+function toggleCursorPanel() {
+  showCursorPanel.value = !showCursorPanel.value
+}
 
 // One-time reset
 if (!localStorage.getItem('arcadeDataReset_v2')) {
@@ -481,6 +496,7 @@ window.showLeaderboard = showLeaderboard;
 window.hideLeaderboard = hideLeaderboard;
 window.setTheme = setTheme;
 window.toggleThemePanel = toggleThemePanel;
+window.toggleCursorPanel = toggleCursorPanel;
 window.setSlide = setSlide;
 window.nextSlide = nextSlide;
 window.prevSlide = prevSlide;
@@ -497,6 +513,7 @@ let cursorTrailDots = [];
 onMounted(() => {
   user.loadFromStorage();
   games.loadFromStorage();
+  cursor.apply();
   updateUserDisplay();
 
   // Boot animation
@@ -558,6 +575,12 @@ onMounted(() => {
   // Leaderboard overlay click-outside
   document.getElementById('leaderboard-overlay')?.addEventListener('click', e => {
     if (e.target === e.currentTarget) hideLeaderboard();
+  });
+
+  // Cursor/theme panel click-outside
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#cursorBtn') && !e.target.closest('#cursorPanel')) showCursorPanel.value = false;
+    if (!e.target.closest('#themeBtn') && !e.target.closest('#themePanel')) document.getElementById('themePanel')?.classList.remove('open');
   });
 
   initStarfield();
