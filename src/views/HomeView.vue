@@ -499,6 +499,8 @@ let starCanvas, starCtx, meteors, sparkParticles, bgStars, floatParticles, starW
 let starRafId, cursorRafId, runnerRafId;
 let starResizeHandler, starMouseMoveHandler, starMouseLeaveHandler;
 let cursorMouseMoveHandler, cursorMouseDownHandler;
+let bootTimeouts = [], loginTimeout, entranceTimeouts = [];
+let cursorTrailDots = [];
 
 onMounted(() => {
   user.loadFromStorage();
@@ -517,25 +519,25 @@ onMounted(() => {
       const title = document.getElementById('bootTitle');
       const delay = 80, step = 280;
       lines.forEach((line, i) => {
-        setTimeout(() => {
+        bootTimeouts.push(setTimeout(() => {
           line.style.opacity = '1';
           line.style.transition = 'opacity 0.2s';
           if (progress) progress.style.width = Math.min(Math.round(((i+1)/lines.length)*95), 95) + '%';
-        }, delay + i * step);
+        }, delay + i * step));
       });
       const totalDur = delay + lines.length * step;
-      setTimeout(() => {
+      bootTimeouts.push(setTimeout(() => {
         if (progress) progress.style.width = '100%';
         if (title) { title.style.opacity = '1'; title.style.transition = 'opacity 0.6s'; }
-      }, totalDur);
-      setTimeout(() => {
+      }, totalDur));
+      bootTimeouts.push(setTimeout(() => {
         bootScreen.style.opacity = '0';
-        setTimeout(() => {
+        bootTimeouts.push(setTimeout(() => {
           bootScreen.remove();
           if (loginOverlay) loginOverlay.classList.add('show');
           document.getElementById('loginInput')?.focus();
-        }, 800);
-      }, totalDur + 900);
+        }, 800));
+      }, totalDur + 900));
     }
   }
 
@@ -559,7 +561,7 @@ onMounted(() => {
 
   // Check if user needs login
   if (!user.isLoggedIn) {
-    setTimeout(() => {
+    loginTimeout = setTimeout(() => {
       document.getElementById('login-overlay')?.style.setProperty('display', 'flex');
       document.getElementById('loginInput')?.focus();
     }, 3000);
@@ -751,6 +753,10 @@ function initStarfield() {
 
 // ========== 赛博光标 ==========
 function initCursor() {
+  // Clean up any leftover trail dots from previous mounts
+  cursorTrailDots.forEach(d => d.remove());
+  cursorTrailDots = [];
+
   const neonCursor = document.getElementById('cursor-neon');
   const cursorArrow = document.getElementById('cursorArrow');
   const cursorTip = document.getElementById('cursorTip');
@@ -765,6 +771,7 @@ function initCursor() {
     dot.style.width = size + 'px';
     dot.style.height = size + 'px';
     document.body.appendChild(dot);
+    cursorTrailDots.push(dot);
     trail.push({ el: dot, x: 0, y: 0, size, life: 0 });
   }
 
@@ -922,11 +929,11 @@ function initEntrance() {
     if (el) el.classList.add('entrance-waiting');
   });
   document.querySelectorAll('.game-card').forEach(c => c.classList.add('entrance-waiting'));
-  setTimeout(() => {
+  entranceTimeouts.push(setTimeout(() => {
     document.querySelectorAll('.entrance-waiting').forEach((el, i) => {
-      setTimeout(() => { el.classList.remove('entrance-waiting'); el.classList.add('entrance-done'); }, i * 60);
+      entranceTimeouts.push(setTimeout(() => { el.classList.remove('entrance-waiting'); el.classList.add('entrance-done'); }, i * 60));
     });
-  }, 400);
+  }, 400));
 }
 
 onUnmounted(() => {
@@ -939,6 +946,13 @@ onUnmounted(() => {
   if (starMouseLeaveHandler) document.removeEventListener('mouseleave', starMouseLeaveHandler);
   if (cursorMouseMoveHandler) document.removeEventListener('mousemove', cursorMouseMoveHandler);
   if (cursorMouseDownHandler) document.removeEventListener('mousedown', cursorMouseDownHandler);
+  bootTimeouts.forEach(t => clearTimeout(t));
+  bootTimeouts = [];
+  if (loginTimeout) clearTimeout(loginTimeout);
+  entranceTimeouts.forEach(t => clearTimeout(t));
+  entranceTimeouts = [];
+  cursorTrailDots.forEach(d => d.remove());
+  cursorTrailDots = [];
 });
 
 </script>
