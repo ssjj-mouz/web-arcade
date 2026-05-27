@@ -1,18 +1,20 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
+const GameFrame = { template: '<iframe :src="src" style="position:fixed;inset:0;width:100%;height:100%;border:none;z-index:50" allow="autoplay"></iframe>', props: { src: String } }
+
 const routes = [
   { path: '/', name: 'home', component: () => import('../views/HomeView.vue') },
   { path: '/admin', name: 'admin', component: () => import('../views/AdminView.vue') },
   { path: '/profile', name: 'profile', component: () => import('../views/ProfileView.vue') },
-  { path: '/game/snake', name: 'snake', component: () => import('../views/games/SnakeView.vue') },
-  { path: '/game/coop', name: 'coop', component: () => import('../views/games/CoopView.vue') },
-  { path: '/game/breakout', name: 'breakout', component: () => import('../views/games/BreakoutView.vue') },
-  { path: '/game/sky-defense', name: 'skyDefense', component: () => import('../views/games/SkyDefenseView.vue') },
-  { path: '/game/match', name: 'match', component: () => import('../views/games/MatchView.vue') },
-  { path: '/game/tower', name: 'tower', component: () => import('../views/games/TowerView.vue') },
-  { path: '/game/typist', name: 'typist', component: () => import('../views/games/TypistView.vue') },
-  { path: '/game/beats', name: 'beats', component: () => import('../views/games/BeatsView.vue') },
-  { path: '/game/particle', name: 'particle', component: () => import('../views/games/ParticleView.vue') },
+  { path: '/game/snake', name: 'snake', component: GameFrame, props: { src: '/games/snake/index.html' } },
+  { path: '/game/coop', name: 'coop', component: GameFrame, props: { src: '/games/coop/index.html' } },
+  { path: '/game/breakout', name: 'breakout', component: GameFrame, props: { src: '/games/breakout/index.html' } },
+  { path: '/game/sky-defense', name: 'skyDefense', component: GameFrame, props: { src: '/games/sky-defense/index.html' } },
+  { path: '/game/match', name: 'match', component: GameFrame, props: { src: '/games/match/index.html' } },
+  { path: '/game/tower', name: 'tower', component: GameFrame, props: { src: '/games/tower/index.html' } },
+  { path: '/game/typist', name: 'typist', component: GameFrame, props: { src: '/games/typist/index.html' } },
+  { path: '/game/beats', name: 'beats', component: GameFrame, props: { src: '/games/beats/index.html' } },
+  { path: '/game/particle', name: 'particle', component: GameFrame, props: { src: '/games/particle/index.html' } },
 ]
 
 const router = createRouter({

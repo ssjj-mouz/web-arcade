@@ -3,7 +3,18 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { useThemeStore } from './stores/theme.js'
+import { useUserStore } from './stores/user.js'
+import { useGamesStore } from './stores/games.js'
+
 const theme = useThemeStore()
-theme.apply()
+const user = useUserStore()
+const games = useGamesStore()
+
+onMounted(() => {
+  theme.apply()
+  user.loadFromStorage()
+  games.loadFromStorage()
+})
 </script>
