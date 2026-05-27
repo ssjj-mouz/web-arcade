@@ -145,8 +145,8 @@
 
             <!-- 轮播样式切换按钮 -->
             <button class="carousel-mode-toggle" @click="toggleCarouselMode()" :title="carouselMode==='swiper' ? '切换为旧版3D平行四边形轮播' : '切换为新版Coverflow 3D轮播'">
-                <span v-if="carouselMode==='swiper'">🔄 旧版3D轮播</span>
-                <span v-else>🔄 新版Coverflow</span>
+                <span v-if="carouselMode==='swiper'">切换轮播</span>
+                <span v-else>切换轮播</span>
             </button>
 
             <!-- Swiper Coverflow 新版 -->
