@@ -858,7 +858,7 @@ function initHomeRunner() {
   const c = document.getElementById('homeRunner');
   if (!c) return;
   const ctx = c.getContext('2d');
-  const W = 1200, H = 120, GROUND = 100, GRAVITY = 0.55, JUMP_F = -8.5, PW = 18, PH = 26;
+  const W = 1200, H = 120, GROUND = 100, GRAVITY = 0.58, JUMP_F = -9.2, PW = 18, PH = 26;
 
   function ac(a) {
     const s = getComputedStyle(document.documentElement);
@@ -870,10 +870,10 @@ function initHomeRunner() {
   }
 
   let state = 'idle', score = 0, hs = parseInt(localStorage.getItem('homeSprintHigh')||'0');
-  let speed = 2, frame = 0, obs = [], spawnT = 0;
+  let speed = 3, frame = 0, obs = [], spawnT = 0;
   let p = { x: 50, y: GROUND-PH, vy: 0, vx: 0, j: false, rf: 0 };
 
-  function start() { state='playing'; score=0; frame=0; speed=2; obs=[]; spawnT=90; p.y=GROUND-PH; p.vy=0; p.vx=0; p.j=false; p.rf=0; }
+  function start() { state='playing'; score=0; frame=0; speed=3; obs=[]; spawnT=70; p.y=GROUND-PH; p.vy=0; p.vx=0; p.j=false; p.rf=0; }
   function spawn() { const types=[{w:14,h:22},{w:18,h:30},{w:12,h:26},{w:28,h:20}]; const t=types[Math.random()*4|0]; obs.push({x:W+10,w:t.w,h:t.h,y:GROUND-t.h}); }
 
   function update() {
@@ -881,9 +881,9 @@ function initHomeRunner() {
     if (p.j) { p.vy+=GRAVITY; p.y+=p.vy; p.x+=p.vx; p.vx*=0.96; if(p.y+PH>=GROUND){p.y=GROUND-PH;p.vy=0;p.vx=0;p.j=false;} }
     else { p.x += (50-p.x)*0.03; }
     if(frame%3===0) score++;
-    speed = Math.min(5,2+score*0.001);
-    spawnT -= speed*0.3;
-    if(spawnT<=0){spawn();spawnT=Math.max(50,90-score*0.03)+Math.random()*40;}
+    speed = Math.min(7,3+score*0.002);
+    spawnT -= speed*0.4;
+    if(spawnT<=0){spawn();spawnT=Math.max(40,80-score*0.03)+Math.random()*35;}
     for(let i=obs.length-1;i>=0;i--){
       const o=obs[i]; o.x-=speed;
       if(o.x+o.w<-20){obs.splice(i,1);continue;}
@@ -930,7 +930,7 @@ function initHomeRunner() {
     }
   }
 
-  function click() { if(state==='idle'){start();return;} if(p.j)return; p.vy=JUMP_F; p.y+=p.vy; p.j=true; p.rf=0; p.vx=3.5; }
+  function click() { if(state==='idle'){start();return;} if(p.j)return; p.vy=JUMP_F; p.y+=p.vy; p.j=true; p.rf=0; p.vx=4.2; }
   c.addEventListener('click', click);
   c.addEventListener('touchstart', e=>{e.preventDefault();click();});
 
