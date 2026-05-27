@@ -344,7 +344,7 @@
 
 <script setup>
 
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThemeStore } from '../stores/theme.js'
 import { useUserStore } from '../stores/user.js'
@@ -470,6 +470,9 @@ window.prevSlide = prevSlide;
 
 // ========== 共享 canvas 变量 ==========
 let starCanvas, starCtx, meteors, sparkParticles, bgStars, floatParticles, starW, starH, mouseX, mouseY;
+let starRafId, cursorRafId, runnerRafId;
+let starResizeHandler, starMouseMoveHandler, starMouseLeaveHandler;
+let cursorMouseMoveHandler, cursorMouseDownHandler;
 
 onMounted(() => {
   user.loadFromStorage();
@@ -556,7 +559,8 @@ function initStarfield() {
 
   function resize() { starW = starCanvas.width = window.innerWidth; starH = starCanvas.height = window.innerHeight; }
   resize();
-  window.addEventListener('resize', () => { resize(); initStars(); initFloatParticles(); meteors = []; sparkParticles = []; });
+  starResizeHandler = () => { resize(); initStars(); initFloatParticles(); meteors = []; sparkParticles = []; };
+	  window.addEventListener('resize', starResizeHandler);
 
   function initStars() {
     bgStars = [];
@@ -616,8 +620,10 @@ function initStarfield() {
 
   initStars();
   initFloatParticles();
-  document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
-  document.addEventListener('mouseleave', () => { mouseX = -1000; mouseY = -1000; });
+  starMouseMoveHandler = e => { mouseX = e.clientX; mouseY = e.clientY; };
+  starMouseLeaveHandler = () => { mouseX = -1000; mouseY = -1000; };
+  document.addEventListener('mousemove', starMouseMoveHandler);
+  document.addEventListener('mouseleave', starMouseLeaveHandler);
 
   function drawStarfield(time) {
     if (!starCanvas.isConnected) return;
@@ -711,9 +717,9 @@ function initStarfield() {
         }
       }
     }
-    requestAnimationFrame(drawStarfield);
+    starRafId = requestAnimationFrame(drawStarfield);
   }
-  requestAnimationFrame(drawStarfield);
+  starRafId = requestAnimationFrame(drawStarfield);
 }
 
 // ========== 赛博光标 ==========
@@ -735,9 +741,10 @@ function initCursor() {
     trail.push({ el: dot, x: 0, y: 0, size, life: 0 });
   }
 
-  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  cursorMouseMoveHandler = e => { mx = e.clientX; my = e.clientY; };
+  document.addEventListener('mousemove', cursorMouseMoveHandler);
 
-  document.addEventListener('mousedown', e => {
+  cursorMouseDownHandler = e => {
     const count = 6 + Math.floor(Math.random() * 6);
     for (let i = 0; i < count; i++) {
       const p = document.createElement('div');
@@ -768,7 +775,8 @@ function initCursor() {
       cursorArrow.style.transform = 'translate(-2px,-2px) scale(0.85)';
       setTimeout(() => { if (cursorArrow) cursorArrow.style.transform = ''; }, 80);
     }
-  });
+  };
+  document.addEventListener('mousedown', cursorMouseDownHandler);
 
   function smoothFollow() {
     cx += (mx - cx) * 0.12; cy += (my - cy) * 0.12;
@@ -790,7 +798,7 @@ function initCursor() {
         t.el.style.boxShadow = '0 0 ' + (4 + i * 2) + 'px rgba(var(--accent-r),var(--accent-g),var(--accent-b),' + (0.5 * (1 - i / TRAIL_COUNT)) + ')';
       }
     });
-    requestAnimationFrame(smoothFollow);
+    cursorRafId = requestAnimationFrame(smoothFollow);
   }
   smoothFollow();
 }
@@ -876,7 +884,7 @@ function initHomeRunner() {
   c.addEventListener('click', click);
   c.addEventListener('touchstart', e=>{e.preventDefault();click();});
 
-  (function loop(){if(state==='playing')update();draw();requestAnimationFrame(loop);})();
+  (function loop(){if(state==='playing')update();draw();runnerRafId=requestAnimationFrame(loop);})();
 }
 
 // ========== 入场动画 ==========
@@ -893,6 +901,18 @@ function initEntrance() {
     });
   }, 400);
 }
+
+onUnmounted(() => {
+  if (starRafId) cancelAnimationFrame(starRafId);
+  if (cursorRafId) cancelAnimationFrame(cursorRafId);
+  if (runnerRafId) cancelAnimationFrame(runnerRafId);
+  if (carouselInterval) clearInterval(carouselInterval);
+  if (starResizeHandler) window.removeEventListener('resize', starResizeHandler);
+  if (starMouseMoveHandler) document.removeEventListener('mousemove', starMouseMoveHandler);
+  if (starMouseLeaveHandler) document.removeEventListener('mouseleave', starMouseLeaveHandler);
+  if (cursorMouseMoveHandler) document.removeEventListener('mousemove', cursorMouseMoveHandler);
+  if (cursorMouseDownHandler) document.removeEventListener('mousedown', cursorMouseDownHandler);
+});
 
 </script>
 
