@@ -407,8 +407,13 @@ function renderLeaderboard() {
   const users = Object.entries(user.allProfiles)
     .map(([name, scores]) => ({ name, total: Object.values(scores).reduce((s,v)=>s+v,0) }))
     .sort((a,b) => b.total - a.total);
+  const maxScore = users.length ? Math.max(users[0].total, 1) : 1;
   let html = '<table><thead><tr><th>#</th><th>玩家</th><th>总分</th></tr></thead><tbody>';
-  users.forEach((u,i) => { html += `<tr><td>${i+1}</td><td>${u.name}</td><td>${u.total}</td></tr>`; });
+  users.forEach((u,i) => {
+    const medal = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : '';
+    const barW = Math.max(2, (u.total / maxScore) * 100);
+    html += `<tr><td>${i+1}</td><td>${medal} ${u.name}<div class="lb-bar"><div class="lb-bar-fill" style="width:${barW}%"></div></div></td><td>${u.total}</td></tr>`;
+  });
   html += '</tbody></table>';
   body.innerHTML = html;
 }
@@ -463,6 +468,9 @@ window.setSlide = setSlide;
 window.nextSlide = nextSlide;
 window.prevSlide = prevSlide;
 
+// ========== 共享 canvas 变量 ==========
+let starCanvas, starCtx, meteors, sparkParticles, bgStars, floatParticles, starW, starH, mouseX, mouseY;
+
 onMounted(() => {
   user.loadFromStorage();
   games.loadFromStorage();
@@ -471,24 +479,35 @@ onMounted(() => {
   // Boot animation
   const bootScreen = document.getElementById('boot-screen');
   if (bootScreen) {
-    const lines = bootScreen.querySelectorAll('.boot-line');
-    const progress = document.getElementById('bootProgress');
-    const title = document.getElementById('bootTitle');
-    let delay = 200;
-    lines.forEach((line, i) => {
+    const loginOverlay = document.getElementById('login-overlay');
+    if (user.isLoggedIn) {
+      bootScreen.remove();
+    } else {
+      const lines = bootScreen.querySelectorAll('.boot-line');
+      const progress = document.getElementById('bootProgress');
+      const title = document.getElementById('bootTitle');
+      const delay = 80, step = 280;
+      lines.forEach((line, i) => {
+        setTimeout(() => {
+          line.style.opacity = '1';
+          line.style.transition = 'opacity 0.2s';
+          if (progress) progress.style.width = Math.min(Math.round(((i+1)/lines.length)*95), 95) + '%';
+        }, delay + i * step);
+      });
+      const totalDur = delay + lines.length * step;
       setTimeout(() => {
-        line.style.opacity = '1';
-        if (progress) progress.style.width = ((i + 1) / lines.length) * 100 + '%';
-      }, delay * (i + 1));
-    });
-    setTimeout(() => {
-      if (title) title.style.opacity = '1';
-      if (progress) progress.style.width = '100%';
-    }, delay * (lines.length + 1));
-    setTimeout(() => {
-      bootScreen.style.opacity = '0';
-      setTimeout(() => { bootScreen.style.display = 'none'; }, 800);
-    }, delay * (lines.length + 1) + 600);
+        if (progress) progress.style.width = '100%';
+        if (title) { title.style.opacity = '1'; title.style.transition = 'opacity 0.6s'; }
+      }, totalDur);
+      setTimeout(() => {
+        bootScreen.style.opacity = '0';
+        setTimeout(() => {
+          bootScreen.remove();
+          if (loginOverlay) loginOverlay.classList.add('show');
+          document.getElementById('loginInput')?.focus();
+        }, 800);
+      }, totalDur + 900);
+    }
   }
 
   // Carousel auto-rotate
@@ -516,35 +535,363 @@ onMounted(() => {
     }, 3000);
   }
 
-  // Starfield canvas (original logic preserved)
+  // Leaderboard overlay click-outside
+  document.getElementById('leaderboard-overlay')?.addEventListener('click', e => {
+    if (e.target === e.currentTarget) hideLeaderboard();
+  });
+
   initStarfield();
+  initCursor();
+  initHomeRunner();
+  initEntrance();
 });
 
+// ========== 混沌流星背景 ==========
 function initStarfield() {
-  const canvas = document.getElementById('starfieldCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let stars = [];
-  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  starCanvas = document.getElementById('starfieldCanvas');
+  if (!starCanvas) return;
+  starCtx = starCanvas.getContext('2d');
+  meteors = []; sparkParticles = []; bgStars = []; floatParticles = [];
+  mouseX = -1000; mouseY = -1000;
+
+  function resize() { starW = starCanvas.width = window.innerWidth; starH = starCanvas.height = window.innerHeight; }
   resize();
-  window.addEventListener('resize', resize);
-  for (let i = 0; i < 150; i++) {
-    stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.5 + 0.5, speed: Math.random() * 0.3 + 0.1, alpha: Math.random() * 0.7 + 0.3 });
+  window.addEventListener('resize', () => { resize(); initStars(); initFloatParticles(); meteors = []; sparkParticles = []; });
+
+  function initStars() {
+    bgStars = [];
+    const count = Math.floor((starW * starH) / 2000);
+    for (let i = 0; i < count; i++) {
+      bgStars.push({
+        x: Math.random() * starW, y: Math.random() * starH,
+        r: Math.random() * 1.5 + 0.2,
+        twinkleSpeed: 0.002 + Math.random() * 0.025,
+        twinkleOffset: Math.random() * Math.PI * 2,
+        hue: Math.random() < 0.25 ? 'accent' : (Math.random() < 0.12 ? 'accent2' : 'white')
+      });
+    }
   }
-  function draw() {
-    if (!canvas.isConnected) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    stars.forEach(s => {
-      s.y += s.speed;
-      if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
-      ctx.fill();
+
+  function initFloatParticles() {
+    floatParticles = [];
+    const count = Math.floor((starW * starH) / 14000);
+    for (let i = 0; i < count; i++) {
+      floatParticles.push({
+        x: Math.random() * starW, y: Math.random() * starH,
+        vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25 - 0.1,
+        r: 0.4 + Math.random() * 1.6, phase: Math.random() * Math.PI * 2,
+        speed: 0.003 + Math.random() * 0.01,
+        hue: Math.random() < 0.2 ? 'accent' : (Math.random() < 0.1 ? 'accent2' : 'white')
+      });
+    }
+  }
+
+  function spawnMeteor() {
+    const edge = Math.floor(Math.random() * 4);
+    let x, y, baseAngle;
+    const margin = 30;
+    switch (edge) {
+      case 0: x = Math.random() * starW; y = -margin; baseAngle = Math.PI * 0.35 + Math.random() * Math.PI * 0.3; break;
+      case 1: x = starW + margin; y = Math.random() * starH; baseAngle = Math.PI * 0.55 + Math.random() * Math.PI * 0.4; break;
+      case 2: x = Math.random() * starW; y = starH + margin; baseAngle = Math.PI * 1.35 + Math.random() * Math.PI * 0.3; break;
+      default: x = -margin; y = Math.random() * starH; baseAngle = Math.PI * 1.65 + Math.random() * Math.PI * 0.4; break;
+    }
+    const angle = baseAngle + (Math.random() - 0.5) * Math.PI * 0.5;
+    const speed = 3 + Math.random() * 14;
+    const vx = Math.cos(angle) * speed, vy = Math.sin(angle) * speed;
+    const len = 40 + Math.random() * 200;
+    const hue = Math.random() < 0.35 ? 'accent' : (Math.random() < 0.55 ? 'accent2' : 'white');
+    return { x, y, vx, vy, life: 1, decay: 0.002 + Math.random() * 0.012, len, hue, headR: 1 + Math.random() * 3.5, sparkTimer: 0, sparkInterval: 0.3 + Math.random() * 0.6, curve: (Math.random() - 0.5) * 0.04 };
+  }
+
+  function spawnSparks(mx, my, vx, vy, hue) {
+    const count = 1 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < count; i++) {
+      sparkParticles.push({
+        x: mx, y: my, vx: vx * 0.3 + (Math.random() - 0.5) * 2, vy: vy * 0.3 + (Math.random() - 0.5) * 2,
+        life: 0.15 + Math.random() * 0.35, decay: 0.015 + Math.random() * 0.04, r: 0.3 + Math.random() * 1.2, hue
+      });
+    }
+  }
+
+  initStars();
+  initFloatParticles();
+  document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+  document.addEventListener('mouseleave', () => { mouseX = -1000; mouseY = -1000; });
+
+  function drawStarfield(time) {
+    if (!starCanvas.isConnected) return;
+    starCtx.clearRect(0, 0, starW, starH);
+    const style = getComputedStyle(document.documentElement);
+    const ar = style.getPropertyValue('--accent-r').trim(), ag = style.getPropertyValue('--accent-g').trim(), ab = style.getPropertyValue('--accent-b').trim();
+    const a2r = style.getPropertyValue('--accent2-r').trim(), a2g = style.getPropertyValue('--accent2-g').trim(), a2b = style.getPropertyValue('--accent2-b').trim();
+
+    bgStars.forEach(s => {
+      const alpha = 0.12 + Math.sin(time * s.twinkleSpeed + s.twinkleOffset) * 0.25;
+      if (s.hue === 'accent') starCtx.fillStyle = `rgba(${ar},${ag},${ab},${Math.max(0.03,alpha)})`;
+      else if (s.hue === 'accent2') starCtx.fillStyle = `rgba(${a2r},${a2g},${a2b},${Math.max(0.03,alpha)})`;
+      else starCtx.fillStyle = `rgba(255,255,255,${Math.max(0.03,alpha)})`;
+      starCtx.beginPath(); starCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2); starCtx.fill();
     });
-    requestAnimationFrame(draw);
+
+    if (Math.random() < 0.025 + Math.sin(time * 0.0003) * 0.01) meteors.push(spawnMeteor());
+    if (meteors.length > 12) meteors.splice(0, meteors.length - 12);
+
+    for (let i = sparkParticles.length - 1; i >= 0; i--) {
+      const sp = sparkParticles[i];
+      sp.x += sp.vx; sp.y += sp.vy; sp.vy += 0.01; sp.life -= sp.decay;
+      if (sp.life <= 0) { sparkParticles.splice(i, 1); continue; }
+      let sr, sg, sb;
+      if (sp.hue === 'accent') { sr = ar; sg = ag; sb = ab; }
+      else if (sp.hue === 'accent2') { sr = a2r; sg = a2g; sb = a2b; }
+      else { sr = 255; sg = 255; sb = 255; }
+      starCtx.fillStyle = `rgba(${sr},${sg},${sb},${sp.life})`;
+      starCtx.shadowColor = `rgba(${sr},${sg},${sb},${sp.life * 0.5})`; starCtx.shadowBlur = 3;
+      starCtx.beginPath(); starCtx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2); starCtx.fill();
+    }
+    starCtx.shadowBlur = 0;
+
+    for (let i = meteors.length - 1; i >= 0; i--) {
+      const m = meteors[i];
+      m.x += m.vx; m.y += m.vy; m.vx += m.curve; m.life -= m.decay;
+      if (m.life <= 0 || m.x < -300 || m.x > starW + 300 || m.y < -300 || m.y > starH + 300) { meteors.splice(i, 1); continue; }
+      m.sparkTimer += 1;
+      if (m.sparkTimer >= m.sparkInterval * 60) { m.sparkTimer = 0; spawnSparks(m.x, m.y, m.vx, m.vy, m.hue); }
+      const alpha = Math.min(1, m.life * 1.5), tailLen = m.len * (0.5 + m.life * 0.5);
+      const tailX = m.x - m.vx * tailLen * 0.05, tailY = m.y - m.vy * tailLen * 0.05;
+      let r, g, b;
+      if (m.hue === 'accent') { r = ar; g = ag; b = ab; }
+      else if (m.hue === 'accent2') { r = a2r; g = a2g; b = a2b; }
+      else { r = 255; g = 255; b = 255; }
+      const grad = starCtx.createLinearGradient(m.x, m.y, tailX, tailY);
+      grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+      grad.addColorStop(0.15, `rgba(${r},${g},${b},${alpha})`);
+      grad.addColorStop(0.6, `rgba(${r},${g},${b},${alpha * 0.4})`);
+      grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+      starCtx.strokeStyle = grad; starCtx.lineWidth = m.headR * 2.5; starCtx.lineCap = 'round';
+      starCtx.shadowColor = `rgba(${r},${g},${b},${alpha * 0.5})`; starCtx.shadowBlur = 14;
+      starCtx.beginPath(); starCtx.moveTo(m.x, m.y); starCtx.lineTo(tailX, tailY); starCtx.stroke();
+      starCtx.shadowBlur = 0; starCtx.fillStyle = `rgba(255,255,255,${alpha})`;
+      starCtx.shadowColor = `rgba(${r},${g},${b},${alpha})`; starCtx.shadowBlur = 18;
+      starCtx.beginPath(); starCtx.arc(m.x, m.y, m.headR * 1.5, 0, Math.PI * 2); starCtx.fill();
+      starCtx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.5})`;
+      starCtx.beginPath(); starCtx.arc(m.x, m.y, m.headR * 3, 0, Math.PI * 2); starCtx.fill();
+      starCtx.shadowBlur = 0;
+    }
+
+    for (let i = 0; i < floatParticles.length; i++) {
+      const fp = floatParticles[i];
+      fp.x += fp.vx + Math.sin(time * fp.speed + fp.phase) * 0.18;
+      fp.y += fp.vy + Math.cos(time * fp.speed + fp.phase + 1) * 0.15;
+      const dx = mouseX - fp.x, dy = mouseY - fp.y;
+      const distToMouse = Math.sqrt(dx * dx + dy * dy);
+      if (distToMouse < 250 && distToMouse > 1) { fp.x += dx / distToMouse * 0.28; fp.y += dy / distToMouse * 0.28; }
+      if (fp.x < -20) fp.x = starW + 20; if (fp.x > starW + 20) fp.x = -20;
+      if (fp.y < -20) fp.y = starH + 20; if (fp.y > starH + 20) fp.y = -20;
+      const pulse = 0.5 + Math.sin(time * 0.002 + fp.phase) * 0.5;
+      const falpha = 0.15 + pulse * 0.35;
+      let fr, fg, fb;
+      if (fp.hue === 'accent') { fr = ar; fg = ag; fb = ab; }
+      else if (fp.hue === 'accent2') { fr = a2r; fg = a2g; fb = a2b; }
+      else { fr = 255; fg = 255; fb = 255; }
+      const glowGrad = starCtx.createRadialGradient(fp.x, fp.y, 0, fp.x, fp.y, fp.r * 3);
+      glowGrad.addColorStop(0, `rgba(${fr},${fg},${fb},${falpha})`);
+      glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      starCtx.fillStyle = glowGrad; starCtx.beginPath(); starCtx.arc(fp.x, fp.y, fp.r * 3, 0, Math.PI * 2); starCtx.fill();
+      starCtx.fillStyle = `rgba(${fr},${fg},${fb},${falpha * 1.4})`;
+      starCtx.beginPath(); starCtx.arc(fp.x, fp.y, fp.r * 0.7, 0, Math.PI * 2); starCtx.fill();
+      for (let j = i + 1; j < floatParticles.length; j++) {
+        const fp2 = floatParticles[j];
+        const ldx = fp.x - fp2.x, ldy = fp.y - fp2.y;
+        const dist = Math.sqrt(ldx * ldx + ldy * ldy);
+        if (dist < 150) {
+          const lineAlpha = (1 - dist / 150) * 0.12 * Math.min(falpha, 0.18 + Math.sin(time * 0.002 + fp2.phase) * 0.5 + 0.5);
+          starCtx.strokeStyle = `rgba(${fr},${fg},${fb},${lineAlpha})`; starCtx.lineWidth = 0.3;
+          starCtx.beginPath(); starCtx.moveTo(fp.x, fp.y); starCtx.lineTo(fp2.x, fp2.y); starCtx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(drawStarfield);
   }
-  draw();
+  requestAnimationFrame(drawStarfield);
+}
+
+// ========== 赛博光标 ==========
+function initCursor() {
+  const neonCursor = document.getElementById('cursor-neon');
+  const cursorArrow = document.getElementById('cursorArrow');
+  const cursorTip = document.getElementById('cursorTip');
+  let mx = 0, my = 0, cx = 0, cy = 0, rx = 0, ry = 0, dx = 0, dy = 0;
+  const trail = [];
+  const TRAIL_COUNT = 12;
+
+  for (let i = 0; i < TRAIL_COUNT; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'cursor-trail';
+    const size = 3 + Math.random() * 5;
+    dot.style.width = size + 'px';
+    dot.style.height = size + 'px';
+    document.body.appendChild(dot);
+    trail.push({ el: dot, x: 0, y: 0, size, life: 0 });
+  }
+
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+
+  document.addEventListener('mousedown', e => {
+    const count = 6 + Math.floor(Math.random() * 6);
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'click-particle';
+      const s = 2 + Math.random() * 6;
+      p.style.width = s + 'px'; p.style.height = s + 'px';
+      p.style.background = 'rgb(var(--accent-r),var(--accent-g),var(--accent-b))';
+      p.style.left = e.clientX + 'px'; p.style.top = e.clientY + 'px';
+      p.style.boxShadow = '0 0 6px rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.8)';
+      document.body.appendChild(p);
+      const angle = Math.random() * Math.PI * 2;
+      const vel = 40 + Math.random() * 80;
+      const vx = Math.cos(angle) * vel, vy = Math.sin(angle) * vel;
+      let life = 1;
+      const animP = () => {
+        life -= 0.025;
+        if (life <= 0) { p.remove(); return; }
+        p.style.left = (parseFloat(p.style.left) + vx * 0.016) + 'px';
+        p.style.top = (parseFloat(p.style.top) + vy * 0.016) + 'px';
+        p.style.opacity = life;
+        p.style.transform = 'translate(-50%,-50%) scale(' + life + ')';
+        requestAnimationFrame(animP);
+      };
+      requestAnimationFrame(animP);
+    }
+    if (cursorArrow) {
+      cursorArrow.style.transition = 'transform 0.06s';
+      cursorArrow.style.transform = 'translate(-2px,-2px) scale(0.85)';
+      setTimeout(() => { if (cursorArrow) cursorArrow.style.transform = ''; }, 80);
+    }
+  });
+
+  function smoothFollow() {
+    cx += (mx - cx) * 0.12; cy += (my - cy) * 0.12;
+    rx += (mx - rx) * 0.25; ry += (my - ry) * 0.25;
+    dx += (mx - dx) * 0.5; dy += (my - dy) * 0.5;
+    if (neonCursor) { neonCursor.style.left = cx + 'px'; neonCursor.style.top = cy + 'px'; }
+    if (cursorArrow) { cursorArrow.style.left = (rx - 2) + 'px'; cursorArrow.style.top = (ry - 2) + 'px'; }
+    if (cursorTip) { cursorTip.style.left = dx + 'px'; cursorTip.style.top = dy + 'px'; }
+    trail.unshift({ x: mx, y: my, life: 1 });
+    if (trail.length > TRAIL_COUNT) trail.pop();
+    trail.forEach((t, i) => {
+      if (t.el) {
+        t.el.style.left = t.x + 'px'; t.el.style.top = t.y + 'px';
+        const alpha = Math.max(0, 1 - i / TRAIL_COUNT) * 0.7;
+        const s = Math.max(0, 1 - i / TRAIL_COUNT);
+        t.el.style.opacity = alpha;
+        t.el.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+        t.el.style.background = 'rgb(var(--accent-r),var(--accent-g),var(--accent-b))';
+        t.el.style.boxShadow = '0 0 ' + (4 + i * 2) + 'px rgba(var(--accent-r),var(--accent-g),var(--accent-b),' + (0.5 * (1 - i / TRAIL_COUNT)) + ')';
+      }
+    });
+    requestAnimationFrame(smoothFollow);
+  }
+  smoothFollow();
+}
+
+// ========== 嵌入跑酷迷你游戏 ==========
+function initHomeRunner() {
+  const c = document.getElementById('homeRunner');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const W = 1200, H = 120, GROUND = 100, GRAVITY = 0.55, JUMP_F = -8.5, PW = 18, PH = 26;
+
+  function ac(a) {
+    const s = getComputedStyle(document.documentElement);
+    return `rgba(${s.getPropertyValue('--accent-r').trim()},${s.getPropertyValue('--accent-g').trim()},${s.getPropertyValue('--accent-b').trim()},${a??1})`;
+  }
+  function mc() {
+    const s = getComputedStyle(document.documentElement);
+    return `rgb(${s.getPropertyValue('--muted-r').trim()},${s.getPropertyValue('--muted-g').trim()},${s.getPropertyValue('--muted-b').trim()})`;
+  }
+
+  let state = 'idle', score = 0, hs = parseInt(localStorage.getItem('homeSprintHigh')||'0');
+  let speed = 2, frame = 0, obs = [], spawnT = 0;
+  let p = { x: 50, y: GROUND-PH, vy: 0, vx: 0, j: false, rf: 0 };
+
+  function start() { state='playing'; score=0; frame=0; speed=2; obs=[]; spawnT=90; p.y=GROUND-PH; p.vy=0; p.vx=0; p.j=false; p.rf=0; }
+  function spawn() { const types=[{w:14,h:22},{w:18,h:30},{w:12,h:26},{w:28,h:20}]; const t=types[Math.random()*4|0]; obs.push({x:W+10,w:t.w,h:t.h,y:GROUND-t.h}); }
+
+  function update() {
+    frame++; p.rf += speed*0.06;
+    if (p.j) { p.vy+=GRAVITY; p.y+=p.vy; p.x+=p.vx; p.vx*=0.96; if(p.y+PH>=GROUND){p.y=GROUND-PH;p.vy=0;p.vx=0;p.j=false;} }
+    else { p.x += (50-p.x)*0.03; }
+    if(frame%3===0) score++;
+    speed = Math.min(5,2+score*0.001);
+    spawnT -= speed*0.3;
+    if(spawnT<=0){spawn();spawnT=Math.max(50,90-score*0.03)+Math.random()*40;}
+    for(let i=obs.length-1;i>=0;i--){
+      const o=obs[i]; o.x-=speed;
+      if(o.x+o.w<-20){obs.splice(i,1);continue;}
+      if(p.x+2<o.x+o.w-2&&p.x+PW-4>o.x+2&&p.y+2<o.y+o.h-2&&p.y+PH-4>o.y+2){
+        if(score>hs){hs=score;localStorage.setItem('homeSprintHigh',String(hs));}
+        obs=[];p.y=GROUND-PH;p.vy=0;p.j=false;state='idle';return;
+      }
+    }
+  }
+
+  function draw() {
+    const accent=ac(), muted=mc();
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='rgba(128,128,128,0.04)';ctx.lineWidth=1;
+    for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    ctx.strokeStyle=ac(0.15);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,GROUND);ctx.lineTo(W,GROUND);ctx.stroke();
+    const cols=['#ff4444','#ff00ff','#00ffff','#ff8800'];
+    for(const o of obs){
+      const ci=Math.floor(o.x/80)%4;
+      ctx.shadowColor=cols[ci];ctx.shadowBlur=8;ctx.fillStyle=cols[ci];
+      ctx.fillRect(o.x,o.y,o.w,o.h);
+      ctx.fillStyle='rgba(255,255,255,0.2)';ctx.fillRect(o.x+2,o.y+3,o.w-4,2);
+    }
+    ctx.shadowBlur=0;
+    const bob=p.j?0:Math.sin(p.rf)*1.2, by=p.y+bob;
+    ctx.shadowColor=accent;ctx.shadowBlur=10;ctx.fillStyle=accent;
+    ctx.fillRect(p.x,by,PW,PH-6);
+    ctx.beginPath();ctx.arc(p.x+PW/2,by-2,7,0,6.28);ctx.fill();
+    ctx.shadowBlur=0;ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.arc(p.x+PW/2+3,by-4,2,0,6.28);ctx.fill();
+    ctx.fillStyle='#111';ctx.beginPath();ctx.arc(p.x+PW/2+4,by-4,1,0,6.28);ctx.fill();
+    if(!p.j){
+      const leg=Math.floor(p.rf*0.5)%2;
+      ctx.fillStyle=accent;ctx.fillRect(p.x+3,by+PH-6,5,leg?6:3);ctx.fillRect(p.x+10,by+PH-6,5,leg?3:6);
+    }
+    ctx.shadowBlur=0;
+    ctx.font='600 13px "Segoe UI",sans-serif';ctx.textAlign='right';
+    ctx.fillStyle='rgb(var(--text-r),var(--text-g),var(--text-b))';ctx.fillText(`🏃 ${score}`,W-16,22);
+    ctx.font='400 10px "Segoe UI",sans-serif';ctx.fillStyle=muted;ctx.fillText(`最高 ${hs}`,W-16,38);ctx.textAlign='left';
+    if(state==='idle'){
+      ctx.fillStyle='rgba(255,255,255,0.12)';ctx.font='500 13px "Segoe UI",sans-serif';ctx.textAlign='center';
+      ctx.fillText('点击奔跑 →',W/2,GROUND-40);ctx.textAlign='left';
+    }
+  }
+
+  function click() { if(state==='idle'){start();return;} if(p.j)return; p.vy=JUMP_F; p.y+=p.vy; p.j=true; p.rf=0; p.vx=3.5; }
+  c.addEventListener('click', click);
+  c.addEventListener('touchstart', e=>{e.preventDefault();click();});
+
+  (function loop(){if(state==='playing')update();draw();requestAnimationFrame(loop);})();
+}
+
+// ========== 入场动画 ==========
+function initEntrance() {
+  const targets = ['header', '.carousel-container', '.section-title', '.filter-bar', '.search-bar', '.mini-runner'];
+  targets.forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) el.classList.add('entrance-waiting');
+  });
+  document.querySelectorAll('.game-card').forEach(c => c.classList.add('entrance-waiting'));
+  setTimeout(() => {
+    document.querySelectorAll('.entrance-waiting').forEach((el, i) => {
+      setTimeout(() => { el.classList.remove('entrance-waiting'); el.classList.add('entrance-done'); }, i * 60);
+    });
+  }, 400);
 }
 
 </script>

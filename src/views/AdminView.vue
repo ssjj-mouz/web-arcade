@@ -116,7 +116,8 @@ function lockGate() {
 
 async function checkPasscode(e) {
   e.preventDefault();
-  const val = passcode.value.trim();
+  const input = document.getElementById('authInput');
+  const val = input?.value?.trim();
   if (!val) return;
   authError.value = '';
   checking.value = true;
@@ -128,7 +129,7 @@ async function checkPasscode(e) {
       renderAll();
     } else {
       authError.value = '✦ 暗号错误 · ACCESS DENIED';
-      passcode.value = '';
+      if (input) input.value = '';
     }
   } catch { authError.value = '✦ 验证服务不可用，请稍后重试'; }
   checking.value = false;
