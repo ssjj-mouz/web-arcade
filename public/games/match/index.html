@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深海寻宝 - Web Arcade</title>
+    <link rel="stylesheet" href="css/match.css">
+</head>
+<body>
+
+    <header>
+        <h1>🌊 深海寻宝</h1>
+        <div class="stats">
+            <span>步数: <span id="moves">0</span></span>
+            <span>最高分: <span id="high-score">0</span></span>
+        </div>
+    </header>
+
+    <div class="game-board" id="board">
+        <!-- JS 动态生成卡片 -->
+    </div>
+
+    <div class="controls">
+        <button onclick="initGame()">重新洗牌 🔄</button>
+        <button onclick="location.href='../../index.html'" style="background:#475569; margin-left:10px;">返回大厅</button>
+    </div>
+
+    <script>
+        const symbols = ['🐟', '🐙', '🦀', '🐢', '🦈', '🐋', '🐡', '🦑'];
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let isLocked = false; // 防止动画期间点击
+
+        const board = document.getElementById('board');
+        const movesEl = document.getElementById('moves');
+        const highScoreEl = document.getElementById('high-score');
+
+        // 读取大厅分数
+        let highScore = localStorage.getItem('matchHighScore') || 999;
+        if(highScore == 999) highScoreEl.innerText = '-';
+        else highScoreEl.innerText = highScore;
+
+        function initGame() {
+            board.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            movesEl.innerText = moves;
+            isLocked = false;
+
+            // 构造 16 张卡片 (8对)
+            cards = [...symbols, ...symbols];
+            // Fisher-Yates 洗牌算法
+            cards.sort(() => Math.random() - 0.5);
+
+            cards.forEach((symbol, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.symbol = symbol;
+                
+                // HTML结构：包含正面和反面
+                card.innerHTML = `
+                    <div class="card-face card-front">${symbol}</div>
+                    <div class="card-face card-back"></div>
+                `;
+                
+                card.addEventListener('click', () => flipCard(card));
+                board.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            // 如果面板锁定、或者是已经翻开/匹配的卡，则忽略
+            if (isLocked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                moves++;
+                movesEl.innerText = moves;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            isLocked = true; // 锁定面板
+            const [card1, card2] = flippedCards;
+            const isMatch = card1.dataset.symbol === card2.dataset.symbol;
+
+            if (isMatch) {
+                // 延迟添加匹配成功的动画类
+                setTimeout(() => {
+                    card1.classList.replace('flipped', 'matched');
+                    card2.classList.replace('flipped', 'matched');
+                    matchedPairs++;
+                    flippedCards = [];
+                    isLocked = false;
+                    
+                    if (matchedPairs === symbols.length) gameOver();
+                }, 400);
+            } else {
+                // 不匹配，1秒后翻回去
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    isLocked = false;
+                }, 1000);
+            }
+        }
+
+        function gameOver() {
+            setTimeout(() => {
+                alert(`🎉 恭喜通关！共花费了 ${moves} 步。`);
+                // 步数越少越好
+                if(moves < highScore) {
+                    if (typeof window._syncScore === 'function') _syncScore('match', moves);
+                    highScoreEl.innerText = moves;
+                }
+            }, 500);
+        }
+
+        // 页面加载启动
+        initGame();
+    </script>
+<script>
+try {
+    const _user = localStorage.getItem('arcadeUser');
+    if (_user) {
+        window._syncScore = function(game, score) {
+            try {
+                const all = JSON.parse(localStorage.getItem('arcadeProfiles') || '{}');
+                if (!all[_user]) all[_user] = {};
+                if (!all[_user][game] || score > all[_user][game]) {
+                    all[_user][game] = score;
+                    localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                }
+            } catch(e){}
+        };
+    }
+} catch(e){}
+</script>
+<!-- ====================== COMMENT WIDGET ====================== -->
+<style>
+.cmt-trigger{position:fixed;bottom:20px;right:20px;z-index:9998;width:42px;height:42px;border-radius:50%;background:rgba(6,8,16,0.85);backdrop-filter:blur(8px);border:1px solid rgba(0,255,200,0.15);color:#00ffc8;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.25s;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
+.cmt-trigger:hover{transform:scale(1.1);box-shadow:0 0 25px rgba(0,255,200,0.15);border-color:rgba(0,255,200,0.3)}
+.cmt-trigger .badge{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:8px;background:#ff40c8;color:#fff;font-size:0.6rem;display:flex;align-items:center;justify-content:center;padding:0 4px;font-weight:700}
+.cmt-panel{position:fixed;bottom:0;left:0;right:0;z-index:9997;background:rgba(8,12,22,0.97);backdrop-filter:blur(16px);border-top:1px solid rgba(0,255,200,0.1);transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);max-height:55vh;display:flex;flex-direction:column;box-shadow:0 -20px 60px rgba(0,0,0,0.5)}
+.cmt-panel.open{transform:translateY(0)}
+.cmt-panel-header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.78rem;font-weight:700;color:#00ffc8;letter-spacing:1px}
+.cmt-panel-header button{background:none;border:none;color:#6a7a9a;font-size:1rem;cursor:pointer;padding:4px 8px;transition:0.2s}
+.cmt-panel-header button:hover{color:#ff4050}
+.cmt-list{flex:1;overflow-y:auto;padding:8px 16px;min-height:60px;max-height:35vh}
+.cmt-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.78rem}
+.cmt-item .avatar{width:26px;height:26px;border-radius:50%;flex-shrink:0;background:rgba(0,255,200,0.1);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:#00ffc8}
+.cmt-item .body{flex:1;min-width:0}
+.cmt-item .uname{font-weight:600;color:#00ffc8;font-size:0.7rem}
+.cmt-item .text{color:#c0d0e0;line-height:1.4;word-break:break-word;margin-top:2px;font-size:0.72rem}
+.cmt-item .time{font-size:0.6rem;color:#4a5a7a}
+.cmt-empty{text-align:center;color:#4a5a7a;padding:16px 0;font-size:0.72rem}
+.cmt-input-row{display:flex;gap:8px;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.04)}
+.cmt-input-row input{flex:1;padding:8px 12px;font-size:0.75rem;font-family:inherit;background:rgba(255,255,255,0.04);color:#e0e8ff;border:1px solid rgba(0,255,200,0.1);border-radius:8px;outline:none;transition:0.2s}
+.cmt-input-row input:focus{border-color:rgba(0,255,200,0.3)}
+.cmt-input-row input::placeholder{color:rgba(255,255,255,0.15)}
+.cmt-input-row button{padding:8px 16px;font-size:0.72rem;font-weight:700;font-family:inherit;background:rgba(0,255,200,0.1);color:#00ffc8;border:1px solid rgba(0,255,200,0.2);border-radius:8px;cursor:pointer;white-space:nowrap;transition:0.2s}
+.cmt-input-row button:hover{background:rgba(0,255,200,0.2)}
+</style>
+<div class="cmt-trigger" id="cmtTrigger" onclick="toggleComments()" title="评论">💬<span class="badge" id="cmtBadge" style="display:none">0</span></div>
+<div class="cmt-panel" id="cmtPanel">
+<div class="cmt-panel-header"><span>💬 深海寻宝 · 玩家评论</span><button onclick="toggleComments()">✕</button></div>
+<div class="cmt-list" id="cmtList"></div>
+<div class="cmt-input-row"><input id="cmtInput" placeholder="写下你的评价..." maxlength="200" onkeydown="if(event.key==='Enter')addComment()"><button onclick="addComment()">发送</button></div>
+</div>
+<script>
+(function(){
+var GK='match';
+window.toggleComments=function(){var p=document.getElementById('cmtPanel');p.classList.toggle('open');if(p.classList.contains('open'))loadComments();};
+function gc(){try{return JSON.parse(localStorage.getItem('arcadeComments')||'{}')}catch(e){return{}}}
+function sc(c){localStorage.setItem('arcadeComments',JSON.stringify(c))}
+window.addComment=function(){var t=document.getElementById('cmtInput').value.trim();if(!t)return;var u=localStorage.getItem('arcadeUser')||'匿名玩家';var c=gc();if(!c[GK])c[GK]=[];c[GK].push({user:u,text:t,time:Date.now()});sc(c);if(typeof CloudSync!=='undefined')CloudSync.addComment(GK,u,t);document.getElementById('cmtInput').value='';loadComments()};
+window.loadComments=function(){var c=gc();var l=c[GK]||[];var h='';if(l.length===0){h='<div class="cmt-empty">还没有评论，来说两句吧</div>'}else{for(var i=l.length-1;i>=0;i--){var o=l[i];var d=new Date(o.time);var ts=d.toLocaleDateString('zh-CN')+' '+d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});h+='<div class="cmt-item"><div class="avatar">'+o.user[0]+'</div><div class="body"><span class="uname">'+o.user+'</span> <span class="time">'+ts+'</span><div class="text">'+o.text+'</div></div></div>'}}document.getElementById('cmtList').innerHTML=h;var b=document.getElementById('cmtBadge');b.textContent=l.length;b.style.display=l.length>0?'flex':'none'};
+var ic=gc();var il=ic[GK]||[];if(il.length>0){var b=document.getElementById('cmtBadge');b.textContent=il.length;b.style.display='flex'}
+})();
+</script>
+</body>
+</html>
