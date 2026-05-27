@@ -131,104 +131,38 @@
     </header>
 
     <main>
-        <!-- 3D 全息轮播 -->
+        <!-- 3D 全息轮播 Swiper -->
         <div class="carousel-container">
             <canvas id="carouselParticles"></canvas>
-            <div class="carousel-slide slide-sky active">
-                <div class="slide-overlay"></div>
-                <div class="slide-icon">✈️</div>
-                <span class="slide-badge">🎯 射击 · 生存</span>
-                <h2 class="slide-title">天空防卫局</h2>
-                <p class="slide-desc">偏导护盾 + 电磁脉冲，在无尽的陨石雨与敌机中守卫最后防线</p>
-                <a @click="router.push('/game/sky-defense')" style="cursor:pointer" class="slide-btn">立即启动 ▶</a>
-            </div>
+            <swiper
+                :modules="[EffectCoverflow, Navigation, Pagination, Autoplay]"
+                :effect="'coverflow'"
+                :centered-slides="true"
+                :slides-per-view="3"
+                :coverflow-effect="{ rotate: 5, stretch: -20, depth: 280, modifier: 1, slideShadows: false }"
+                :navigation="{ nextEl: '.carousel-arrow-right', prevEl: '.carousel-arrow-left' }"
+                :pagination="{ el: '.carousel-nav', clickable: true }"
+                :autoplay="{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }"
+                :loop="true"
+                :speed="700"
+                :loop-additional-slides="3"
+                :allow-touch-move="true"
+                class="carousel-swiper"
+            >
+                <swiper-slide v-for="s in carouselSlides" :key="s.id" :class="'carousel-slide slide-' + s.id">
+                    <div class="slide-overlay"></div>
+                    <div class="slide-icon">{{ s.icon }}</div>
+                    <span class="slide-badge">{{ s.badge }}</span>
+                    <h2 class="slide-title">{{ s.title }}</h2>
+                    <p class="slide-desc">{{ s.desc }}</p>
+                    <a @click="router.push(s.link)" style="cursor:pointer" class="slide-btn">{{ s.btn }}</a>
+                </swiper-slide>
+            </swiper>
 
-            <div class="carousel-slide slide-match">
-                <div class="slide-overlay"></div>
-                <div class="slide-icon">🐙</div>
-                <span class="slide-badge">🧩 记忆 · 休闲</span>
-                <h2 class="slide-title">深海寻宝</h2>
-                <p class="slide-desc">翻开神秘卡片，在限定步数内找出所有配对的海底生物</p>
-                <a @click="router.push('/game/match')" style="cursor:pointer" class="slide-btn">开始探险 ▶</a>
-            </div>
+            <div class="carousel-nav"></div>
 
-            <div class="carousel-slide slide-tower">
-                <div class="slide-overlay"></div>
-                <div class="slide-icon">🏗️</div>
-                <span class="slide-badge">⚡ 反应 · 物理</span>
-                <h2 class="slide-title">云端筑梦师</h2>
-                <p class="slide-desc">抓准时机堆叠建筑模块，挑战人类物理学的极限高度</p>
-                <a @click="router.push('/game/tower')" style="cursor:pointer" class="slide-btn">开始搭建 ▶</a>
-            </div>
-
-            <div class="carousel-slide slide-typist">
-                <div class="slide-overlay"></div>
-                <div class="slide-icon">💻</div>
-                <span class="slide-badge">⌨️ 打字 · 硬核</span>
-                <h2 class="slide-title">极客骇客</h2>
-                <p class="slide-desc">化身顶级黑客，快速敲击键盘拦截落下的代码病毒</p>
-                <a @click="router.push('/game/typist')" style="cursor:pointer" class="slide-btn">入侵系统 ▶</a>
-            </div>
-
-            <div class="carousel-slide slide-beats">
-                <div class="slide-overlay"></div>
-                <div class="slide-icon">🎵</div>
-                <span class="slide-badge">🧠 记忆 · 音乐</span>
-                <h2 class="slide-title">光音记忆</h2>
-                <p class="slide-desc">记住光色与音符的序列，重现完美旋律，挑战你的记忆极限</p>
-                <a @click="router.push('/game/beats')" style="cursor:pointer" class="slide-btn">开始挑战 ▶</a>
-            </div>
-
-            <div class="carousel-slide slide-particle">
-                <div class="slide-overlay"></div>
-                <div class="slide-icon">🌌</div>
-                <span class="slide-badge">✨ 沙盒 · 解压</span>
-                <h2 class="slide-title">星海流沙</h2>
-                <p class="slide-desc">6种粒子交互：引力场、银河旋涡、流光拖尾，解压神器</p>
-                <a @click="router.push('/game/particle')" style="cursor:pointer" class="slide-btn">进入星海 ▶</a>
-            </div>
-
-            <div class="carousel-slide slide-coop">
-                <div class="slide-overlay"></div>
-                <div class="slide-icon">👯</div>
-                <span class="slide-badge">👫 双人 · 迷宫</span>
-                <h2 class="slide-title">双子星探险</h2>
-                <p class="slide-desc">双人配合穿越随机迷宫，同时抵达传送门才能过关</p>
-                <a @click="router.push('/game/coop')" style="cursor:pointer" class="slide-btn">组队出发 ▶</a>
-            </div>
-
-            <div class="carousel-slide slide-snake">
-                <div class="slide-overlay"></div>
-                <div class="slide-icon">🐍</div>
-                <span class="slide-badge">🕹 经典 · 贪吃蛇</span>
-                <h2 class="slide-title">贪吃蛇</h2>
-                <p class="slide-desc">经典贪吃蛇玩法，全屏网格战场。吃果实越长越大，挑战最高分！</p>
-                <a @click="router.push('/game/snake')" style="cursor:pointer" class="slide-btn">开始游戏 ▶</a>
-            </div>
-
-            <div class="carousel-slide slide-breakout">
-                <div class="slide-overlay"></div>
-                <div class="slide-icon">💎</div>
-                <span class="slide-badge">🔄 消除 · 益智</span>
-                <h2 class="slide-title">宝石消消乐</h2>
-                <p class="slide-desc">交换相邻宝石凑成三个以上消除，触发华丽级联连消</p>
-                <a @click="router.push('/game/breakout')" style="cursor:pointer" class="slide-btn">开始消除 ▶</a>
-            </div>
-
-            <div class="carousel-nav">
-                <div class="nav-dot active" @click="setSlide(0)"></div>
-                <div class="nav-dot" @click="setSlide(1)"></div>
-                <div class="nav-dot" @click="setSlide(2)"></div>
-                <div class="nav-dot" @click="setSlide(3)"></div>
-                <div class="nav-dot" @click="setSlide(4)"></div>
-                <div class="nav-dot" @click="setSlide(5)"></div>
-                <div class="nav-dot" @click="setSlide(6)"></div>
-                <div class="nav-dot" @click="setSlide(7)"></div>
-                <div class="nav-dot" @click="setSlide(8)"></div>
-            </div>
-
-            <button class="carousel-arrow carousel-arrow-left" @click="prevSlide()" aria-label="上一页">‹</button>
-            <button class="carousel-arrow carousel-arrow-right" @click="nextSlide()" aria-label="下一页">›</button>
+            <button class="carousel-arrow carousel-arrow-left" aria-label="上一页">‹</button>
+            <button class="carousel-arrow carousel-arrow-right" aria-label="下一页">›</button>
         </div>
 
 
@@ -349,6 +283,12 @@ import { useRouter } from 'vue-router'
 import { useThemeStore } from '../stores/theme.js'
 import { useUserStore } from '../stores/user.js'
 import { useGamesStore } from '../stores/games.js'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { EffectCoverflow, Navigation, Pagination, Autoplay } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/effect-coverflow'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
 
 const router = useRouter()
 const theme = useThemeStore()
@@ -418,44 +358,18 @@ function renderLeaderboard() {
   body.innerHTML = html;
 }
 
-// Carousel
-let currentSlide = 0;
-const totalSlides = 9;
-let carouselInterval;
-let isTransitioning = false;
-
-function getCarouselOffset(i) {
-  let d = i - currentSlide;
-  if (d > totalSlides / 2) d -= totalSlides;
-  if (d < -totalSlides / 2) d += totalSlides;
-  return d;
-}
-function posClass(offset) {
-  if (offset === 0) return 'pos-current';
-  if (offset === -1) return 'pos-prev';
-  if (offset === 1) return 'pos-next';
-  if (offset === -2) return 'pos-far-prev';
-  if (offset === 2) return 'pos-far-next';
-  return 'pos-hidden';
-}
-function updateCarousel() {
-  const slides = document.querySelectorAll('.carousel-slide');
-  slides.forEach((s, i) => {
-    s.classList.remove('pos-current', 'pos-prev', 'pos-next', 'pos-far-prev', 'pos-far-next', 'pos-hidden');
-    s.classList.add(posClass(getCarouselOffset(i)));
-  });
-  document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
-}
-function setSlide(i) {
-  if (isTransitioning || i === currentSlide) return;
-  isTransitioning = true;
-  currentSlide = i;
-  updateCarousel();
-  if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = setInterval(nextSlide, 5000); }
-  setTimeout(() => { isTransitioning = false; }, 750);
-}
-function nextSlide() { setSlide((currentSlide + 1) % totalSlides); }
-function prevSlide() { setSlide((currentSlide - 1 + totalSlides) % totalSlides); }
+// Carousel slides data
+const carouselSlides = [
+  { id:'sky',  icon:'✈️', badge:'🎯 射击 · 生存', title:'天空防卫局', desc:'偏导护盾 + 电磁脉冲，在无尽的陨石雨与敌机中守卫最后防线', link:'/game/sky-defense', btn:'立即启动 ▶' },
+  { id:'match',  icon:'🐙', badge:'🧩 记忆 · 休闲', title:'深海寻宝', desc:'翻开神秘卡片，在限定步数内找出所有配对的海底生物', link:'/game/match', btn:'开始探险 ▶' },
+  { id:'tower',  icon:'🏗️', badge:'⚡ 反应 · 物理', title:'云端筑梦师', desc:'抓准时机堆叠建筑模块，挑战人类物理学的极限高度', link:'/game/tower', btn:'开始搭建 ▶' },
+  { id:'typist', icon:'💻', badge:'⌨️ 打字 · 硬核', title:'极客骇客', desc:'化身顶级黑客，快速敲击键盘拦截落下的代码病毒', link:'/game/typist', btn:'入侵系统 ▶' },
+  { id:'beats',  icon:'🎵', badge:'🧠 记忆 · 音乐', title:'光音记忆', desc:'记住光色与音符的序列，重现完美旋律，挑战你的记忆极限', link:'/game/beats', btn:'开始挑战 ▶' },
+  { id:'particle', icon:'🌌', badge:'✨ 沙盒 · 解压', title:'星海流沙', desc:'6种粒子交互：引力场、银河旋涡、流光拖尾，解压神器', link:'/game/particle', btn:'进入星海 ▶' },
+  { id:'coop',  icon:'👯', badge:'👫 双人 · 迷宫', title:'双子星探险', desc:'双人配合穿越随机迷宫，同时抵达传送门才能过关', link:'/game/coop', btn:'组队出发 ▶' },
+  { id:'snake',  icon:'🐍', badge:'🕹 经典 · 贪吃蛇', title:'贪吃蛇', desc:'经典贪吃蛇玩法，全屏网格战场。吃果实越长越大，挑战最高分！', link:'/game/snake', btn:'开始游戏 ▶' },
+  { id:'breakout', icon:'💎', badge:'🔄 消除 · 益智', title:'宝石消消乐', desc:'交换相邻宝石凑成三个以上消除，触发华丽级联连消', link:'/game/breakout', btn:'开始消除 ▶' },
+]
 
 // Search & filter
 function applySearchAndFilter() {
@@ -490,9 +404,6 @@ window.showLeaderboard = showLeaderboard;
 window.hideLeaderboard = hideLeaderboard;
 window.setTheme = setTheme;
 window.toggleThemePanel = toggleThemePanel;
-window.setSlide = setSlide;
-window.nextSlide = nextSlide;
-window.prevSlide = prevSlide;
 
 // ========== 共享 canvas 变量 ==========
 let starCanvas, starCtx, meteors, sparkParticles, bgStars, floatParticles, starW, starH, mouseX, mouseY;
@@ -540,10 +451,6 @@ onMounted(() => {
       }, totalDur + 900));
     }
   }
-
-  // Carousel auto-rotate
-  updateCarousel();
-  carouselInterval = setInterval(nextSlide, 5000);
 
   // Search/filter listeners
   document.getElementById('searchInput')?.addEventListener('input', applySearchAndFilter);
@@ -940,7 +847,6 @@ onUnmounted(() => {
   if (starRafId) cancelAnimationFrame(starRafId);
   if (cursorRafId) cancelAnimationFrame(cursorRafId);
   if (runnerRafId) cancelAnimationFrame(runnerRafId);
-  if (carouselInterval) clearInterval(carouselInterval);
   if (starResizeHandler) window.removeEventListener('resize', starResizeHandler);
   if (starMouseMoveHandler) document.removeEventListener('mousemove', starMouseMoveHandler);
   if (starMouseLeaveHandler) document.removeEventListener('mouseleave', starMouseLeaveHandler);
