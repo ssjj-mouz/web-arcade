@@ -25,7 +25,7 @@ body {
     overflow: hidden;
 }
 
-canvas { display: block; background: #000; cursor: pointer; }
+canvas { display: block; background: #000; cursor: pointer; max-width: 100%; height: auto; touch-action: manipulation; }
 
 /* 游戏结束覆盖层 */
 .overlay {
@@ -72,3 +72,34 @@ button:hover { background: #fbbf24; transform: translateY(-2px); box-shadow: 0 5
 .diff-icon { font-size: 1.5rem; }
 .diff-label { font-size: 1.1rem; min-width: 40px; }
 .diff-note { font-size: 0.75rem; color: #94a3b8; font-weight: normal; }
+
+/* 移动端放置按钮 */
+.mobile-drop-btn {
+    display: none;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+}
+.mobile-drop-btn:active {
+    background: var(--primary);
+    color: #000;
+    box-shadow: 0 0 24px rgba(245,158,11,0.5);
+}
+
+@media (pointer: coarse) {
+    .mobile-drop-btn { display: block; }
+    .controls p { display: none; }
+    .canvas-container { max-width: 95vw; }
+}

@@ -26,6 +26,18 @@
         </div>
     </main>
 
+    <!-- 移动端虚拟键盘提示 -->
+    <div class="vk-banner" id="vkBanner">
+        <p>⌨️ 此游戏需要键盘输入，建议在电脑上游玩</p>
+        <button onclick="showVK()">仍然在手机上尝试</button>
+    </div>
+    <div class="vk-panel" id="vkPanel">
+        <div class="vk-close"><button onclick="hideVK()">✕ 收起键盘</button></div>
+        <div class="vk-row" id="vkRow1"></div>
+        <div class="vk-row" id="vkRow2"></div>
+        <div class="vk-row" id="vkRow3"></div>
+    </div>
+
     <script>
         // Web前端开发常用词汇库
         const dictionary = [
@@ -168,6 +180,56 @@
             overlay.classList.remove('hidden');
         }
         
+        // ========== 移动端虚拟键盘 ==========
+        var vkVisible = false;
+        var vkKeys = [
+            ['q','w','e','r','t','y','u','i','o','p'],
+            ['a','s','d','f','g','h','j','k','l'],
+            ['z','x','c','v','b','n','m']
+        ];
+
+        function buildVK() {
+            for (var r = 0; r < 3; r++) {
+                var row = document.getElementById('vkRow' + (r + 1));
+                if (!row) continue;
+                var html = '';
+                if (r === 1) html += '<div style="flex:0.5"></div>';
+                for (var k = 0; k < vkKeys[r].length; k++) {
+                    var key = vkKeys[r][k];
+                    html += '<button ontouchstart="vkTap(\''+key+'\',event)" onmousedown="vkTap(\''+key+'\',event)">' + key.toUpperCase() + '</button>';
+                }
+                if (r === 1) html += '<div style="flex:0.5"></div>';
+                row.innerHTML = html;
+            }
+        }
+
+        function showVK() {
+            document.getElementById('vkBanner').style.display = 'none';
+            var panel = document.getElementById('vkPanel');
+            panel.classList.add('show');
+            vkVisible = true;
+            if (!vkKeys[0][0]) buildVK();
+            buildVK();
+        }
+
+        function hideVK() {
+            document.getElementById('vkPanel').classList.remove('show');
+            document.getElementById('vkBanner').style.display = 'block';
+            vkVisible = false;
+        }
+
+        function vkTap(key, e) {
+            if (e) e.preventDefault();
+            // 模拟 keydown 事件
+            var evt = new KeyboardEvent('keydown', { key: key, bubbles: true });
+            window.dispatchEvent(evt);
+        }
+
+        // 桌面设备自动隐藏虚拟键盘提示
+        if (window.matchMedia('(pointer: fine)').matches) {
+            document.getElementById('vkBanner').style.display = 'none';
+        }
+
         // 进入页面不自动开始，点击按钮才开始，这里直接自动开始以方便测试
         startGame();
     </script>

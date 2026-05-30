@@ -16,7 +16,7 @@
 
         .game-header {
             display: flex; justify-content: space-between; align-items: center;
-            width: 540px; padding: 12px 20px; margin-bottom: 16px;
+            width: min(540px, 95vw); padding: 12px 20px; margin-bottom: 16px;
             background: rgba(255,255,255,0.05); backdrop-filter: blur(12px);
             border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
         }
@@ -32,8 +32,9 @@
             border-radius: 16px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08);
             overflow: hidden;
+            max-width: 95vw;
         }
-        canvas { display: block; cursor: pointer; background: #0f0a1a; }
+        canvas { display: block; cursor: pointer; background: #0f0a1a; max-width: 100%; height: auto; touch-action: manipulation; }
 
         .controls {
             margin-top: 16px; display: flex; gap: 14px; align-items: center;
@@ -55,7 +56,7 @@
             background: rgba(255,255,255,0.03);
             border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.06);
-            max-width: 540px;
+            max-width: min(540px, 95vw);
         }
         .rules span {
             color: #94a3b8; font-size: 0.82rem;

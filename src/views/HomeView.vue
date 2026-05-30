@@ -156,6 +156,7 @@
                     :effect="'coverflow'"
                     :centered-slides="true"
                     :slides-per-view="3"
+                    :breakpoints="{ 320: { slidesPerView: 1 }, 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } }"
                     :coverflow-effect="{ rotate: 5, stretch: -20, depth: 280, modifier: 1, slideShadows: false }"
                     :navigation="{ nextEl: '.carousel-arrow-right', prevEl: '.carousel-arrow-left' }"
                     :pagination="{ el: '.carousel-nav', clickable: true }"

@@ -42,6 +42,8 @@
             position: relative;
             width: 594px;
             height: 594px;
+            max-width: calc(100vw - 20px);
+            max-height: calc(100vh - 380px);
             border: 2px solid rgba(255,255,255,0.1);
             border-radius: 10px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
@@ -602,6 +604,114 @@
             margin-top: 2px;
             align-self: flex-start;
         }
+
+        /* ===== 移动端虚拟方向键 ===== */
+        .mobile-dpad {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 16px;
+            z-index: 300;
+        }
+        .dpad-grid {
+            display: grid;
+            grid-template-columns: 56px 56px 56px;
+            grid-template-rows: 56px 56px 56px;
+            gap: 3px;
+        }
+        .dpad-grid button {
+            width: 56px; height: 56px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(8px);
+            color: #fff;
+            font-size: 1.3rem;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            padding: 0; display: flex; align-items: center; justify-content: center;
+        }
+        .dpad-grid button:active {
+            background: rgba(59,130,246,0.3);
+            border-color: #60a5fa;
+            box-shadow: 0 0 16px rgba(59,130,246,0.3);
+        }
+        .dpad-grid .empty { border: none; background: none; }
+
+        .char-switch-btn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 16px;
+            z-index: 300;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #f8fafc;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .char-switch-btn.p2-active {
+            border-color: rgba(248,113,113,0.5);
+            color: #f87171;
+        }
+
+        .item-use-btns {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 300;
+            gap: 10px;
+        }
+        .item-use-btns button {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(8px);
+            color: #f8fafc;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .item-use-btns .use-pause { border-color: rgba(251,191,36,0.4); color: #fbbf24; }
+        .item-use-btns .use-turn { border-color: rgba(139,92,246,0.4); color: #c084fc; }
+
+        @media (max-width: 680px), (pointer: coarse) {
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .item-legend {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 16px;
+                align-items: center;
+                min-width: auto;
+                padding: 8px 14px;
+                margin-top: 8px;
+            }
+            .legend-title { display: none; }
+            .legend-item { margin-bottom: 0; }
+            .legend-key { display: none; }
+            .controls { display: none; }
+            .mobile-dpad { display: block; }
+            .char-switch-btn { display: block; }
+            .item-use-btns { display: flex; }
+            .nav { width: 95vw; padding: 8px 12px; flex-wrap: wrap; gap: 6px; }
+            .nav h1 { font-size: 1rem; }
+            .nav-info { gap: 12px; }
+            .nav-info span { font-size: 0.75rem; }
+            .btn-back, .nav .btn-primary { padding: 6px 10px; font-size: 0.72rem; }
+            #maze { max-height: calc(100vh - 440px); }
+        }
     </style>
 </head>
 <body>
@@ -724,6 +834,26 @@
         <h1 id="winTitle" style="color:#fcd34d;">双子同心</h1>
         <p id="winDesc">关卡完成，继续前进吧</p>
         <button class="btn-primary" id="overlayBtn" onclick="nextLevel()">下一关</button>
+    </div>
+
+    <!-- 移动端方向键 -->
+    <button class="char-switch-btn" id="charSwitchBtn" onclick="switchCharacter()">🔵 蓝星</button>
+    <div class="mobile-dpad" id="mobileDpad">
+        <div class="dpad-grid">
+            <div class="empty"></div>
+            <button id="dpadUp" ontouchstart="dpadPress('up',event)" onmousedown="dpadPress('up',event)">▲</button>
+            <div class="empty"></div>
+            <button id="dpadLeft" ontouchstart="dpadPress('left',event)" onmousedown="dpadPress('left',event)">◀</button>
+            <div class="empty"></div>
+            <button id="dpadRight" ontouchstart="dpadPress('right',event)" onmousedown="dpadPress('right',event)">▶</button>
+            <div class="empty"></div>
+            <button id="dpadDown" ontouchstart="dpadPress('down',event)" onmousedown="dpadPress('down',event)">▼</button>
+            <div class="empty"></div>
+        </div>
+    </div>
+    <div class="item-use-btns" id="itemUseBtns">
+        <button class="use-turn" ontouchstart="dpadUseItem('turn',event)" onmousedown="dpadUseItem('turn',event)">🔄 转向</button>
+        <button class="use-pause" ontouchstart="dpadUseItem('pause',event)" onmousedown="dpadUseItem('pause',event)">⏸ 定身</button>
     </div>
 
     <script>
@@ -1519,6 +1649,141 @@
                 }, 300);
             }
         });
+
+        // ========== 移动端虚拟方向键 ==========
+        let dpadChar = 'p1'; // 'p1' 或 'p2'，当前方向键控制的角色
+
+        function switchCharacter() {
+            if (isMultiplayer) return; // 联机模式不需要切换
+            dpadChar = dpadChar === 'p1' ? 'p2' : 'p1';
+            var btn = document.getElementById('charSwitchBtn');
+            if (dpadChar === 'p1') {
+                btn.textContent = '🔵 蓝星';
+                btn.classList.remove('p2-active');
+            } else {
+                btn.textContent = '🔴 红星';
+                btn.classList.add('p2-active');
+            }
+        }
+
+        function doMove(dx, dy) {
+            if (isLocked) return;
+            var d = grid;
+            var moved = false;
+            var target = dpadChar === 'p1' ? p1 : p2;
+
+            // 联机模式客机
+            if (isMultiplayer && !isHost && dpadChar === 'p2') {
+                if (target.y + dy >= 0 && target.y + dy < rows && target.x + dx >= 0 && target.x + dx < cols &&
+                    d[target.y + dy][target.x + dx] === 0) {
+                    target.x += dx; target.y += dy;
+                    lastGuestMoveTime = Date.now();
+                    moved = true;
+                }
+                if (moved && target.el) {
+                    target.el.style.left = (target.x * CELL + PADDING) + 'px';
+                    target.el.style.top = (target.y * CELL + PADDING) + 'px';
+                    for (var i = items.length - 1; i >= 0; i--) {
+                        var it = items[i];
+                        if (target.x === it.x && target.y === it.y) {
+                            heldItems.push(it.type); it.el.remove(); items.splice(i, 1); updateItemUI();
+                        }
+                    }
+                    guestSendP2Input({type:'move', x:target.x, y:target.y});
+                }
+                return;
+            }
+
+            // 主机/单人模式
+            if (isMultiplayer && !isHost && dpadChar === 'p1') return; // 客机不能控制P1
+
+            if (!isMultiplayer || isHost) {
+                if (dpadChar === 'p1') {
+                    if (target.y + dy >= 0 && target.y + dy < rows && target.x + dx >= 0 && target.x + dx < cols &&
+                        d[target.y + dy][target.x + dx] === 0) {
+                        target.x += dx; target.y += dy;
+                        moved = true;
+                    }
+                }
+            }
+
+            if (!isMultiplayer || !isHost) {
+                if (dpadChar === 'p2') {
+                    if (target.y + dy >= 0 && target.y + dy < rows && target.x + dx >= 0 && target.x + dx < cols &&
+                        d[target.y + dy][target.x + dx] === 0) {
+                        target.x += dx; target.y += dy;
+                        moved = true;
+                    }
+                }
+            }
+
+            if (moved) {
+                p1.el.style.left = (p1.x * CELL + PADDING) + 'px';
+                p1.el.style.top = (p1.y * CELL + PADDING) + 'px';
+                p2.el.style.left = (p2.x * CELL + PADDING) + 'px';
+                p2.el.style.top = (p2.y * CELL + PADDING) + 'px';
+
+                for (var i = items.length - 1; i >= 0; i--) {
+                    var it = items[i];
+                    if ((p1.x === it.x && p1.y === it.y) || (p2.x === it.x && p2.y === it.y)) {
+                        heldItems.push(it.type); it.el.remove(); items.splice(i, 1); updateItemUI();
+                    }
+                }
+
+                checkEnemyCollision();
+                if (!isLocked) {
+                    if (p1.x === gate1.x && p1.y === gate1.y && p2.x === gate2.x && p2.y === gate2.y) {
+                        isLocked = true;
+                        lockReason = 'win';
+                        if (enemy.timer) { clearInterval(enemy.timer); enemy.timer = null; }
+                        if (enemy2.timer) { clearInterval(enemy2.timer); enemy2.timer = null; }
+                        setTimeout(function() {
+                            showOverlay('✨ 双子同心！', '#fcd34d', '关卡 ' + currentLevel + ' 完成！', '下一关', 'nextLevel()');
+                        }, 300);
+                    }
+                }
+            }
+        }
+
+        function dpadPress(dir, e) {
+            if (e) e.preventDefault();
+            switch (dir) {
+                case 'up': doMove(0, -1); break;
+                case 'down': doMove(0, 1); break;
+                case 'left': doMove(-1, 0); break;
+                case 'right': doMove(1, 0); break;
+            }
+        }
+
+        function dpadUseItem(type, e) {
+            if (e) e.preventDefault();
+            if (isLocked) return;
+            var idx = heldItems.indexOf(type);
+            if (idx === -1) return;
+            heldItems.splice(idx, 1);
+            useItem(type);
+            updateItemUI();
+            if (typeof guestUseItem === 'function') guestUseItem(type);
+        }
+
+        // 迷宫自适应
+        function resizeMaze() {
+            var maxW = Math.min(window.innerWidth - 20, 594);
+            var maxH = Math.min(window.innerHeight - 440, 594);
+            if (window.innerWidth > 680 && window.matchMedia('(pointer: fine)').matches) {
+                maxH = Math.min(window.innerHeight - 300, 594);
+            }
+            var size = Math.min(maxW, maxH);
+            size = Math.max(300, Math.floor(size / 11) * 11);
+            var newCell = Math.floor(size / 11);
+            if (newCell !== CELL && newCell >= 27) {
+                // Rebuild with new cell size would lose state, so just resize container
+                mazeEl.style.width = (newCell * 11) + 'px';
+                mazeEl.style.height = (newCell * 11) + 'px';
+            }
+        }
+        window.addEventListener('resize', resizeMaze);
+        resizeMaze();
     </script>
 <script>
 try {

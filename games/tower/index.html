@@ -49,6 +49,8 @@
         <p style="color: #94a3b8; line-height: 40px; margin-left: 10px;">提示: 点击画面或按空格键放置方块</p>
     </div>
 
+    <button class="mobile-drop-btn" id="mobileDropBtn">放置</button>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -142,7 +144,17 @@
         }
 
         canvas.addEventListener('mousedown', dropBlock);
-        window.addEventListener('keydown', (e) => { if(e.code === 'Space') dropBlock(); });
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); dropBlock(); });
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') { e.preventDefault(); dropBlock(); }
+        });
+
+        // 移动端放置按钮
+        var dropBtn = document.getElementById('mobileDropBtn');
+        if (dropBtn) {
+            dropBtn.addEventListener('touchstart', function(e) { e.preventDefault(); dropBlock(); });
+            dropBtn.addEventListener('mousedown', function(e) { dropBlock(); });
+        }
 
         function update() {
             if (state !== 'playing') return;
