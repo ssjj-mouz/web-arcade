@@ -237,7 +237,7 @@ header{
 
 <header>
     <div class="header-left">
-        <button class="back-btn" onclick="location.href='../../index.html'" aria-label="返回大厅">&#9664; 大厅</button>
+        <button class="back-btn" onclick="top.postMessage({from:'web-arcade-game',type:'navigate',path:'/'},'*')" aria-label="返回大厅">&#9664; 大厅</button>
         <span class="game-title">&#10022; 天空防卫局 &#10022;</span>
     </div>
     <div class="header-right">
@@ -772,6 +772,7 @@ try {
                 if (!all[_user][game] || score > all[_user][game]) {
                     all[_user][game] = score;
                     localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                    top.postMessage({from:'web-arcade-game',type:'scoreUpdate'},'*');
                 }
             } catch(e){}
         };

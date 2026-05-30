@@ -131,9 +131,9 @@
             <a @click="router.push('/admin')" class="hdr-icon-btn" title="后台管理" style="opacity:0.55;cursor:pointer">⚙️</a>
             <div class="user-pill" id="userPill">
                 <div class="avatar">👾</div>
-                <span class="user-name" id="userNameDisplay">游客</span>
-                <span class="pill-score" id="global-score">0</span>
-                <button class="pill-logout" id="logoutBtn" @click="logoutUser()" style="display:none" title="退出登录">✕</button>
+                <span class="user-name">{{ user.username || '游客' }}</span>
+                <span class="pill-score" id="global-score">{{ user.totalScore }}</span>
+                <button class="pill-logout" @click="logoutUser()" :style="{display: user.isLoggedIn ? '' : 'none'}" title="退出登录">✕</button>
             </div>
         </div>
     </header>
@@ -219,7 +219,8 @@
 
         <div class="game-grid" id="game-grid">
 
-            <article class="game-card" data-category="action" @click="router.push('/game/sky-defense')">
+            <article class="game-card" data-category="action" data-game="skyDefense" @click="router.push('/game/sky-defense')">
+                <button class="card-fav" @click.stop="toggleFav('skyDefense')">❤️</button>
                 <div class="card-cover cover-sky">✈️</div>
                 <div class="card-info">
                     <h2>天空防卫局</h2>
@@ -228,7 +229,8 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="puzzle" @click="router.push('/game/match')">
+            <article class="game-card" data-category="puzzle" data-game="match" @click="router.push('/game/match')">
+                <button class="card-fav" @click.stop="toggleFav('match')">❤️</button>
                 <div class="card-cover cover-match">🐙</div>
                 <div class="card-info">
                     <h2>深海寻宝</h2>
@@ -237,7 +239,8 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="hardcore puzzle" @click="router.push('/game/tower')">
+            <article class="game-card" data-category="hardcore puzzle" data-game="tower" @click="router.push('/game/tower')">
+                <button class="card-fav" @click.stop="toggleFav('tower')">❤️</button>
                 <div class="card-cover cover-tower">🏗️</div>
                 <div class="card-info">
                     <h2>云端筑梦师</h2>
@@ -246,7 +249,8 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="hardcore action" @click="router.push('/game/typist')">
+            <article class="game-card" data-category="hardcore action" data-game="typist" @click="router.push('/game/typist')">
+                <button class="card-fav" @click.stop="toggleFav('typist')">❤️</button>
                 <div class="card-cover cover-type">💻</div>
                 <div class="card-info">
                     <h2>极客骇客</h2>
@@ -255,7 +259,8 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="hardcore action" @click="router.push('/game/beats')">
+            <article class="game-card" data-category="hardcore action" data-game="beats" @click="router.push('/game/beats')">
+                <button class="card-fav" @click.stop="toggleFav('beats')">❤️</button>
                 <div class="card-cover cover-beat">🎵</div>
                 <div class="card-info">
                     <h2>光音记忆</h2>
@@ -264,7 +269,8 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="puzzle" @click="router.push('/game/particle')">
+            <article class="game-card" data-category="puzzle" data-game="particle" @click="router.push('/game/particle')">
+                <button class="card-fav" @click.stop="toggleFav('particle')">❤️</button>
                 <div class="card-cover cover-sand">🌌</div>
                 <div class="card-info">
                     <h2>星海流沙</h2>
@@ -273,7 +279,8 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="coop puzzle" @click="router.push('/game/coop')">
+            <article class="game-card" data-category="coop puzzle" data-game="coop" @click="router.push('/game/coop')">
+                <button class="card-fav" @click.stop="toggleFav('coop')">❤️</button>
                 <div class="card-cover" style="background: linear-gradient(135deg, #ef4444, #3b82f6);">👯</div>
                 <div class="card-info">
                     <h2>双子星探险</h2>
@@ -282,7 +289,8 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="classic casual" @click="router.push('/game/snake')">
+            <article class="game-card" data-category="classic casual" data-game="snake" @click="router.push('/game/snake')">
+                <button class="card-fav" @click.stop="toggleFav('snake')">❤️</button>
                 <div class="card-cover" style="background: linear-gradient(135deg, #22c55e, #15803d);">🐍</div>
                 <div class="card-info">
                     <h2>贪吃蛇</h2>
@@ -291,7 +299,8 @@
                 </div>
             </article>
 
-            <article class="game-card" data-category="puzzle" @click="router.push('/game/breakout')">
+            <article class="game-card" data-category="puzzle" data-game="breakout" @click="router.push('/game/breakout')">
+                <button class="card-fav" @click.stop="toggleFav('breakout')">❤️</button>
                 <div class="card-cover" style="background: linear-gradient(135deg, #ec4899, #a855f7);">💎</div>
                 <div class="card-info">
                     <h2>宝石消消乐</h2>
@@ -366,12 +375,7 @@ function logoutUser() {
   updateUserDisplay();
 }
 function updateUserDisplay() {
-  const nameEl = document.getElementById('userNameDisplay');
-  const scoreEl = document.getElementById('global-score');
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (nameEl) nameEl.textContent = user.username || '游客';
-  if (scoreEl) scoreEl.textContent = user.totalScore;
-  if (logoutBtn) logoutBtn.style.display = user.isLoggedIn ? '' : 'none';
+  // Vue 响应式模板自动更新显示，保留函数以兼容已有调用
 }
 function showLeaderboard() {
   document.getElementById('leaderboard-overlay').style.display = 'flex';
@@ -463,6 +467,30 @@ function prevSlide() { setSlide((currentSlide - 1 + totalSlides) % totalSlides) 
 function startLegacyAutoplay() { stopLegacyAutoplay(); carouselInterval = setInterval(nextSlide, 5000) }
 function stopLegacyAutoplay() { if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null } }
 
+// Favorites
+function toggleFav(gameKey) {
+  user.toggleFavorite(gameKey);
+  syncFavoritesUI();
+  applySearchAndFilter();
+}
+
+function syncFavoritesUI() {
+  document.querySelectorAll('#game-grid .game-card').forEach(card => {
+    const key = card.dataset.game;
+    const fav = key && user.favorites.includes(key);
+    card.dataset.fav = fav ? 'true' : 'false';
+    const btn = card.querySelector('.card-fav');
+    if (btn) {
+      btn.classList.toggle('favorited', !!fav);
+      btn.textContent = fav ? '❤️' : '🤍';
+    }
+  });
+  const favFilterBtn = document.getElementById('favFilterBtn');
+  if (favFilterBtn) {
+    favFilterBtn.classList.toggle('active-fav', user.favorites.length > 0);
+  }
+}
+
 // Search & filter
 function applySearchAndFilter() {
   const query = document.getElementById('searchInput')?.value?.toLowerCase() || '';
@@ -501,6 +529,7 @@ window.setSlide = setSlide;
 window.nextSlide = nextSlide;
 window.prevSlide = prevSlide;
 window.toggleCarouselMode = toggleCarouselMode;
+window.toggleFav = toggleFav;
 
 // ========== 共享 canvas 变量 ==========
 let starCanvas, starCtx, meteors, sparkParticles, bgStars, floatParticles, starW, starH, mouseX, mouseY;
@@ -515,6 +544,7 @@ onMounted(() => {
   games.loadFromStorage();
   cursor.apply();
   updateUserDisplay();
+  syncFavoritesUI();
 
   // Boot animation
   const bootScreen = document.getElementById('boot-screen');
@@ -870,10 +900,10 @@ function initHomeRunner() {
   }
 
   let state = 'idle', score = 0, hs = parseInt(localStorage.getItem('homeSprintHigh')||'0');
-  let speed = 3, frame = 0, obs = [], spawnT = 0;
+  let speed = 2, frame = 0, obs = [], spawnT = 0;
   let p = { x: 50, y: GROUND-PH, vy: 0, vx: 0, j: false, rf: 0 };
 
-  function start() { state='playing'; score=0; frame=0; speed=3; obs=[]; spawnT=70; p.y=GROUND-PH; p.vy=0; p.vx=0; p.j=false; p.rf=0; }
+  function start() { state='playing'; score=0; frame=0; speed=2; obs=[]; spawnT=90; p.y=GROUND-PH; p.vy=0; p.vx=0; p.j=false; p.rf=0; }
   function spawn() { const types=[{w:14,h:22},{w:18,h:30},{w:12,h:26},{w:28,h:20}]; const t=types[Math.random()*4|0]; obs.push({x:W+10,w:t.w,h:t.h,y:GROUND-t.h}); }
 
   function update() {
@@ -881,9 +911,9 @@ function initHomeRunner() {
     if (p.j) { p.vy+=GRAVITY; p.y+=p.vy; p.x+=p.vx; p.vx*=0.96; if(p.y+PH>=GROUND){p.y=GROUND-PH;p.vy=0;p.vx=0;p.j=false;} }
     else { p.x += (50-p.x)*0.03; }
     if(frame%3===0) score++;
-    speed = Math.min(7,3+score*0.002);
+    speed = Math.min(5, 2 + score * 0.0012);
     spawnT -= speed*0.4;
-    if(spawnT<=0){spawn();spawnT=Math.max(40,80-score*0.03)+Math.random()*35;}
+    if(spawnT<=0){spawn();spawnT=Math.max(60,120-score*0.04)+Math.random()*40;}
     for(let i=obs.length-1;i>=0;i--){
       const o=obs[i]; o.x-=speed;
       if(o.x+o.w<-20){obs.splice(i,1);continue;}

@@ -45,7 +45,7 @@
     </div>
 
     <div class="controls">
-        <button class="btn-back" onclick="location.href='../../index.html'">返回大厅</button>
+        <button class="btn-back" onclick="top.postMessage({from:'web-arcade-game',type:'navigate',path:'/'},'*')">返回大厅</button>
         <p style="color: #94a3b8; line-height: 40px; margin-left: 10px;">提示: 点击画面或按空格键放置方块</p>
     </div>
 
@@ -196,6 +196,7 @@ try {
                 if (!all[_user][game] || score > all[_user][game]) {
                     all[_user][game] = score;
                     localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                    top.postMessage({from:'web-arcade-game',type:'scoreUpdate'},'*');
                 }
             } catch(e){}
         };

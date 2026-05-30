@@ -847,6 +847,11 @@ function setToolbarEnabled(enabled) {
   toolbar.style.pointerEvents = enabled ? 'auto' : 'none';
 }
 
+// ====================== 返回大厅 ======================
+function backToLobby() {
+  try { top.postMessage({from:'web-arcade-game',type:'navigate',path:'/'},'*'); } catch(e) {}
+}
+
 // ====================== Init ======================
 document.getElementById('nameInput').value = localStorage.getItem('arcadeUser') || '';
 resizeCanvas();

@@ -649,7 +649,7 @@
     </div>
 
     <div class="nav">
-        <button class="btn-back" onclick="location.href='../../index.html'">← 大厅</button>
+        <button class="btn-back" onclick="top.postMessage({from:'web-arcade-game',type:'navigate',path:'/'},'*')">← 大厅</button>
         <h1>双子星探险</h1>
         <div class="nav-info">
             <span id="diffLabel" style="color:#22c55e;">简单</span>
@@ -1531,6 +1531,7 @@ try {
                 if (!all[_user][game] || score > all[_user][game]) {
                     all[_user][game] = score;
                     localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                    top.postMessage({from:'web-arcade-game',type:'scoreUpdate'},'*');
                 }
             } catch(e){ console.error('[profile save] error:', e); }
         };
@@ -2134,6 +2135,7 @@ async function backToLobby() {
     document.getElementById('chatArea').style.display = 'none';
     currentLevel = 1;
     disconnectCount = 0;
+    try { top.postMessage({from:'web-arcade-game',type:'navigate',path:'/'},'*'); } catch(e) {}
 }
 
 // ===== 聊天（直接写数据库） =====

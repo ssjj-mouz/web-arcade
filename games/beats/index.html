@@ -529,7 +529,7 @@ body {
 
     <div class="bottom-bar">
         <button class="btn btn-primary" id="startBtn" onclick="startRound()">开始游戏</button>
-        <a href="../../index.html"><button class="btn btn-secondary">返回大厅</button></a>
+        <button class="btn btn-secondary" onclick="top.postMessage({from:'web-arcade-game',type:'navigate',path:'/'},'*')">返回大厅</button>
     </div>
 
     <!-- 闪光覆盖层 -->
@@ -912,6 +912,7 @@ try {
                 if (!all[_user][game] || score > all[_user][game]) {
                     all[_user][game] = score;
                     localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                    top.postMessage({from:'web-arcade-game',type:'scoreUpdate'},'*');
                 }
             } catch(e){}
         };

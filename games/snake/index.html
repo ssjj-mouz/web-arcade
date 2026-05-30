@@ -487,7 +487,7 @@ canvas.addEventListener('touchend', e => {
 
 document.getElementById('btnStart').addEventListener('click', startGame);
 document.getElementById('btnRestart').addEventListener('click', startGame);
-document.getElementById('btnHome').addEventListener('click', () => location.href = '../../index.html');
+document.getElementById('btnHome').addEventListener('click', () => { try { top.postMessage({from:'web-arcade-game',type:'navigate',path:'/'},'*'); } catch(e) {} });
 
 // mobile button prevent default touch events
 document.querySelectorAll('.dpad button').forEach(b => {

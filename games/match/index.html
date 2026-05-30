@@ -22,7 +22,7 @@
 
     <div class="controls">
         <button onclick="initGame()">重新洗牌 🔄</button>
-        <button onclick="location.href='../../index.html'" style="background:#475569; margin-left:10px;">返回大厅</button>
+        <button onclick="top.postMessage({from:'web-arcade-game',type:'navigate',path:'/'},'*')" style="background:#475569; margin-left:10px;">返回大厅</button>
     </div>
 
     <script>
@@ -137,6 +137,7 @@ try {
                 if (!all[_user][game] || score > all[_user][game]) {
                     all[_user][game] = score;
                     localStorage.setItem('arcadeProfiles', JSON.stringify(all));
+                    top.postMessage({from:'web-arcade-game',type:'scoreUpdate'},'*');
                 }
             } catch(e){}
         };
