@@ -69,6 +69,9 @@
     <header>
         <div class="logo">⚡ Web Arcade OS</div>
         <div class="header-right">
+            <button class="hdr-icon-btn" @click="music.toggle()" :title="music.isPlaying ? '关闭音乐' : '开启音乐'">
+                {{ music.isPlaying ? '🔊' : '🔇' }}
+            </button>
             <div style="position:relative;">
                 <button class="hdr-icon-btn" id="cursorBtn" @click="toggleCursorPanel()" title="指针样式">🖱️</button>
                 <div class="cursor-panel" id="cursorPanel" :class="{ open: showCursorPanel }">
@@ -326,6 +329,7 @@ import { useThemeStore } from '../stores/theme.js'
 import { useUserStore } from '../stores/user.js'
 import { useGamesStore } from '../stores/games.js'
 import { useCursorStore } from '../stores/cursor.js'
+import { useMusicStore } from '../stores/music.js'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { EffectCoverflow, Navigation, Pagination, Autoplay } from 'swiper/modules'
 import 'swiper/css'
@@ -338,6 +342,7 @@ const theme = useThemeStore()
 const user = useUserStore()
 const games = useGamesStore()
 const cursor = useCursorStore()
+const music = useMusicStore()
 
 const showCursorPanel = ref(false)
 function toggleCursorPanel() {
@@ -544,6 +549,7 @@ onMounted(() => {
   user.loadFromStorage();
   games.loadFromStorage();
   cursor.apply();
+  music.init();
   updateUserDisplay();
   syncFavoritesUI();
 
